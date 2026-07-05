@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+<linearGradient id="bg" x1="0.08" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#F7FAFD"></stop><stop offset="1" stop-color="#CFDBEB"></stop></linearGradient>
+<linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.55"></stop><stop offset="0.46" stop-color="#ffffff" stop-opacity="0"></stop></linearGradient>
+</defs>
+<rect width="1024" height="1024" rx="307" ry="307" fill="url(#bg)"></rect>
+<rect width="1024" height="1024" rx="307" ry="307" fill="url(#sh)"></rect>
+<rect x="3" y="3" width="1018" height="1018" rx="305" ry="305" fill="none" stroke="#28384a" stroke-opacity="0.10" stroke-width="4"></rect>
+<g transform="translate(110.3,273.15) scale(10.857)" fill="none" stroke="#15181D" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 39.5 L21 4.5 L37 31.5 L53 4.5 L69 39.5"></path><path d="M69 39.5 L68 25.5 M69 39.5 L59 29.5"></path></g>
+<g transform="translate(110.3,273.15) scale(10.857)" fill="#15181D"><circle cx="26" cy="38.5" r="3.4"></circle><circle cx="48" cy="38.5" r="3.4"></circle></g>
+</svg>

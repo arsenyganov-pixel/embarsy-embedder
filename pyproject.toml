@@ -1,0 +1,41 @@
+[project]
+name = "embarsy"
+version = "0.1.0"
+description = "Local OpenAI-compatible embeddings wrapper for Roo Code semantic codebase indexing."
+requires-python = ">=3.9"
+license = { text = "PolyForm Strict License 1.0.0" }
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "httpx>=0.27,<1.0",
+  "pydantic>=2.7,<3.0",
+  "pydantic-settings>=2.3,<3.0",
+  "uvicorn[standard]>=0.30,<1.0",
+]
+
+[project.scripts]
+embarsy-api = "embarsy_api.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pyinstaller>=6.11,<7.0",
+  "pytest>=8.2,<9.0",
+  "ruff>=0.5,<1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = [
+  # FastAPI dependency injection intentionally uses Depends/Header in defaults.
+  "B008",
+  # Keep runtime-evaluated typing syntax compatible with macOS Python 3.9.
+  "UP007",
+  "UP045",
+]

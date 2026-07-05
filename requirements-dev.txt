@@ -1,0 +1,7 @@
+-r requirements.txt
+pyinstaller>=6.11,<7.0
+pytest>=8.2,<9.0
+ruff>=0.5,<1.0
+# DMG packaging: Finder-free window layout + background for scripts/package-dmg.sh
+# (the script also self-installs this into build/.dmg-venv if it's missing).
+dmgbuild>=1.6,<2.0
