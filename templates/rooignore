@@ -1,0 +1,37 @@
+# Embarsy recommended `.rooignore` template for large codebases.
+
+# Dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Build artifacts
+dist/
+build/
+out/
+target/
+.next/
+.nuxt/
+coverage/
+
+# Generated and binary-heavy files
+*.min.js
+*.map
+*.lock
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.pdf
+*.zip
+*.tar
+*.gz
+
+# Local secrets and machine state
+.env
+.env.*
+!.env.example
+.DS_Store
+
