@@ -83,9 +83,11 @@ struct StatusView: View {
     private var runningCount: Int {
         ManagedService.allCases.filter { store.serviceStatus(for: $0) == .running }.count
     }
+    /// True if at least one service is running — starting again would just fail, so Start All disables.
+    private var anyRunning: Bool { runningCount > 0 }
 
     private var servicesSection: some View {
-        EmbarsySection(title: "Services", right: running ? "\(runningCount) running" : "all stopped") {
+        EmbarsySection(title: "Services", right: anyRunning ? "\(runningCount) running" : "all stopped") {
             VStack(spacing: 0) {
                 ForEach(Array(ManagedService.allCases.enumerated()), id: \.element) { index, service in
                     if index > 0 { Divider().overlay(Theme.separator) }
@@ -95,11 +97,12 @@ struct StatusView: View {
             .padding(.horizontal, -14)   // full-bleed inside the card
 
             HStack(spacing: Theme.gapRow) {
-                // When everything is already running, Stop All is the primary (highlighted)
-                // action; otherwise Start All is.
-                if running {
+                // Once anything is running, Start All is disabled (starting again just fails) and
+                // Stop All becomes the highlighted action. When everything is stopped it flips.
+                if anyRunning {
                     Button("Start All") { Task { await store.startAll() } }
                         .buttonStyle(.bordered)
+                        .disabled(true)
                     Button("Stop All") { store.processManager.stopAll() }
                         .buttonStyle(.borderedProminent).tint(Theme.accent)
                 } else {

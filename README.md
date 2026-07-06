@@ -80,10 +80,18 @@ embeddings endpoint is OpenAI‑compatible, so anything that speaks it just work
 ## Quick start
 
 1. Download the latest **`Embarsy-*.dmg`** from [Releases](../../releases).
-2. Drag **Embarsy** into Applications and launch it.
-3. Open **Install → Install and Start**. Embarsy fetches Qdrant, Ollama and the embedding model, then
+2. Drag **Embarsy** into Applications.
+3. **First open.** Embarsy is a self‑signed beta, so macOS Gatekeeper stops it once:
+   - Double‑click **Embarsy**; if the dialog offers **Open**, click it.
+   - If it's blocked, go to **System Settings → Privacy & Security**, scroll to the bottom and click
+     **Open Anyway**, then launch again.
+   - Still blocked (or it says the app is "damaged")? Clear the download quarantine once, then launch:
+     ```bash
+     xattr -dr com.apple.quarantine /Applications/Embarsy.app
+     ```
+4. Open **Install → Install and Start**. Embarsy fetches Qdrant, Ollama and the embedding model, then
    starts the stack (the first model download takes a few minutes).
-4. Open **Status**, copy the connection values, and paste them into your editor's codebase‑indexing
+5. Open **Status**, copy the connection values, and paste them into your editor's codebase‑indexing
    settings. Point the **Qdrant URL** at the Embarsy proxy so Monitoring can count reads/writes.
 
 <p align="center"><img src="assets/status.png" width="840" alt="Status screen with the connection values to paste into your editor"></p>

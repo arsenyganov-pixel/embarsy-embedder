@@ -15,77 +15,66 @@ The other values are always the same and don't need changing:
 
 ## 1. Claude Code
 
-Claude Code doesn't search your code on its own — we'll add a small bridge plugin (MCP) that pulls the embeddings and the vector store from Embarsy.
+Claude Code doesn't search your code on its own — Embarsy's bridge (`embarsy-qdrant-mcp`) indexes your project into Qdrant and exposes it to Claude Code over MCP.
 
 1. Install the bridge:
 
    ```bash
-   npm install -g @kindash/qdrant-mcp-server
+   npm install -g embarsy-qdrant-mcp
    ```
 
-2. Index the project once (substitute your own path and the **Qdrant API Key** from Embarsy):
+2. Index the project once (substitute your own path and the keys from Embarsy):
 
    ```bash
-   OPENAI_BASE_URL=http://localhost:8000/v1 \
    OPENAI_API_KEY=<API Key from Embarsy> \
-   EMBEDDING_MODEL=qwen3-embedding \
-   QDRANT_URL=http://localhost:8000/qdrant \
+   QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
+   embarsy-index ~/projects/my-app --collection cc-my-app
+   ```
+
+3. Connect it to Claude Code — run this **in your project folder** (it writes `.mcp.json` with absolute paths):
+
+   ```bash
+   OPENAI_API_KEY=<API Key from Embarsy> \
    QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
    QDRANT_COLLECTION_NAME=cc-my-app \
-   qdrant-indexer ~/projects/my-app
-   ```
-
-3. Connect the bridge to Claude Code:
-
-   ```bash
-   claude mcp add embarsy-qdrant \
-     -e OPENAI_BASE_URL=http://localhost:8000/v1 \
-     -e OPENAI_API_KEY=<API Key from Embarsy> \
-     -e EMBEDDING_MODEL=qwen3-embedding \
-     -e QDRANT_URL=http://localhost:8000/qdrant \
-     -e QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
-     -- qdrant-mcp --collection cc-my-app
+   embarsy-mcp --setup-claude
    ```
 
 4. Check it: ask Claude about your code — for example, "where is authorization handled?". It will find the relevant files, and the counters in Embarsy → **Monitoring** will start moving.
 
-> Both `OPENAI_API_KEY` and the **Qdrant API Key** come from Embarsy → **Status** (the connection block). Copy the current values — they change after a Hard Reset.
+> Both API keys come from Embarsy → **Status** (the connection block). Copy the current values — they change after a Hard Reset. The bridge defaults to Embarsy's proxy (`http://localhost:8000`) and `qwen3-embedding` / `1024`, so only the two keys are needed.
 
 ---
 
 ## 2. Codex
 
-Same as Claude Code, but the bridge goes into Codex's config file. If the project is already indexed in section 1, you don't need to re-index it.
+Same bridge as Claude Code, registered with Codex. If the project is already indexed in section 1, skip step 2.
 
-1. Connect the bridge (substitute the **Qdrant API Key** from Embarsy):
+1. Install the bridge (skip if you already did it for Claude Code):
 
    ```bash
-   codex mcp add embarsy-qdrant \
-     --env OPENAI_BASE_URL=http://localhost:8000/v1 \
-     --env OPENAI_API_KEY=<API Key from Embarsy> \
-     --env EMBEDDING_MODEL=qwen3-embedding \
-     --env QDRANT_URL=http://localhost:8000/qdrant \
-     --env QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
-     -- qdrant-mcp --collection cc-my-app
+   npm install -g embarsy-qdrant-mcp
    ```
 
-   Or write the same thing by hand into `~/.codex/config.toml`:
+2. Index the project once:
 
-   ```toml
-   [mcp_servers.embarsy-qdrant]
-   command = "qdrant-mcp"
-   args = ["--collection", "cc-my-app"]
-
-   [mcp_servers.embarsy-qdrant.env]
-   OPENAI_BASE_URL = "http://localhost:8000/v1"
-   OPENAI_API_KEY = "<API Key from Embarsy>"
-   EMBEDDING_MODEL = "qwen3-embedding"
-   QDRANT_URL = "http://localhost:8000/qdrant"
-   QDRANT_API_KEY = "<Qdrant API Key from Embarsy>"
+   ```bash
+   OPENAI_API_KEY=<API Key from Embarsy> \
+   QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
+   embarsy-index ~/projects/my-app --collection cc-my-app
    ```
 
-2. Launch Codex and type `/mcp` — `embarsy-qdrant` should appear in the list.
-3. Ask about your code — Codex will find the files, and the counters in Embarsy → **Monitoring** will move.
+3. Register it with Codex — this writes `~/.codex/config.toml` with **absolute** `node` + script paths, so the Codex desktop app (which doesn't inherit your shell `PATH`) can always launch it:
+
+   ```bash
+   OPENAI_API_KEY=<API Key from Embarsy> \
+   QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
+   QDRANT_COLLECTION_NAME=cc-my-app \
+   embarsy-mcp --setup-codex
+   ```
+
+4. Restart Codex and type `/mcp` — `embarsy-qdrant` should appear in the list.
+5. Ask about your code — Codex will find the files, and the counters in Embarsy → **Monitoring** will move.
 
 ---
 

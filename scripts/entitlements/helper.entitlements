@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+      Entitlements for the bundled helper binaries (qdrant, ollama, llama-server and
+      the PyInstaller `embarsy-api`). Hardened runtime is required for notarization, but
+      these third-party binaries load their own bundled libraries that are not signed by
+      our Team ID — the PyInstaller onefile in particular extracts Python + .so files to a
+      temp dir and dlopen()s them. Library-validation would reject those, so we disable it
+      here (scoped to the helpers only — the main app has no entitlements).
+    -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
+</dict>
+</plist>

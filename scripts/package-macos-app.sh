@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 app_name="Embarsy"
-app_version="0.1.0"
+app_version="0.1.1"
 bundle_version="${EMBARSY_BUNDLE_VERSION:-$(date -u +%Y%m%d%H%M)}"
 native_dir="${EMBARSY_HOME}/native/EmbarsyApp"
 bundle_dir="${EMBARSY_HOME}/build/${app_name}.app"
@@ -257,11 +257,26 @@ if [[ "${sign_app}" == true ]]; then
   if [[ "${codesign_identity}" == "-" ]]; then
     echo "Warning: signing ${app_name}.app ad-hoc because EMBARSY_CODESIGN_IDENTITY is not set."
     echo "Warning: apps copied from DMG may be marked rejected by Gatekeeper and show a prohibited overlay until signed with Developer ID and notarized."
+    while IFS= read -r -d '' executable; do
+      codesign --force --sign - --timestamp=none "$executable"
+    done < <(find "${contents_dir}" -type f -perm -111 -print0)
+    codesign --force --deep --sign - --timestamp=none "${bundle_dir}"
+  else
+    # Developer ID: sign inside-out with the hardened runtime + a secure timestamp so the
+    # app can be notarized. Nested helper binaries get entitlements that let them load their
+    # own bundled libraries; the outer bundle is sealed LAST and WITHOUT --deep so the nested
+    # signatures (and their entitlements) are preserved rather than clobbered.
+    echo "Signing ${app_name}.app with Developer ID: ${codesign_identity}"
+    helper_entitlements="${SCRIPT_DIR}/entitlements/helper.entitlements"
+    while IFS= read -r -d '' executable; do
+      [[ "${executable}" == "${macos_dir}/${app_name}" ]] && continue   # main exe sealed with the bundle below
+      codesign --force --options runtime --timestamp \
+        --entitlements "${helper_entitlements}" \
+        --sign "${codesign_identity}" "$executable"
+    done < <(find "${contents_dir}" -type f -perm -111 -print0)
+    codesign --force --options runtime --timestamp \
+      --sign "${codesign_identity}" "${bundle_dir}"
   fi
-  while IFS= read -r -d '' executable; do
-    codesign --force --sign "${codesign_identity}" --timestamp=none "$executable"
-  done < <(find "${contents_dir}" -type f -perm -111 -print0)
-  codesign --force --deep --sign "${codesign_identity}" --timestamp=none "${bundle_dir}"
   codesign --verify --deep --strict "${bundle_dir}"
 fi
 
