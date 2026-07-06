@@ -1,0 +1,45 @@
+{
+  "name": "embarsy-qdrant-mcp",
+  "version": "0.1.0",
+  "description": "Codebase-indexing MCP server for Embarsy — semantic code search over a local Qdrant + OpenAI-compatible embeddings stack. Routes embeddings and Qdrant through Embarsy's proxy so auth and Monitoring counters just work.",
+  "type": "module",
+  "bin": {
+    "embarsy-index": "dist/bin/index.js",
+    "embarsy-mcp": "dist/bin/mcp.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "embarsy",
+    "mcp",
+    "qdrant",
+    "codebase",
+    "semantic-search",
+    "embeddings",
+    "claude-code",
+    "codex"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "ignore": "^5.3.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.6.2"
+  },
+  "license": "PolyForm-Strict-1.0.0",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  }
+}

@@ -128,39 +128,45 @@ struct HowToView: View {
 
     private var guideClaude: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepIntro("Claude Code doesn't search code on its own — we'll add a small bridge plugin (MCP) that pulls embeddings and the database from Embarsy.")
+            stepIntro("Claude Code doesn't search code on its own — Embarsy's bridge indexes your project into Qdrant and exposes it to Claude Code over MCP.")
             NumStep(1) {
                 StepText("Install the bridge:")
-                CodeBlock(code: "npm install -g @kindash/qdrant-mcp-server")
+                CodeBlock(code: Self.installBridge)
             }
             NumStep(2) {
-                StepText("Index the project once (substitute your path and the **Qdrant API Key** from Embarsy):")
-                CodeBlock(code: Self.claudeIndex)
+                StepText("Index the project once (substitute your path and the keys from Embarsy \u{2192} **Status**):")
+                CodeBlock(code: Self.indexProject)
             }
             NumStep(3) {
-                StepText("Connect the bridge to Claude Code:")
+                StepText("Connect it to Claude Code — run this **in your project folder** (it writes `.mcp.json` with absolute paths):")
                 CodeBlock(code: Self.claudeConnect)
             }
             NumStep(4) {
                 StepText("Verify: ask Claude about the code — e.g. \u{201C}where is authorization handled\u{201D}. It finds the right files, and counters start moving in Embarsy \u{2192} **Monitoring**.")
             }
-            noteBox("Both `OPENAI_API_KEY` and the **Qdrant API Key** come from Embarsy \u{2192} **Status** (the connection block). Copy the current values — they change after a Hard Reset.")
+            noteBox("Both API keys come from Embarsy \u{2192} **Status** (the connection block). Copy the current values — they change after a Hard Reset.")
         }
     }
 
     private var guideCodex: some View {
         VStack(alignment: .leading, spacing: 16) {
-            stepIntro("Same as Claude Code, only the bridge is registered in a Codex file. If the project is already indexed in the Claude Code section, you don't need to re-index.")
+            stepIntro("Same bridge as Claude Code, registered with Codex. If you already indexed the project in the Claude Code section, skip step 2.")
             NumStep(1) {
-                StepText("Connect the bridge (substitute the **Qdrant API Key** from Embarsy):")
-                CodeBlock(code: Self.codexConnect)
-                StepText("Or add the same manually to `~/.codex/config.toml`:")
-                CodeBlock(code: Self.codexToml)
+                StepText("Install the bridge (skip if you already did it for Claude Code):")
+                CodeBlock(code: Self.installBridge)
             }
             NumStep(2) {
-                StepText("Launch Codex and type `/mcp` — `embarsy-qdrant` should appear in the list.")
+                StepText("Index the project once (substitute your path and the keys from Embarsy \u{2192} **Status**):")
+                CodeBlock(code: Self.indexProject)
             }
             NumStep(3) {
+                StepText("Register it with Codex — writes `~/.codex/config.toml` with absolute paths (so the desktop app can always launch it):")
+                CodeBlock(code: Self.codexConnect)
+            }
+            NumStep(4) {
+                StepText("Restart Codex and type `/mcp` — `embarsy-qdrant` should appear in the list.")
+            }
+            NumStep(5) {
                 StepText("Ask about the code — Codex finds the files, and counters move in Embarsy \u{2192} **Monitoring**.")
             }
         }
@@ -214,44 +220,26 @@ struct HowToView: View {
 
     // MARK: Content
 
-    static let claudeIndex = """
-    OPENAI_BASE_URL=http://localhost:8000/v1 \\
+    static let installBridge = "npm install -g embarsy-qdrant-mcp"
+
+    // The tool defaults to Embarsy's proxy (embeddings :8000/v1, Qdrant :8000/qdrant) and the
+    // qwen3-embedding / 1024 model, so only the two API keys are needed.
+    static let indexProject = """
     OPENAI_API_KEY=<API Key from Embarsy> \\
-    EMBEDDING_MODEL=qwen3-embedding \\
-    QDRANT_URL=http://localhost:8000/qdrant \\
     QDRANT_API_KEY=<Qdrant API Key from Embarsy> \\
-    QDRANT_COLLECTION_NAME=my-project \\
-    qdrant-indexer ~/projects/my-project
+    embarsy-index ~/projects/my-project --collection my-project
     """
     static let claudeConnect = """
-    claude mcp add embarsy-qdrant \\
-      -e OPENAI_BASE_URL=http://localhost:8000/v1 \\
-      -e OPENAI_API_KEY=<API Key from Embarsy> \\
-      -e EMBEDDING_MODEL=qwen3-embedding \\
-      -e QDRANT_URL=http://localhost:8000/qdrant \\
-      -e QDRANT_API_KEY=<Qdrant API Key from Embarsy> \\
-      -- qdrant-mcp --collection my-project
+    OPENAI_API_KEY=<API Key from Embarsy> \\
+    QDRANT_API_KEY=<Qdrant API Key from Embarsy> \\
+    QDRANT_COLLECTION_NAME=my-project \\
+    embarsy-mcp --setup-claude
     """
     static let codexConnect = """
-    codex mcp add embarsy-qdrant \\
-      --env OPENAI_BASE_URL=http://localhost:8000/v1 \\
-      --env OPENAI_API_KEY=<API Key from Embarsy> \\
-      --env EMBEDDING_MODEL=qwen3-embedding \\
-      --env QDRANT_URL=http://localhost:8000/qdrant \\
-      --env QDRANT_API_KEY=<Qdrant API Key from Embarsy> \\
-      -- qdrant-mcp --collection my-project
-    """
-    static let codexToml = """
-    [mcp_servers.embarsy-qdrant]
-    command = "qdrant-mcp"
-    args = ["--collection", "my-project"]
-
-    [mcp_servers.embarsy-qdrant.env]
-    OPENAI_BASE_URL = "http://localhost:8000/v1"
-    OPENAI_API_KEY = "<API Key from Embarsy>"
-    EMBEDDING_MODEL = "qwen3-embedding"
-    QDRANT_URL = "http://localhost:8000/qdrant"
-    QDRANT_API_KEY = "<Qdrant API Key from Embarsy>"
+    OPENAI_API_KEY=<API Key from Embarsy> \\
+    QDRANT_API_KEY=<Qdrant API Key from Embarsy> \\
+    QDRANT_COLLECTION_NAME=my-project \\
+    embarsy-mcp --setup-codex
     """
 
     static let rooFields: [(String, String)] = [
