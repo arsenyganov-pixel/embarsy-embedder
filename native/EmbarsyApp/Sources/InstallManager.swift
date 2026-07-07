@@ -101,7 +101,17 @@ final class InstallManager: ObservableObject {
 
             try await setStep(.startAPI, "Starting Embarsy API with current local secrets...")
             await processManager.start(.api)
-            guard processManager.statuses[.api] == .running else { throw InstallError.serviceStartFailed(.api) }
+            if processManager.statuses[.api] != .running {
+                // One in-place retry: the first post-install start of the PyInstaller onefile
+                // API is its slowest (extraction + per-dylib signature validation); a second
+                // attempt starts from warm caches and usually clears a marginal timeout.
+                debugLog?.append("Embarsy API failed its first start during install (\(processManager.messages[.api] ?? "")). Retrying once...", category: "install")
+                updateInstallActivity("Embarsy API needs a second start attempt. Retrying...")
+                await processManager.restart(.api, reason: "Install retry after first API start failed")
+            }
+            guard processManager.statuses[.api] == .running else {
+                throw InstallError.apiStartFailed(processManager.messages[.api] ?? "No details available.")
+            }
 
             try await setStep(.verifyHealth, "Verifying Watcher-compatible authentication...")
             try await validateRooAuth(config: config)
@@ -125,6 +135,7 @@ final class InstallManager: ObservableObject {
         debugLog?.append("Hard Reset requested: stopping services and cleaning app support", category: "install")
         clearInstallActivity()
         processManager.hardResetCleanup()
+        archiveLogsBeforeReset(paths: paths)
         do {
             try FileManager.default.removeItem(at: paths.appSupport)
             debugLog?.append("Removed App Support at \(paths.appSupport.path)", category: "install")
@@ -143,6 +154,32 @@ final class InstallManager: ObservableObject {
         detailMessage = "Components removed. Run Install to recreate the local stack."
         processManager.markAllStopped(message: "Components removed. Install required.")
         debugLog?.append(message, category: "install")
+    }
+
+    /// Hard Reset deletes App Support INCLUDING logs/ — which used to destroy the only
+    /// evidence of whatever failure prompted the reset. Snapshot the logs directory to
+    /// ~/Library/Logs/Embarsy/reset-<timestamp>/ first (keep the last 3 snapshots).
+    private func archiveLogsBeforeReset(paths: AppPaths) {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: paths.logsDirectory.path) else { return }
+        let archiveRoot = fileManager.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Logs/Embarsy")
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate, .withTime, .withDashSeparatorInDate]
+        let destination = archiveRoot.appendingPathComponent("reset-\(formatter.string(from: Date()))")
+        do {
+            try fileManager.createDirectory(at: archiveRoot, withIntermediateDirectories: true)
+            try fileManager.copyItem(at: paths.logsDirectory, to: destination)
+            debugLog?.append("Archived logs to \(destination.path) before Hard Reset", category: "install")
+            let snapshots = (try fileManager.contentsOfDirectory(at: archiveRoot, includingPropertiesForKeys: nil))
+                .filter { $0.lastPathComponent.hasPrefix("reset-") }
+                .sorted { $0.lastPathComponent < $1.lastPathComponent }
+            for stale in snapshots.dropLast(3) {
+                try? fileManager.removeItem(at: stale)
+            }
+        } catch {
+            debugLog?.append("Log archive before Hard Reset failed: \(error.localizedDescription)", category: "install.error")
+        }
     }
 
     private func writeInstallMarker(paths: AppPaths) throws {
@@ -446,6 +483,7 @@ enum InstallError: LocalizedError {
     case commandFailed(String, String)
     case commandTimedOut(String, String)
     case serviceStartFailed(ManagedService)
+    case apiStartFailed(String)
     case healthCheckFailed
     case rooAuthProbeFailed(String)
     case qdrantAuthProbeFailed(String)
@@ -455,11 +493,13 @@ enum InstallError: LocalizedError {
         case .missingBinaries(let binaries):
             "Missing executable binaries:\n" + binaries.joined(separator: "\n")
         case .commandFailed(let command, let output):
-            "\(command) failed: \(output)\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, use Remove Components and Clear Secrets in Settings, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
+            "\(command) failed: \(output)\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com."
         case .commandTimedOut(let command, let output):
-            "\(command) timed out. Output tail: \(Self.outputTail(output))\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, use Remove Components and Clear Secrets in Settings, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
+            "\(command) timed out. Output tail: \(Self.outputTail(output))\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com."
         case .serviceStartFailed(let service):
             "\(service.title) failed to start during install. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
+        case .apiStartFailed(let details):
+            "Embarsy API failed to start during install (after a retry): \(details)\n\nQdrant, Ollama and the model are installed correctly — only the API step failed. Recommendation: retry Install (it will skip the finished steps), and if it fails again, export the debug log (Settings) and send it to arsenyganov@gmail.com. Do NOT run Remove Components — that would erase the evidence and the downloaded model."
         case .healthCheckFailed:
             "Health check failed: not all services are running. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
         case .rooAuthProbeFailed(let details):

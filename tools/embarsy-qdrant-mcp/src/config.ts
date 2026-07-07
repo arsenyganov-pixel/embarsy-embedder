@@ -18,6 +18,7 @@ export interface Config {
   chunkOverlapChars: number;
   embedBatch: number;      // texts per embeddings request
   maxFileBytes: number;    // skip files larger than this
+  maxLineChars: number;    // skip files with a line longer than this (minified / generated blobs)
 }
 
 function intEnv(value: string | undefined, fallback: number): number {
@@ -40,8 +41,9 @@ export function loadConfig(overrides: Partial<Config> = {}): Config {
     collection: env.QDRANT_COLLECTION_NAME ?? env.QDRANT_COLLECTION ?? "",
     chunkMaxChars: intEnv(env.EMBARSY_CHUNK_CHARS, 1500),
     chunkOverlapChars: intEnv(env.EMBARSY_CHUNK_OVERLAP, 200),
-    embedBatch: intEnv(env.EMBARSY_EMBED_BATCH, 64),
+    embedBatch: intEnv(env.EMBARSY_EMBED_BATCH, 32),
     maxFileBytes: intEnv(env.EMBARSY_MAX_FILE_BYTES, 1_000_000),
+    maxLineChars: intEnv(env.EMBARSY_MAX_LINE_CHARS, 5000),
     ...overrides,
   };
 }

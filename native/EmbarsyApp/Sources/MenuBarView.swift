@@ -94,7 +94,7 @@ struct MenuBarView: View {
         .background {
             ZStack {
                 Theme.surface
-                BinaryGrainView(active: displayStatus == .running)
+                BinaryGrainView(active: displayStatus == .running, pausesWhenMainWindowHidden: false)
             }
             .ignoresSafeArea()
         }

@@ -13,13 +13,18 @@ struct EmbarsyMarkView: View {
     /// a 2.4s cycle — draw over the first 55% (eased), then hold. Dots stay static.
     var animated: Bool = false
 
+    @ObservedObject private var windowVisibility = WindowVisibility.shared
+
     var body: some View {
         GeometryReader { geo in
             let s = min(geo.size.width, geo.size.height)
             let style = StrokeStyle(lineWidth: strokeWidth * s / 96.0, lineCap: .round, lineJoin: .round)
             ZStack {
                 if animated {
-                    TimelineView(.animation) { timeline in
+                    // 30fps is visually identical for a 2.4s eased draw; uncapped
+                    // TimelineView(.animation) redrew at full display refresh (up to 120Hz).
+                    // Paused entirely while the window can't be seen.
+                    TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !windowVisibility.isMainWindowVisible)) { timeline in
                         MarkOutline()
                             .trim(from: 0, to: Self.drawProgress(timeline.date.timeIntervalSinceReferenceDate))
                             .stroke(color, style: style)

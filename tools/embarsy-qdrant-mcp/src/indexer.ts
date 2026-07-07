@@ -19,6 +19,7 @@ export interface IndexResult {
   skipped: number;   // unchanged files
   removed: number;   // files deleted from the index
   chunks: number;    // chunks upserted
+  skippedMinified: number; // files skipped as minified / generated blobs
 }
 
 export interface IndexOptions {
@@ -34,6 +35,16 @@ function looksBinary(s: string): boolean {
   return false;
 }
 
+/** Longest line length — a line far longer than any hand-written source line flags a minified
+ *  / bundled / single-blob file (a poor embedding candidate that also stresses the model). */
+function maxLineLength(s: string): number {
+  let max = 0, cur = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (s.charCodeAt(i) === 10) { if (cur > max) max = cur; cur = 0; } else cur++;
+  }
+  return cur > max ? cur : max;
+}
+
 /** Full/incremental index of a directory into the configured Qdrant collection. */
 export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = {}): Promise<IndexResult> {
   const log = opts.onProgress ?? (() => {});
@@ -45,7 +56,7 @@ export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = 
 
   const existing = await scrollFileHashes(cfg);
   const seen = new Set<string>();
-  const result: IndexResult = { files: files.length, indexed: 0, skipped: 0, removed: 0, chunks: 0 };
+  const result: IndexResult = { files: files.length, indexed: 0, skipped: 0, removed: 0, chunks: 0, skippedMinified: 0 };
 
   // Pending chunk buffer, flushed in embedding batches across files.
   let pending: { text: string; payload: Record<string, unknown>; key: string }[] = [];
@@ -72,6 +83,11 @@ export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = 
       continue;
     }
     if (looksBinary(content)) continue;
+    if (maxLineLength(content) > cfg.maxLineChars) {
+      result.skippedMinified++;
+      log(`  skipped (minified/generated): ${file.rel}`);
+      continue;
+    }
 
     const hash = sha256(content);
     if (existing.get(file.rel) === hash) {

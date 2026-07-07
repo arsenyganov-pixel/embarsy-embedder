@@ -3,6 +3,10 @@ import SwiftUI
 
 struct MonitoringView: View {
     @EnvironmentObject private var store: EmbarsyStore
+    /// Observed directly (not through the store) so only Monitoring re-renders on its
+    /// own 2s ticks — the store no longer re-broadcasts these services' changes.
+    @ObservedObject var monitoring: MonitoringService
+    @ObservedObject var contentIndex: ContentIndexService
     @ObservedObject var sysMetrics: SystemMetricsService
     @State private var selectedScale: MonitoringScale = .hour1
     @State private var refreshInterval: RefreshInterval = .s2
@@ -14,13 +18,6 @@ struct MonitoringView: View {
     private let refreshMenuWidth: CGFloat = 184
 
     private func toggle(_ menu: OpenMenu) { openMenu = (openMenu == menu) ? nil : menu }
-
-    private enum Series {
-        static let reads = "Qdrant reads", writes = "Qdrant writes", vectors = "Embedding vectors", errors = "Embedding errors"
-    }
-    private let colorScale: KeyValuePairs<String, Color> = [
-        Series.reads: Theme.mReads, Series.writes: Theme.mWrites, Series.vectors: Theme.mVectors, Series.errors: Theme.mErrors,
-    ]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,21 +33,24 @@ struct MonitoringView: View {
             .overlay(alignment: .bottom) { Rectangle().fill(Theme.separator).frame(height: 1) }
 
             ScrollView {
-                VStack(alignment: .leading, spacing: Theme.gapSection) {
+                // Lazy: collapsed/off-screen panels are not laid out on every data tick.
+                LazyVStack(alignment: .leading, spacing: Theme.gapSection) {
                 MonitorRowHeader(id: "overview", title: "OVERVIEW") {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
-                        ForEach(metricTiles) { StatPanel(tile: $0) }
+                        ForEach(metricTiles) { StatPanel(tile: $0).equatable() }
                     }
                 }
 
                 CollapsiblePanel(id: "rw", title: "Read / write activity", meta: "events / bucket") {
-                    activityChart
+                    ActivityLinesChart(series: monitoring.snapshot.series, domain: xDomain)
+                        .equatable()
                     legend.padding(.top, 10)
                         .overlay(alignment: .top) { Rectangle().fill(Theme.separator).frame(height: 1).offset(y: -1) }
                 }
 
                 CollapsiblePanel(id: "latency", title: "Embedding latency", meta: "ms") {
-                    latencyChart
+                    LatencyChart(series: monitoring.snapshot.series, domain: xDomain)
+                        .equatable()
                 }
 
                 CollapsiblePanel(id: "memcpu", title: "Memory / CPU utilisation", meta: "GB / %") {
@@ -59,6 +59,7 @@ struct MonitoringView: View {
                         DualAxisChart(mem: w.mem, cpu: w.cpu, dates: w.dates,
                                       domainStart: windowStart, domainEnd: domainEnd,
                                       leftColor: Theme.mReads, rightColor: Theme.mErrors)
+                            .equatable()
                             .frame(height: 220)
                         HStack {
                             legendSwatch("memory \(String(format: "%.2f", sysMetrics.lastMemGB)) GB", color: Theme.mReads)
@@ -87,7 +88,9 @@ struct MonitoringView: View {
                         }
                     }
                     if sysMetrics.tempSeries.count >= 2 {
-                        temperatureChart
+                        let w = tempWindow
+                        TemperatureChart(dates: w.dates, values: w.values, domain: xDomain)
+                            .equatable()
                     } else {
                         Text(sysMetrics.lastTempC == nil
                              ? "CPU temperature sensors aren\u{2019}t available on this Mac."
@@ -135,12 +138,29 @@ struct MonitoringView: View {
             }
         }
         .task(id: refreshInterval) {
-            selectedScale = store.monitoring.scale
+            selectedScale = monitoring.scale
+            // The "Points indexed" tile reads the Content service — populate it once if
+            // the user opens Monitoring before ever visiting Content (it used to show 0).
+            if contentIndex.snapshot.collections.isEmpty {
+                await store.refreshContentIndex()
+            }
+            // Sleep in short slices and track the last fetch: while the window is
+            // closed/minimized/covered nothing is fetched (nobody can see the result),
+            // and on becoming visible again the next ≤2s slice refreshes immediately
+            // instead of waiting out a full interval.
+            var lastRefresh = Date.distantPast
             while !Task.isCancelled {
-                busy = true
-                await store.refreshMonitoring()
-                busy = false
-                try? await Task.sleep(nanoseconds: UInt64(refreshInterval.seconds * 1_000_000_000))
+                if WindowVisibility.mainWindowVisible,
+                   Date().timeIntervalSince(lastRefresh) >= refreshInterval.seconds {
+                    busy = true
+                    await store.refreshMonitoring()
+                    busy = false
+                    lastRefresh = Date()
+                }
+                try? await Task.sleep(
+                    for: .seconds(min(2, refreshInterval.seconds)),
+                    tolerance: .milliseconds(500)
+                )
             }
         }
     }
@@ -168,7 +188,7 @@ struct MonitoringView: View {
         Task {
             busy = true
             await store.refreshMonitoring()
-            await sysMetrics.sample(rootPIDs: store.processManager.runningPIDs, config: store.config)
+            await sysMetrics.sample(rootPIDs: store.processManager.runningPIDs, config: store.config, watching: true)
             busy = false
         }
     }
@@ -198,8 +218,10 @@ struct MonitoringView: View {
             ForEach(MonitoringScale.allCases) { scale in
                 DropdownRow(label: scale.rangeLabel, selected: selectedScale == scale) {
                     selectedScale = scale
-                    store.monitoring.scale = scale
+                    monitoring.scale = scale
                     openMenu = nil
+                    // The service cancel-and-replaces any in-flight poll, so the new
+                    // scale's data always lands (the old guard could drop this fetch).
                     Task { await store.refreshMonitoring() }
                 }
             }
@@ -208,11 +230,20 @@ struct MonitoringView: View {
 
     // MARK: Metric tiles
 
+    /// Sparkline budget per tile — min/max decimation keeps every visible peak, so the
+    /// rendered line matches the full series at the 44pt sparkline's resolution.
+    private static let sparkPoints = 120
+
     private var metricTiles: [MetricTile] {
-        let s = store.monitoring.snapshot.summary
-        let series = store.monitoring.snapshot.series
-        func spark(_ f: (MonitoringPoint) -> Double) -> [Double] { series.map(f) }
-        let points = store.contentIndex.snapshot.collections.reduce(0) { $0 + $1.pointsCount }
+        let s = monitoring.snapshot.summary
+        let series = monitoring.snapshot.series
+        func spark(_ f: (MonitoringPoint) -> Double) -> [SparkPoint] {
+            ChartDownsample.minMaxPoints(series.map(f), to: Self.sparkPoints)
+        }
+        func spark(_ values: [Double]) -> [SparkPoint] {
+            ChartDownsample.minMaxPoints(values, to: Self.sparkPoints)
+        }
+        let points = contentIndex.snapshot.collections.reduce(0) { $0 + $1.pointsCount }
         return [
             MetricTile(title: "Embedding requests", value: s.embeddingsRequests.formatted(), color: Theme.mRequests, spark: spark { Double($0.embeddingsRequests) }),
             MetricTile(title: "Vectors generated", value: s.embeddingsVectors.formatted(), color: Theme.mVectors, spark: spark { Double($0.embeddingsVectors) }),
@@ -221,17 +252,17 @@ struct MonitoringView: View {
             MetricTile(title: "Qdrant reads", value: s.qdrantReads.formatted(), color: Theme.mReads, spark: spark { Double($0.qdrantReads) }),
             MetricTile(title: "Qdrant writes", value: s.qdrantWrites.formatted(), color: Theme.mWrites, spark: spark { Double($0.qdrantWrites) }),
             MetricTile(title: "Points indexed", value: points.formatted(), color: Theme.accent, spark: spark { Double($0.embeddingsVectors) }),
-            MetricTile(title: "Memory", value: String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: sysMetrics.memSeries),
-            MetricTile(title: "CPU", value: String(format: "%.0f %%", sysMetrics.lastCPU), color: Theme.mErrors, spark: sysMetrics.cpuSeries),
-            MetricTile(title: "Temperature", value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? "\u{2014}", color: Theme.mTemp, spark: sysMetrics.tempSeries),
+            MetricTile(title: "Memory", value: String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: spark(sysMetrics.memSeries)),
+            MetricTile(title: "CPU", value: String(format: "%.0f %%", sysMetrics.lastCPU), color: Theme.mErrors, spark: spark(sysMetrics.cpuSeries)),
+            MetricTile(title: "Temperature", value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? "\u{2014}", color: Theme.mTemp, spark: spark(sysMetrics.tempSeries)),
         ]
     }
 
     // MARK: Charts
 
     private var domainEnd: Date {
-        store.monitoring.snapshot.now > 0
-            ? Date(timeIntervalSince1970: TimeInterval(store.monitoring.snapshot.now)) : Date()
+        monitoring.snapshot.now > 0
+            ? Date(timeIntervalSince1970: TimeInterval(monitoring.snapshot.now)) : Date()
     }
     private var xDomain: ClosedRange<Date> {
         domainEnd.addingTimeInterval(-Double(selectedScale.rawValue))...domainEnd
@@ -240,12 +271,22 @@ struct MonitoringView: View {
     // Local Memory / CPU / temperature samples windowed to the selected time scale.
     private var windowStart: Date { domainEnd.addingTimeInterval(-Double(selectedScale.rawValue)) }
 
+    /// Cap on the windowed client-side series — the raw buffer holds up to 1800 samples,
+    /// which used to become ~1800 marks per chart at large scales.
+    private static let windowPoints = 300
+
     private var memCpuWindow: (dates: [Date], mem: [Double], cpu: [Double]) {
         let dates = sysMetrics.sampleDates
         let end = min(dates.count, sysMetrics.memSeries.count, sysMetrics.cpuSeries.count)
         let cut = dates.firstIndex(where: { $0 >= windowStart }) ?? end
         guard cut < end else { return ([], [], []) }
-        return (Array(dates[cut..<end]), Array(sysMetrics.memSeries[cut..<end]), Array(sysMetrics.cpuSeries[cut..<end]))
+        let mem = Array(sysMetrics.memSeries[cut..<end])
+        let cpu = Array(sysMetrics.cpuSeries[cut..<end])
+        let ds = Array(dates[cut..<end])
+        // One shared index set keeps mem/cpu date-aligned while preserving both series' peaks.
+        let idx = ChartDownsample.minMaxIndices(count: ds.count, maxPoints: Self.windowPoints, series: [mem, cpu])
+        guard idx.count < ds.count else { return (ds, mem, cpu) }
+        return (idx.map { ds[$0] }, idx.map { mem[$0] }, idx.map { cpu[$0] })
     }
 
     private var tempWindow: (dates: [Date], values: [Double]) {
@@ -253,73 +294,11 @@ struct MonitoringView: View {
         let end = min(dates.count, sysMetrics.tempSeries.count)
         let cut = dates.firstIndex(where: { $0 >= windowStart }) ?? end
         guard cut < end else { return ([], []) }
-        return (Array(dates[cut..<end]), Array(sysMetrics.tempSeries[cut..<end]))
-    }
-
-    private var activityChart: some View {
-        Chart(store.monitoring.snapshot.series) { point in
-            LineMark(x: .value("Time", point.date), y: .value(Series.reads, point.qdrantReads)).foregroundStyle(by: .value("Metric", Series.reads))
-            LineMark(x: .value("Time", point.date), y: .value(Series.writes, point.qdrantWrites)).foregroundStyle(by: .value("Metric", Series.writes))
-            LineMark(x: .value("Time", point.date), y: .value(Series.vectors, point.embeddingsVectors)).foregroundStyle(by: .value("Metric", Series.vectors))
-            LineMark(x: .value("Time", point.date), y: .value(Series.errors, point.embeddingsErrors)).foregroundStyle(by: .value("Metric", Series.errors))
-                .lineStyle(StrokeStyle(lineWidth: 2, dash: [4, 3]))
-        }
-        .chartForegroundStyleScale(colorScale)
-        .chartLegend(.hidden)
-        .chartYAxis { chartYMarks }
-        .chartXAxis { chartXMarks }
-        .chartXScale(domain: xDomain)
-        .frame(height: 210)
-    }
-
-    private var latencyChart: some View {
-        Chart(store.monitoring.snapshot.series) { point in
-            LineMark(x: .value("Time", point.date), y: .value("Latency", point.embeddingsLatencyMSAverage))
-                .foregroundStyle(Theme.mLatency)
-                .interpolationMethod(.monotone)
-        }
-        .chartYAxis { chartYMarks }
-        .chartXAxis { chartXMarks }
-        .chartXScale(domain: xDomain)
-        .frame(height: 180)
-    }
-
-    private var temperatureChart: some View {
-        let w = tempWindow
-        let series = w.values
-        let pts = Array(zip(w.dates, series).enumerated())   // (offset, (Date, °C))
-        let lo = (series.min() ?? 40) - 3
-        let hi = (series.max() ?? 60) + 3
-        let yMin = max(0, (lo / 5).rounded(.down) * 5)
-        let yMax = max(yMin + 5, (hi / 5).rounded(.up) * 5)
-        return Chart(pts, id: \.offset) { row in
-            // Fill from the domain floor (not the default y=0 baseline, which sits below the
-            // 40…55 domain and bleeds past the plot on macOS Swift Charts).
-            AreaMark(x: .value("time", row.element.0), yStart: .value("min", yMin), yEnd: .value("°C", row.element.1))
-                .foregroundStyle(LinearGradient(colors: [Theme.mTemp.opacity(0.30), Theme.mTemp.opacity(0.02)], startPoint: .top, endPoint: .bottom))
-                .interpolationMethod(.monotone)
-            LineMark(x: .value("time", row.element.0), y: .value("°C", row.element.1))
-                .foregroundStyle(Theme.mTemp)
-                .interpolationMethod(.monotone)
-        }
-        .chartYScale(domain: yMin...yMax)
-        .chartYAxis { chartYMarks }
-        .chartXAxis { chartXMarks }
-        .chartXScale(domain: xDomain)
-        .frame(height: 140)
-    }
-
-    private var chartYMarks: some AxisContent {
-        AxisMarks(position: .trailing) { _ in
-            AxisGridLine().foregroundStyle(Theme.separator)
-            AxisValueLabel().font(.system(.caption2, design: .monospaced)).foregroundStyle(Theme.accent)
-        }
-    }
-    private var chartXMarks: some AxisContent {
-        AxisMarks { _ in
-            AxisGridLine().foregroundStyle(Theme.separator)
-            AxisValueLabel().font(.system(.caption2, design: .monospaced)).foregroundStyle(Theme.accent)
-        }
+        let values = Array(sysMetrics.tempSeries[cut..<end])
+        let ds = Array(dates[cut..<end])
+        let idx = ChartDownsample.minMaxIndices(count: ds.count, maxPoints: Self.windowPoints, series: [values])
+        guard idx.count < ds.count else { return (ds, values) }
+        return (idx.map { ds[$0] }, idx.map { values[$0] })
     }
 
     private var legend: some View {
@@ -340,17 +319,112 @@ struct MonitoringView: View {
 
 }
 
+// MARK: - Extracted Equatable charts
+//
+// Each chart is a standalone value-only view mounted with `.equatable()`: SwiftUI skips its
+// (expensive) body when the data and domain haven't changed — in particular on every scroll
+// frame and on unrelated state changes, which used to re-lay-out all charts at once.
+
+private struct MonitoringAxisMarks {
+    static var y: some AxisContent {
+        AxisMarks(position: .trailing) { _ in
+            AxisGridLine().foregroundStyle(Theme.separator)
+            AxisValueLabel().font(.system(.caption2, design: .monospaced)).foregroundStyle(Theme.accent)
+        }
+    }
+    static var x: some AxisContent {
+        AxisMarks { _ in
+            AxisGridLine().foregroundStyle(Theme.separator)
+            AxisValueLabel().font(.system(.caption2, design: .monospaced)).foregroundStyle(Theme.accent)
+        }
+    }
+}
+
+private struct ActivityLinesChart: View, Equatable {
+    let series: [MonitoringPoint]
+    let domain: ClosedRange<Date>
+
+    private enum Series {
+        static let reads = "Qdrant reads", writes = "Qdrant writes", vectors = "Embedding vectors", errors = "Embedding errors"
+    }
+    private static let colorScale: KeyValuePairs<String, Color> = [
+        Series.reads: Theme.mReads, Series.writes: Theme.mWrites, Series.vectors: Theme.mVectors, Series.errors: Theme.mErrors,
+    ]
+
+    var body: some View {
+        Chart(series) { point in
+            LineMark(x: .value("Time", point.date), y: .value(Series.reads, point.qdrantReads)).foregroundStyle(by: .value("Metric", Series.reads))
+            LineMark(x: .value("Time", point.date), y: .value(Series.writes, point.qdrantWrites)).foregroundStyle(by: .value("Metric", Series.writes))
+            LineMark(x: .value("Time", point.date), y: .value(Series.vectors, point.embeddingsVectors)).foregroundStyle(by: .value("Metric", Series.vectors))
+            LineMark(x: .value("Time", point.date), y: .value(Series.errors, point.embeddingsErrors)).foregroundStyle(by: .value("Metric", Series.errors))
+                .lineStyle(StrokeStyle(lineWidth: 2, dash: [4, 3]))
+        }
+        .chartForegroundStyleScale(Self.colorScale)
+        .chartLegend(.hidden)
+        .chartYAxis { MonitoringAxisMarks.y }
+        .chartXAxis { MonitoringAxisMarks.x }
+        .chartXScale(domain: domain)
+        .frame(height: 210)
+    }
+}
+
+private struct LatencyChart: View, Equatable {
+    let series: [MonitoringPoint]
+    let domain: ClosedRange<Date>
+
+    var body: some View {
+        Chart(series) { point in
+            LineMark(x: .value("Time", point.date), y: .value("Latency", point.embeddingsLatencyMSAverage))
+                .foregroundStyle(Theme.mLatency)
+                .interpolationMethod(.monotone)
+        }
+        .chartYAxis { MonitoringAxisMarks.y }
+        .chartXAxis { MonitoringAxisMarks.x }
+        .chartXScale(domain: domain)
+        .frame(height: 180)
+    }
+}
+
+private struct TemperatureChart: View, Equatable {
+    let dates: [Date]
+    let values: [Double]
+    let domain: ClosedRange<Date>
+
+    var body: some View {
+        let pts = Array(zip(dates, values).enumerated())   // (offset, (Date, °C))
+        let lo = (values.min() ?? 40) - 3
+        let hi = (values.max() ?? 60) + 3
+        let yMin = max(0, (lo / 5).rounded(.down) * 5)
+        let yMax = max(yMin + 5, (hi / 5).rounded(.up) * 5)
+        return Chart(pts, id: \.offset) { row in
+            // Fill from the domain floor (not the default y=0 baseline, which sits below the
+            // 40…55 domain and bleeds past the plot on macOS Swift Charts).
+            AreaMark(x: .value("time", row.element.0), yStart: .value("min", yMin), yEnd: .value("°C", row.element.1))
+                .foregroundStyle(LinearGradient(colors: [Theme.mTemp.opacity(0.30), Theme.mTemp.opacity(0.02)], startPoint: .top, endPoint: .bottom))
+                .interpolationMethod(.monotone)
+            LineMark(x: .value("time", row.element.0), y: .value("°C", row.element.1))
+                .foregroundStyle(Theme.mTemp)
+                .interpolationMethod(.monotone)
+        }
+        .chartYScale(domain: yMin...yMax)
+        .chartYAxis { MonitoringAxisMarks.y }
+        .chartXAxis { MonitoringAxisMarks.x }
+        .chartXScale(domain: domain)
+        .frame(height: 140)
+    }
+}
+
 // MARK: - Stat tile
 
-struct MetricTile: Identifiable {
+struct MetricTile: Identifiable, Equatable {
     let title: String
     let value: String
     let color: Color
-    let spark: [Double]
+    let spark: [SparkPoint]
     var id: String { title }
 }
 
-private struct StatPanel: View {
+private struct StatPanel: View, Equatable {
     let tile: MetricTile
 
     var body: some View {
@@ -377,15 +451,17 @@ private struct StatPanel: View {
     @ViewBuilder
     private var sparkline: some View {
         if tile.spark.count >= 2 {
-            Chart(Array(tile.spark.enumerated()), id: \.offset) { i, v in
-                AreaMark(x: .value("i", i), y: .value("v", v))
+            Chart(tile.spark, id: \.x) { point in
+                AreaMark(x: .value("i", point.x), y: .value("v", point.y))
                     .foregroundStyle(LinearGradient(colors: [tile.color.opacity(0.30), tile.color.opacity(0)], startPoint: .top, endPoint: .bottom))
                     .interpolationMethod(.monotone)
-                LineMark(x: .value("i", i), y: .value("v", v))
+                LineMark(x: .value("i", point.x), y: .value("v", point.y))
                     .foregroundStyle(tile.color)
                     .interpolationMethod(.monotone)
             }
             .chartXAxis(.hidden).chartYAxis(.hidden).chartLegend(.hidden)
+            // Pure vector + gradient, no text: safe to rasterize into one layer.
+            .drawingGroup()
         } else {
             Color.clear
         }
@@ -463,7 +539,7 @@ private struct MonitorRowHeader<Content: View>: View {
 
 // MARK: - Dual-axis Memory/CPU chart (Canvas: mem area on left scale, cpu line on right)
 
-private struct DualAxisChart: View {
+private struct DualAxisChart: View, Equatable {
     let mem: [Double]     // GB
     let cpu: [Double]     // %
     let dates: [Date]     // timestamps aligned with mem/cpu
@@ -471,6 +547,11 @@ private struct DualAxisChart: View {
     let domainEnd: Date   // right edge = now
     let leftColor: Color
     let rightColor: Color
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.domainStart == rhs.domainStart && lhs.domainEnd == rhs.domainEnd
+            && lhs.mem == rhs.mem && lhs.cpu == rhs.cpu && lhs.dates == rhs.dates
+    }
 
     private static let timeFmt: DateFormatter = { let f = DateFormatter(); f.dateFormat = "HH:mm"; return f }()
 

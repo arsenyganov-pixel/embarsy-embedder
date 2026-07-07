@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 app_name="Embarsy"
-app_version="0.1.1"
+app_version="0.2.0"
 bundle_version="${EMBARSY_BUNDLE_VERSION:-$(date -u +%Y%m%d%H%M)}"
 native_dir="${EMBARSY_HOME}/native/EmbarsyApp"
 bundle_dir="${EMBARSY_HOME}/build/${app_name}.app"

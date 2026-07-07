@@ -25,7 +25,7 @@ export async function requestJSON(
       // Don't retry explicit 4xx errors we threw above.
       if (e instanceof Error && /HTTP 4\d\d/.test(e.message)) throw e;
     }
-    if (attempt < retries) await sleep(300 * (attempt + 1));
+    if (attempt < retries) await sleep(Math.min(5000, 400 * 2 ** attempt)); // exp backoff, capped 5s
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
 }

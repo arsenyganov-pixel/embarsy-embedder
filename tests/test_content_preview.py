@@ -79,3 +79,88 @@ def test_non_workspace_and_empty():
 
     # No payload text at all -> just the count chip.
     assert build_preview_tags("ws-z", "ws-z collection", [], [], 42) == [{"kind": "count", "label": "42 points"}]
+
+
+# ── "What seems indexed" prose ────────────────────────────────────────────────
+
+from embarsy_api.main import content_preview, indexed_content_summary
+
+
+def test_summary_reads_like_a_sentence_without_collection_ids():
+    paths = ["app/Kernel.php", "app/Controller/UserController.php", "docs/README.md", "config/services.toml"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 352_662)
+
+    assert summary.startswith("Looks like a PHP project: 4 files")
+    # Languages ordered by frequency: PHP (2) before Markdown/TOML (1 each).
+    assert "mostly PHP" in summary
+    assert "Key area" in summary
+    assert "ws-" not in summary and "collection" not in summary
+
+
+def test_summary_prefixes_resolved_workspace_name():
+    paths = ["backend/main.go", "backend/api/router.go"]
+    summary = indexed_content_summary("autohub", paths, [{"file_path": p} for p in paths], 10)
+
+    assert summary.startswith("autohub — looks like a Go project: 2 files")
+
+
+def test_summary_docs_only_workspace():
+    paths = ["notes/a.md", "notes/b.md", "data/config.json"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 5)
+
+    assert summary.startswith("Looks like a docs & config workspace: 3 files, mostly Markdown and JSON")
+
+
+def test_summary_without_file_metadata():
+    summary = indexed_content_summary("", [], [{"text": "raw chunk body"}], 249)
+    assert summary == "249 indexed text snippets — the sampled ones carry no file names. Sample: raw chunk body."
+
+    bare = indexed_content_summary("", [], [], 1)
+    assert bare == "1 point — the sampled payload has no readable file metadata."
+
+    # A resolved name joins with a colon — never a second em-dash in the same sentence.
+    named = indexed_content_summary("myproj", [], [], 3)
+    assert named == "myproj: 3 points — the sampled payload has no readable file metadata."
+    assert " — 3 points — " not in named
+
+
+def test_pathless_preview_does_not_duplicate_the_sample():
+    payloads = [{"text": "raw chunk body"}]
+    summary = indexed_content_summary("", [], payloads, 249)
+    preview = content_preview([], payloads, summary)
+    assert preview.count("Sample:") == 1
+
+
+def test_project_flavor_needs_real_dominance():
+    # One stray helper script must not relabel a docs repository...
+    paths = [f"notes/{i}.md" for i in range(20)] + ["scripts/build.py"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 21)
+    assert summary.startswith("Looks like a docs & config workspace")
+
+    # ...and a two-file JS minority must not claim a mostly-HTML website.
+    paths = [f"site/p{i}.html" for i in range(9)] + ["site/app.js", "site/init.js"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 11)
+    assert summary.startswith("Looks like a website")
+
+
+def test_previously_unmapped_languages_get_friendly_labels():
+    paths = ["src/main.rs", "src/lib.rs", "Cargo.toml"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 3)
+    assert summary.startswith("Looks like a Rust project")
+    assert "RS" not in summary
+
+    # A dominant language we have no label for stays neutral — never "a XY project".
+    paths = ["a/one.zig", "a/two.zig", "b/three.zig"]
+    summary = indexed_content_summary("", paths, [{"file_path": p} for p in paths], 3)
+    assert summary.startswith("Looks like a code workspace")
+
+
+def test_preview_extends_summary_without_repeating_names():
+    paths = ["app/a.py", "app/b.py"]
+    summary = indexed_content_summary("myproj", paths, [{"file_path": p} for p in paths], 2)
+    preview = content_preview(paths, [{"file_path": p} for p in paths], summary)
+
+    assert preview.startswith(summary)
+    assert "Typical files:" in preview
+    # The old builder repeated the display name twice ("... in myproj: ..."); never again.
+    assert " in myproj" not in preview

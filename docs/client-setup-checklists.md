@@ -78,6 +78,29 @@ Same bridge as Claude Code, registered with Codex. If the project is already ind
 
 ---
 
+## Updating the bridge (Claude Code / Codex)
+
+When a new version of `embarsy-qdrant-mcp` ships:
+
+1. Update the CLI:
+
+   ```bash
+   npm install -g embarsy-qdrant-mcp@latest
+   ```
+
+2. Restart your editor (Claude Code / Codex) so it picks up the new server. The config stays — no need to re-run setup.
+3. Re-run the index to pick up improvements (incremental, safe):
+
+   ```bash
+   OPENAI_API_KEY=<API Key from Embarsy> \
+   QDRANT_API_KEY=<Qdrant API Key from Embarsy> \
+   embarsy-index ~/projects/my-app --collection cc-my-app
+   ```
+
+> If `npm` points at a private/corporate mirror that doesn't have the package, add `--registry https://registry.npmjs.org/`.
+
+---
+
 ## 3. Zoo Code / Roo Code
 
 The simplest option: search is built in, no bridge needed.

@@ -1,6 +1,6 @@
 {
   "name": "embarsy-qdrant-mcp",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Codebase-indexing MCP server for Embarsy — semantic code search over a local Qdrant + OpenAI-compatible embeddings stack. Routes embeddings and Qdrant through Embarsy's proxy so auth and Monitoring counters just work.",
   "type": "module",
   "bin": {

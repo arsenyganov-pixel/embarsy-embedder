@@ -34,6 +34,11 @@ final class EmbarsyStore: ObservableObject {
     @Published var debugLogMessage = "Debug log is ready."
     @Published var selectedTab: AppTab = .status
     @Published var isClearingRooIndex = false
+    /// True when the RUNNING API process reports an older version than the API bundled
+    /// with this app (e.g. an orphaned process from before an app update still holds
+    /// :8000). Surfaces the "Update" button on the Status screen.
+    @Published private(set) var apiUpdateAvailable = false
+    @Published private(set) var isUpdatingAPI = false
 
     let localSecrets: LocalSecretStore
     let workspaceService = WorkspaceService()
@@ -87,13 +92,31 @@ final class EmbarsyStore: ObservableObject {
 
     /// Continuously sample Memory / CPU / temperature for the app's lifetime so the Monitoring
     /// charts are historical — they no longer reset when the Monitoring tab is left and reopened.
+    ///
+    /// Adaptive cadence: 2s only while someone can actually see the charts (window visible and
+    /// the Monitoring tab selected); ~16s otherwise. The loop ticks every 2s and decides per
+    /// tick, so opening the Monitoring tab gets a fresh sample within 2s — while the background
+    /// cost (a /bin/ps fork per sample) still drops ~8x when nobody is watching. History stays
+    /// continuous, just coarser while hidden.
     private func startMetricsSampling() {
         guard metricsSamplingTask == nil else { return }
         metricsSamplingTask = Task { [weak self] in
+            var tick = 0
             while !Task.isCancelled {
                 guard let self else { return }
-                await self.sysMetrics.sample(rootPIDs: self.processManager.runningPIDs, config: self.config)
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                let watching = WindowVisibility.mainWindowVisible && self.selectedTab == .monitoring
+                if watching || tick % 8 == 0 {
+                    await self.sysMetrics.sample(
+                        rootPIDs: self.processManager.runningPIDs,
+                        config: self.config,
+                        watching: watching
+                    )
+                    // Piggyback: cap any runaway child log (ollama's llama-server can write
+                    // hundreds of MB/day) — one file-attribute check per service.
+                    self.processManager.capRunningLogs()
+                }
+                tick += 1
+                try? await Task.sleep(for: .seconds(2), tolerance: .milliseconds(500))
             }
         }
     }
@@ -136,6 +159,46 @@ final class EmbarsyStore: ObservableObject {
             return
         }
         await processManager.refreshAll()
+        await checkAPIVersion()
+    }
+
+    /// Compare the running API's reported version against the bundled one and flag an
+    /// available update. Cheap (one localhost GET), only meaningful while the API runs.
+    func checkAPIVersion() async {
+        guard processManager.statuses[.api] == .running,
+              let running = await processManager.reportedAPIVersion() else {
+            apiUpdateAvailable = false
+            return
+        }
+        let outdated = running != EmbarsyConfig.bundledAPIVersion
+        if outdated != apiUpdateAvailable {
+            apiUpdateAvailable = outdated
+            if outdated {
+                debugLog.append(
+                    "Running API reports version \(running); this app bundles \(EmbarsyConfig.bundledAPIVersion) — offering update",
+                    category: "store"
+                )
+            }
+        }
+    }
+
+    /// Restart ONLY the API so the binary bundled with this app takes over :8000 —
+    /// Qdrant, Ollama, the model and all indexed data stay untouched. restart() also
+    /// terminates any orphaned listener from a previous app version before starting.
+    func updateAPIService() async {
+        guard !isUpdatingAPI else { return }
+        isUpdatingAPI = true
+        defer { isUpdatingAPI = false }
+
+        workspaceMessage = "Updating Embarsy API to \(EmbarsyConfig.bundledAPIVersion)..."
+        debugLog.append("API update requested from Status screen", category: "store")
+        guard prepareLocalSecretsForUse() else { return }
+        await processManager.restart(.api, reason: "Update to bundled API \(EmbarsyConfig.bundledAPIVersion)")
+        await checkAPIVersion()
+        workspaceMessage = processManager.statuses[.api] == .running
+            ? "Embarsy API updated to \(EmbarsyConfig.bundledAPIVersion). Qdrant and Ollama were not touched."
+            : "Embarsy API update failed: \(processManager.messages[.api] ?? "no details")"
+        debugLog.append(workspaceMessage, category: "store")
     }
 
     func startStackIfNeededOnLaunch() async {
@@ -144,6 +207,7 @@ final class EmbarsyStore: ObservableObject {
         debugLog.append("Start stack on launch requested", category: "store")
         guard prepareLocalSecretsForUse() else { return }
         await processManager.startAll()
+        reconcileStatusesAfterStart()
     }
 
     func startAll() async {
@@ -155,6 +219,29 @@ final class EmbarsyStore: ObservableObject {
         await processManager.startAll()
         workspaceMessage = "Start All finished with status: \(aggregateStatus.title)."
         debugLog.append(workspaceMessage, category: "store")
+        reconcileStatusesAfterStart()
+    }
+
+    /// A service (usually the API, still loading its model) can turn healthy shortly after the
+    /// initial readiness wait times out and marks it Failed. Re-check for a while so the menu-bar
+    /// and Status badges self-correct — without the user having to press Refresh.
+    private var statusReconcileTask: Task<Void, Never>?
+    private func reconcileStatusesAfterStart() {
+        statusReconcileTask?.cancel()
+        statusReconcileTask = Task { [weak self] in
+            for _ in 0..<12 {   // re-check every 3s for up to ~36s, stopping once all healthy
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                if Task.isCancelled { return }
+                guard let self else { return }
+                if self.processManager.allServicesRunning { break }
+                await self.processManager.refreshAll()
+            }
+            guard let self, !Task.isCancelled else { return }
+            await self.checkAPIVersion()
+            guard self.processManager.allServicesRunning else { return }
+            self.workspaceMessage = "Start All finished with status: \(self.aggregateStatus.title)."
+            self.debugLog.append("Status reconciled after start: \(self.aggregateStatus.title)", category: "store")
+        }
     }
 
     func install() async {
@@ -249,11 +336,11 @@ final class EmbarsyStore: ObservableObject {
         await activity.refresh(config: config)
     }
 
-    func refreshContentIndex() async {
+    func refreshContentIndex(maxAge: Double? = nil) async {
         if config.embarsyAPIKey.isEmpty {
             _ = prepareLocalSecretsForUse()
         }
-        await contentIndex.refresh(config: config)
+        await contentIndex.refresh(config: config, maxAge: maxAge)
     }
 
     /// Permanently delete a Qdrant collection (Content slide-to-delete).
@@ -276,7 +363,7 @@ final class EmbarsyStore: ObservableObject {
             if let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) {
                 workspaceMessage = "Deleted collection \(trimmed)."
                 debugLog.append("Deleted Qdrant collection \(trimmed)", category: "content")
-                await contentIndex.refresh(config: config)
+                await contentIndex.refresh(config: config, maxAge: 0)
             } else {
                 let code = (response as? HTTPURLResponse)?.statusCode ?? 0
                 let body = String(data: data, encoding: .utf8) ?? ""
@@ -520,20 +607,16 @@ final class EmbarsyStore: ObservableObject {
         localSecretsNeedsRemediation = false
     }
 
+    /// Only cross-cutting services fan into the store's objectWillChange (statuses, install
+    /// state, preferences drive the tab bar / menu bar / multiple screens). Monitoring,
+    /// Activity and Content are observed directly by their own tabs (see ContentView), so
+    /// their per-2s refresh ticks no longer invalidate every view in the window — that
+    /// whole-window re-render on each tick was the main source of Monitoring scroll jank.
     private func bindChildObjectChanges() {
         processManager.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
         installManager.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-        monitoring.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-        activity.objectWillChange
-            .sink { [weak self] _ in self?.objectWillChange.send() }
-            .store(in: &cancellables)
-        contentIndex.objectWillChange
             .sink { [weak self] _ in self?.objectWillChange.send() }
             .store(in: &cancellables)
         preferences.objectWillChange

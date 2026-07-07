@@ -145,6 +145,7 @@ struct HowToView: View {
                 StepText("Verify: ask Claude about the code — e.g. \u{201C}where is authorization handled\u{201D}. It finds the right files, and counters start moving in Embarsy \u{2192} **Monitoring**.")
             }
             noteBox("Both API keys come from Embarsy \u{2192} **Status** (the connection block). Copy the current values — they change after a Hard Reset.")
+            updateNote
         }
     }
 
@@ -169,6 +170,7 @@ struct HowToView: View {
             NumStep(5) {
                 StepText("Ask about the code — Codex finds the files, and counters move in Embarsy \u{2192} **Monitoring**.")
             }
+            updateNote
         }
     }
 
@@ -216,6 +218,19 @@ struct HowToView: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(Theme.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 9))
         .overlay(RoundedRectangle(cornerRadius: 9).stroke(Theme.accent.opacity(0.25)))
+    }
+
+    /// Shared "how to update the bridge" note for the Claude Code / Codex guides.
+    private var updateNote: some View {
+        HStack(alignment: .top, spacing: 9) {
+            Image(systemName: "arrow.triangle.2.circlepath").font(.system(size: 13)).foregroundStyle(.tertiary)
+            Text(.init("**Updating the bridge:** run `npm install -g embarsy-qdrant-mcp@latest`, then restart your editor — the config stays, no need to re-run setup. Re-run the `embarsy-index` command to pick up improvements (it's incremental)."))
+                .font(.system(size: 11.5)).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .background(Theme.fillQuaternary, in: RoundedRectangle(cornerRadius: 9))
+        .overlay(RoundedRectangle(cornerRadius: 9).stroke(Theme.separator))
     }
 
     // MARK: Content

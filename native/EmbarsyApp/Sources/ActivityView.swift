@@ -2,22 +2,22 @@ import SwiftUI
 
 struct ActivityView: View {
     @EnvironmentObject private var store: EmbarsyStore
+    /// Observed directly (not through the store) so Activity ticks only re-render this tab.
+    @ObservedObject var activity: ActivityService
     @State private var filterState = ActivityTypeFilterState()
     @State private var onlyErrors = false
     @State private var typeMenuOpen = false
     private let typeMenuWidth: CGFloat = 200   // fits "Embedding request" without truncating
 
-    private let refreshIntervalNanoseconds: UInt64 = 2_000_000_000
-
     private var filteredEvents: [ActivityEvent] {
-        filterState.filteredEvents(from: store.activity.snapshot.events, onlyErrors: onlyErrors)
+        filterState.filteredEvents(from: activity.snapshot.events, onlyErrors: onlyErrors)
     }
 
     var body: some View {
         // No outer ScrollView: header + footer stay put and the "Recent requests" list fills the
         // remaining window height (scrolling happens inside the list), so it grows with the window.
         VStack(alignment: .leading, spacing: 18) {
-            BrandedHeader(title: "Request Activity", subtitle: store.activity.message) {
+            BrandedHeader(title: "Request Activity", subtitle: activity.message) {
                 HStack(spacing: 8) {
                     activityTypeMenu
                     onlyErrorsToggle
@@ -25,7 +25,7 @@ struct ActivityView: View {
                 .fixedSize()
             }
 
-            if store.activity.snapshot.events.isEmpty {
+            if activity.snapshot.events.isEmpty {
                 emptyState
             } else {
                 EmbarsySection(title: "Recent requests") {
@@ -71,9 +71,13 @@ struct ActivityView: View {
             }
         }
         .task {
+            // Fetch only while the window can be seen; the 2s slice doubles as the poll
+            // interval, so a re-shown window refreshes within 2s — same as the old cadence.
             while !Task.isCancelled {
-                await store.refreshActivity()
-                try? await Task.sleep(nanoseconds: refreshIntervalNanoseconds)
+                if WindowVisibility.mainWindowVisible {
+                    await store.refreshActivity()
+                }
+                try? await Task.sleep(for: .seconds(2), tolerance: .milliseconds(500))
             }
         }
     }

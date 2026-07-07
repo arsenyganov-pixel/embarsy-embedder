@@ -1,3 +1,4 @@
+import json
 import httpx
 from fastapi.testclient import TestClient
 
@@ -37,6 +38,7 @@ def test_qdrant_proxy_forwards_request_and_counts_read(monkeypatch):
     main.app.dependency_overrides[get_settings] = lambda: settings
     monkeypatch.setattr(main, "metrics", proxy_metrics)
     monkeypatch.setattr(main.httpx, "AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr(main, "_http_client", None)   # drop the shared-client cache
     FakeAsyncClient.response = httpx.Response(200, json={"result": []})
 
     try:
@@ -66,6 +68,7 @@ def test_qdrant_proxy_counts_write_errors(monkeypatch):
     main.app.dependency_overrides[get_settings] = lambda: settings
     monkeypatch.setattr(main, "metrics", proxy_metrics)
     monkeypatch.setattr(main.httpx, "AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr(main, "_http_client", None)   # drop the shared-client cache
     FakeAsyncClient.response = httpx.Response(500, json={"status": "error"})
 
     try:
@@ -100,3 +103,64 @@ def test_qdrant_proxy_rejects_wrong_api_key():
         main.app.dependency_overrides.clear()
 
     assert response.status_code == 401
+
+
+def test_inject_default_quantization_on_collection_create():
+    body = json.dumps({"vectors": {"size": 1024, "distance": "Cosine"}}).encode()
+    out = json.loads(main.inject_default_quantization("PUT", "collections/ws-abc", body))
+    assert out["quantization_config"] == main.SCALAR_INT8_QUANTIZATION
+    assert out["vectors"]["on_disk"] is True
+    # client's own settings survive
+    assert out["vectors"]["size"] == 1024
+    assert out["vectors"]["distance"] == "Cosine"
+
+
+def test_inject_default_quantization_respects_explicit_config():
+    explicit = {"binary": {"always_ram": True}}
+    body = json.dumps({
+        "vectors": {"size": 512, "distance": "Dot", "on_disk": False},
+        "quantization_config": explicit,
+    }).encode()
+    out = json.loads(main.inject_default_quantization("PUT", "collections/ws-abc", body))
+    assert out["quantization_config"] == explicit
+    assert out["vectors"]["on_disk"] is False
+
+
+def test_inject_default_quantization_handles_named_vectors():
+    body = json.dumps({"vectors": {"text": {"size": 768, "distance": "Cosine"}}}).encode()
+    out = json.loads(main.inject_default_quantization("PUT", "collections/ws-abc", body))
+    assert out["quantization_config"] == main.SCALAR_INT8_QUANTIZATION
+    assert out["vectors"]["text"]["on_disk"] is True
+
+
+def test_inject_default_quantization_leaves_other_requests_alone():
+    points = json.dumps({"points": [{"id": 1, "vector": [0.1]}]}).encode()
+    assert main.inject_default_quantization("PUT", "collections/ws/points", points) == points
+    assert main.inject_default_quantization("POST", "collections/ws-abc", points) == points
+    assert main.inject_default_quantization("PUT", "collections/ws-abc", b"not json") == b"not json"
+    no_vectors = json.dumps({"init_from": "other"}).encode()
+    assert main.inject_default_quantization("PUT", "collections/ws-abc", no_vectors) == no_vectors
+
+
+def test_qdrant_proxy_injects_quantization_into_collection_create(monkeypatch):
+    proxy_metrics = EmbarsyMetrics(bucket_seconds=5, max_buckets=10)
+    settings = Settings(QDRANT_BASE_URL="http://qdrant.local", QDRANT_API_KEY="secret")
+    main.app.dependency_overrides[get_settings] = lambda: settings
+    monkeypatch.setattr(main, "metrics", proxy_metrics)
+    monkeypatch.setattr(main.httpx, "AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr(main, "_http_client", None)   # drop the shared-client cache
+    FakeAsyncClient.response = httpx.Response(200, json={"result": True})
+
+    try:
+        response = TestClient(main.app).put(
+            "/qdrant/collections/ws-new",
+            headers={"api-key": "secret", "content-type": "application/json"},
+            json={"vectors": {"size": 1024, "distance": "Cosine"}},
+        )
+    finally:
+        main.app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    forwarded = json.loads(FakeAsyncClient.last_request["content"])
+    assert forwarded["quantization_config"] == main.SCALAR_INT8_QUANTIZATION
+    assert forwarded["vectors"]["on_disk"] is True

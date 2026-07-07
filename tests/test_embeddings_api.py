@@ -35,6 +35,19 @@ def test_health_returns_expected_dimension():
     assert response.json()["dimension"] == 1024
 
 
+def test_health_reports_api_version():
+    """The app's Status screen compares this against its bundled API version to offer
+    the API "Update" button - the field must always be present and match the package."""
+    import embarsy_api
+
+    client = TestClient(app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["version"] == embarsy_api.__version__
+
+
 @pytest.mark.parametrize("endpoint", ["/v1/embeddings", "/embeddings"])
 def test_embeddings_float_response_has_1024_dimensions_and_unit_norm(endpoint):
     client = TestClient(app)
