@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
 app_name="Embarsy"
-app_version="0.1.1"
+app_version="0.2.0"
 volume_name="Embarsy ${app_version}"
 build_dir="${EMBARSY_HOME}/build"
 app_bundle="${build_dir}/${app_name}.app"

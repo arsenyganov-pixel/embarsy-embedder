@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import atexit
 import time
 import json
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
-from threading import Lock
+from threading import Event, Lock, Thread
 from typing import Literal
 
 MetricOperation = Literal["embeddings", "qdrant_read", "qdrant_write"]
@@ -129,7 +130,7 @@ class EmbarsyMetrics:
         max_buckets: int | None = None,
         max_activity_events: int | None = None,
         state_file: Path | str | None = None,
-        persist_min_interval: float = 1.0,
+        persist_min_interval: float = 30.0,
     ) -> None:
         self.bucket_seconds = bucket_seconds
         if max_buckets is None:
@@ -144,13 +145,27 @@ class EmbarsyMetrics:
         self._last_observed_qdrant_totals: QdrantActivityTotals | None = None
         self._next_activity_id = 1
         self._state_file = Path(state_file).expanduser() if state_file else None
-        # The full bucket series is re-serialized on every event; at 7-day retention
-        # that is a large write, so coalesce disk flushes to at most once per interval.
-        # The Monitoring endpoint reads in-memory state, so this only affects how fresh
-        # the on-disk copy is after a restart.
-        self._persist_min_interval = max(0.0, persist_min_interval)
-        self._last_persist_monotonic = 0.0
+        # Persistence is decoupled from the request path: record_* methods only set a
+        # dirty flag, and a background thread serializes + writes the (multi-MB at 7-day
+        # retention) state file at most once per interval — the old write-per-event model
+        # rewrote the whole file up to 1x/second, which was the API's single biggest
+        # source of disk traffic. The Monitoring endpoint reads in-memory state, so this
+        # only affects how fresh the on-disk copy is after a crash; a clean shutdown
+        # flushes via atexit.
+        self._persist_min_interval = max(0.5, persist_min_interval)
+        self._dirty = False
+        self._flush_stop = Event()
+        # Serializes the serialize+write section of flush(): the flusher thread, atexit,
+        # and the FastAPI shutdown hook may all call flush() concurrently, and unserialized
+        # writers sharing one .tmp path could atomically install torn JSON.
+        self._flush_io_lock = Lock()
+        # Identifies this in-memory state incarnation; not persisted, so it changes on
+        # every process start. Clients use it to detect id resets (see activity_snapshot).
+        self._boot_token = f"{int(time.time() * 1000):x}-{id(self):x}"
         self._load_state()
+        if self._state_file is not None:
+            Thread(target=self._flush_loop, name="metrics-flush", daemon=True).start()
+            atexit.register(self.flush)
 
     def record_embeddings(
         self,
@@ -240,6 +255,16 @@ class EmbarsyMetrics:
                     errors=totals.errors - previous.errors,
                 )
 
+            # Idle Monitoring polls observe the same totals over and over. Still create
+            # the current bucket — the chart relies on explicit zero buckets to draw a
+            # flat zero line through idle periods — but skip the no-op bookkeeping and
+            # don't mark state dirty for the persister. (Skip ONLY on exact equality:
+            # a Qdrant restart that resets counters to the same-looking zeros must
+            # still fall through and update the observed baseline.)
+            if previous is not None and totals == previous:
+                self._current_bucket()
+                return
+
             if self._state_file is None:
                 self._summary.qdrant_reads = totals.reads
                 self._summary.qdrant_writes = totals.writes
@@ -284,7 +309,14 @@ class EmbarsyMetrics:
         *,
         limit: int = 80,
         since_seconds: int | None = None,
+        since_id: int | None = None,
     ) -> dict[str, object]:
+        """Recent activity, newest first.
+
+        `since_id` makes the poll incremental: only events newer than the given id are
+        returned, so a steady 2s UI poll moves ~zero bytes when nothing happened.
+        `latest_id` lets the client detect an id reset (fresh state) and re-fetch fully.
+        """
         bounded_limit = max(1, min(limit, self._activity_events.maxlen or limit))
         now = int(time.time())
         since = None if since_seconds is None else now - max(1, since_seconds)
@@ -292,11 +324,18 @@ class EmbarsyMetrics:
             events = [
                 event
                 for event in self._activity_events
-                if since is None or event.timestamp >= since
+                if (since is None or event.timestamp >= since)
+                and (since_id is None or event.id > since_id)
             ][-bounded_limit:]
             events.reverse()
+            latest_id = self._activity_events[-1].id if self._activity_events else 0
             return {
                 "now": now,
+                # Changes on every API process start; a client holding a since_id from a
+                # previous incarnation must drop it and re-fetch fully (ids may have been
+                # re-minted after a state wipe).
+                "boot_id": self._boot_token,
+                "latest_id": latest_id,
                 "events": [event.as_dict() for event in events],
             }
 
@@ -347,33 +386,62 @@ class EmbarsyMetrics:
         self._next_activity_id = max(state.next_activity_id, 1)
 
     def _persist_state_locked(self) -> None:
+        """Mark state dirty; the background flusher does the actual (expensive) write."""
+        self._dirty = True
+
+    def _flush_loop(self) -> None:
+        while not self._flush_stop.wait(self._persist_min_interval):
+            self.flush()
+
+    def flush(self) -> None:
+        """Serialize + write the state file if anything changed since the last flush.
+
+        Only cheap copies happen under the lock (the deques hold references; older
+        buckets never mutate once a newer bucket exists, and the possibly-live last
+        bucket and summary are copied) — JSON encoding and the disk write run outside
+        it, off the request path.
+        """
         if self._state_file is None:
             return
-        now = time.monotonic()
-        if now - self._last_persist_monotonic < self._persist_min_interval:
-            return
+        with self._flush_io_lock:
+            self._flush_locked_io()
+
+    def _flush_locked_io(self) -> None:
+        with self._lock:
+            if not self._dirty:
+                return
+            self._dirty = False
+            buckets = list(self._buckets)
+            if buckets:
+                buckets[-1] = replace(buckets[-1])  # the only bucket that can still mutate
+            summary = replace(self._summary)
+            events = list(self._activity_events)
+            totals = self._last_observed_qdrant_totals
+            next_activity_id = self._next_activity_id
+
         try:
             self._state_file.parent.mkdir(parents=True, exist_ok=True)
             payload = {
                 "bucket_seconds": self.bucket_seconds,
-                "summary": self._summary.as_dict(),
-                "summary_latency_ms_total": self._summary.embeddings_latency_ms_total,
+                "summary": summary.as_dict(),
+                "summary_latency_ms_total": summary.embeddings_latency_ms_total,
                 "buckets": [
                     {
                         **bucket.as_dict(),
                         "embeddings_latency_ms_total": bucket.embeddings_latency_ms_total,
                     }
-                    for bucket in self._buckets
+                    for bucket in buckets
                 ],
-                "activity_events": [event.as_dict() for event in self._activity_events],
-                "last_observed_qdrant_totals": _qdrant_totals_as_dict(self._last_observed_qdrant_totals),
-                "next_activity_id": self._next_activity_id,
+                "activity_events": [event.as_dict() for event in events],
+                "last_observed_qdrant_totals": _qdrant_totals_as_dict(totals),
+                "next_activity_id": next_activity_id,
             }
             tmp_file = self._state_file.with_suffix(f"{self._state_file.suffix}.tmp")
             tmp_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
             tmp_file.replace(self._state_file)
-            self._last_persist_monotonic = now
         except OSError:
+            with self._lock:
+                self._dirty = True  # retry on the next flush tick
             return
 
 

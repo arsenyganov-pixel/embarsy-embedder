@@ -39,7 +39,7 @@ struct StatusView: View {
                     Color.clear
                         .frame(width: 26, height: 26)
                         .overlay(alignment: .leading) {
-                            EmbarsyMarkView(color: Theme.markTint(store.aggregateStatus), animated: running)
+                            EmbarsyMarkView(color: Theme.markTint(store.aggregateStatus), animated: running && !EmbarsyLaunchOverrides.stillMode)
                                 .frame(width: 34, height: 34)
                         }
                     (Text("Emb").font(.system(size: 19, weight: .heavy))
@@ -132,11 +132,38 @@ struct StatusView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1).truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            if service == .api, status == .running, store.apiUpdateAvailable {
+                apiUpdateButton
+            }
             Text(status.title)
                 .font(.system(.callout, design: .monospaced))
                 .foregroundStyle(Theme.status(status))
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
+    }
+
+    /// Shown when the RUNNING API is older than the one bundled with this app (typical
+    /// right after installing a new Embarsy version while the stack kept running).
+    /// Restarts only the API — Qdrant, Ollama, the model and every index stay untouched.
+    private var apiUpdateButton: some View {
+        Button {
+            Task { await store.updateAPIService() }
+        } label: {
+            HStack(spacing: 5) {
+                if store.isUpdatingAPI {
+                    ProgressView().controlSize(.small).scaleEffect(0.7)
+                } else {
+                    Image(systemName: "arrow.triangle.2.circlepath").font(.system(size: 10, weight: .semibold))
+                }
+                Text(store.isUpdatingAPI ? "Updating..." : "Update")
+                    .font(.system(size: 11.5, weight: .semibold))
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Theme.accent)
+        .controlSize(.small)
+        .disabled(store.isUpdatingAPI)
+        .help("A newer Embarsy API (\(EmbarsyConfig.bundledAPIVersion)) ships with this app. Update restarts only the API — Qdrant, Ollama and your indexes are not touched.")
     }
 }

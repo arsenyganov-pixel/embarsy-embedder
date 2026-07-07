@@ -3,6 +3,8 @@ import SwiftUI
 
 struct ContentIndexView: View {
     @EnvironmentObject private var store: EmbarsyStore
+    /// Observed directly (not through the store) so Content ticks only re-render this tab.
+    @ObservedObject var contentIndex: ContentIndexService
 
     private enum Column {
         static let name: CGFloat = 0.20
@@ -23,31 +25,31 @@ struct ContentIndexView: View {
     private let refreshMenuWidth: CGFloat = 184
 
     private var sortedCollections: [ContentIndexCollection] {
-        store.contentIndex.snapshot.collections.sorted {
+        contentIndex.snapshot.collections.sorted {
             sortDescending ? $0.pointsCount > $1.pointsCount : $0.pointsCount < $1.pointsCount
         }
     }
-    private var maxPoints: Int { max(store.contentIndex.snapshot.collections.map(\.pointsCount).max() ?? 1, 1) }
+    private var maxPoints: Int { max(contentIndex.snapshot.collections.map(\.pointsCount).max() ?? 1, 1) }
 
     var body: some View {
         // No outer ScrollView: the header + footer stay put and the table fills the remaining
         // window height (scrolling happens inside the table), so the list grows with the window.
         VStack(alignment: .leading, spacing: Theme.gapSection) {
-            BrandedHeader(title: "Content", subtitle: store.contentIndex.message) {
+            BrandedHeader(title: "Content", subtitle: contentIndex.message) {
                 Button { refreshOpen.toggle() } label: {
-                    RefreshPillLabel(short: refreshInterval.short, busy: store.contentIndex.isRefreshing, open: refreshOpen)
+                    RefreshPillLabel(short: refreshInterval.short, busy: contentIndex.isRefreshing, open: refreshOpen)
                 }
                 .buttonStyle(.plain).fixedSize()
                 .anchorPreference(key: MenuAnchorsKey.self, value: .bounds) { MenuAnchors(refresh: $0) }
             }
 
-            if store.contentIndex.snapshot.collections.isEmpty {
+            if contentIndex.snapshot.collections.isEmpty {
                 emptyState
             } else {
                 tableCard
             }
 
-            Text("\(store.contentIndex.snapshot.collections.count) collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.")
+            Text("\(contentIndex.snapshot.collections.count) collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -63,7 +65,7 @@ struct ContentIndexView: View {
                             .onTapGesture { refreshOpen = false }
                         RefreshDropdownCard(interval: $refreshInterval, options: RefreshInterval.contentOptions,
                                             width: refreshMenuWidth,
-                                            onRefreshNow: { Task { await store.refreshContentIndex() } },
+                                            onRefreshNow: { Task { await store.refreshContentIndex(maxAge: 0) } },
                                             onSelect: { refreshOpen = false })
                             .offset(x: max(0, r.maxX - refreshMenuWidth), y: r.maxY + 6)
                     }
@@ -71,9 +73,18 @@ struct ContentIndexView: View {
             }
         }
         .task(id: refreshInterval) {
+            // Short sleep slices + a last-fetch timestamp: hidden windows fetch nothing,
+            // and a re-shown window refreshes within ~2s instead of a full interval.
+            var lastRefresh = Date.distantPast
             while !Task.isCancelled {
-                await store.refreshContentIndex()
-                try? await Task.sleep(nanoseconds: UInt64(refreshInterval.seconds * 1_000_000_000))
+                if WindowVisibility.mainWindowVisible,
+                   Date().timeIntervalSince(lastRefresh) >= refreshInterval.seconds {
+                    // Accept server-side cached data only up to one poll period old, so the
+                    // cache never makes this screen staler than its own refresh interval.
+                    await store.refreshContentIndex(maxAge: refreshInterval.seconds)
+                    lastRefresh = Date()
+                }
+                try? await Task.sleep(for: .seconds(min(2, refreshInterval.seconds)), tolerance: .milliseconds(500))
             }
         }
     }

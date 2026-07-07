@@ -114,12 +114,13 @@ final class ProcessManager: ObservableObject {
             try processes[service]?.start()
             setMessage(service, "Process started. Waiting for health at \(healthURL(for: service).absoluteString)...")
             debugLog?.append(messages[service] ?? "Waiting health for \(service.title)", category: "process")
-            let ready = await waitUntilReady(service)
-            setStatus(service, ready ? .running : .failed, message: ready
-                ? "Running."
-                : "Started process did not become healthy with current configuration. Check \(logFile(for: service).path)."
-            )
-            debugLog?.append("\(service.title) status after start: \(statuses[service, default: .unknown].title). \(messages[service] ?? "")", category: ready ? "process" : "process.error")
+            let wait = await waitUntilReady(service)
+            if wait == .ready {
+                setStatus(service, .running, message: "Running.")
+            } else {
+                reportStartupFailure(service, outcome: wait)
+            }
+            debugLog?.append("\(service.title) status after start: \(statuses[service, default: .unknown].title). \(messages[service] ?? "")", category: wait == .ready ? "process" : "process.error")
         } catch {
             setStatus(service, .failed, message: "Failed to start \(service.title): \(error.localizedDescription). Check \(logFile(for: service).path).")
             debugLog?.append(messages[service] ?? error.localizedDescription, category: "process.error")
@@ -149,11 +150,31 @@ final class ProcessManager: ObservableObject {
     func refresh(_ service: ManagedService) async {
         let url = healthURL(for: service)
         let isReady = await isServiceReady(service)
+        // Keep precise startup-failure diagnostics (exit status, code-signing guidance)
+        // on screen: a dead service already reported .failed must not be downgraded to a
+        // generic .stopped by the periodic post-start status reconciliation.
+        if !isReady, statuses[service] == .failed, processes[service]?.isRunning != true {
+            return
+        }
         setStatus(
             service,
             isReady ? .running : (processes[service]?.isRunning == true ? .starting : .stopped),
             message: isReady ? "Health check OK." : "Health check is not ready at \(url.absoluteString) with current configuration."
         )
+    }
+
+    /// Copy-truncate any oversized log of a running child (ollama's llama-server slot logs
+    /// alone can add hundreds of MB per day). Cheap when logs are small — one attribute
+    /// read per service — so it can ride the store's periodic sampling tick.
+    func capRunningLogs() {
+        for service in ManagedService.allCases {
+            // Never rotate mid-startup: the startup-failure diagnostics read the log tail
+            // relative to the offset captured at start().
+            guard statuses[service] != .starting else { continue }
+            if processes[service]?.capLogWhileRunning() == true {
+                debugLog?.append("Rotated oversized log for \(service.title)", category: "process")
+            }
+        }
     }
 
     func logFile(for service: ManagedService) -> URL {
@@ -167,16 +188,90 @@ final class ProcessManager: ObservableObject {
         }
     }
 
-    private func waitUntilReady(_ service: ManagedService, attempts: Int = 30) async -> Bool {
+    enum StartupWaitOutcome: Equatable {
+        case ready
+        case processDied
+        case timedOut
+    }
+
+    /// Readiness budget per service. The API is a PyInstaller onefile binary whose FIRST
+    /// start after a (re)install can spend ~20s just extracting and code-sign-validating
+    /// its bundled dylibs (observed in the 2026-07-07 install incident), so it gets a much
+    /// longer budget. The wait below exits early the moment the child process dies, so a
+    /// long budget never delays reporting a real crash.
+    private func readyAttempts(for service: ManagedService) -> Int {
+        switch service {
+        case .api: 240      // 240 × 0.5s = up to 120s while the process stays alive
+        case .qdrant, .ollama: 60   // up to 30s
+        }
+    }
+
+    /// Poll health while the child is alive. Fails FAST (not after the full budget) when
+    /// the process exits — that is what distinguishes "killed at exec / crashed" from
+    /// "still starting"; the blind 15s wait used to hide exactly that difference.
+    private func waitUntilReady(_ service: ManagedService) async -> StartupWaitOutcome {
+        let attempts = readyAttempts(for: service)
         for _ in 0..<attempts {
-            if await isServiceReady(service) { return true }
+            if await isServiceReady(service) { return .ready }
+            if processes[service]?.isRunning != true {
+                // Give the termination handler a beat to record the exit info.
+                try? await Task.sleep(nanoseconds: 200_000_000)
+                return .processDied
+            }
             try? await Task.sleep(nanoseconds: 500_000_000)
         }
-        return false
+        return .timedOut
+    }
+
+    /// Build a precise failure status: what the child wrote, how it exited, and — for the
+    /// kernel code-signing kill — what the user should actually do. Also preserves the
+    /// child's log tail in the debug log so failure evidence survives log wipes.
+    private func reportStartupFailure(_ service: ManagedService, outcome: StartupWaitOutcome) {
+        let process = processes[service]
+        let exit = process?.lastExit
+        let tail = process?.logTailSinceStart()
+
+        var message: String
+        switch outcome {
+        case .processDied:
+            if let exit, exit.isSignalKill {
+                message = "\(service.title) was killed by macOS right after launch (code-signature enforcement). "
+                    + "Restart your Mac; if it happens again, delete /Applications/Embarsy.app completely "
+                    + "and copy the new version fresh instead of overwriting it."
+            } else {
+                message = "\(service.title) \(exit?.summary ?? "exited during startup"). Check \(logFile(for: service).path)."
+            }
+        case .timedOut:
+            // Leave the process running: a service that turns healthy late is picked up by
+            // the post-start status reconciliation (EmbarsyStore) and flips to Running.
+            message = "\(service.title) is still starting but did not pass its health check in time. "
+                + "It may finish on its own — press Refresh in a minute. Check \(logFile(for: service).path)."
+        case .ready:
+            return
+        }
+        setStatus(service, .failed, message: message)
+
+        if let exit {
+            debugLog?.append("\(service.title) startup failure: \(exit.summary)", category: "process.error")
+        }
+        switch tail {
+        case .some(let text) where text.isEmpty:
+            debugLog?.append("\(service.title) wrote no output during the failed start (killed before it could run?)", category: "process.error")
+        case .some(let text):
+            debugLog?.append("\(service.title) log tail from the failed start:\n\(text)", category: "process.error")
+        case .none:
+            debugLog?.append("\(service.title) log tail unavailable at \(logFile(for: service).path)", category: "process.error")
+        }
     }
 
     private func isServiceReady(_ service: ManagedService) async -> Bool {
         await health.isReady(url: healthURL(for: service), headers: healthHeaders(for: service))
+    }
+
+    /// Version reported by whatever process currently serves the API health endpoint —
+    /// after an app update this can be an orphaned process from the previous app version.
+    func reportedAPIVersion() async -> String? {
+        await health.reportedAPIVersion(healthURL: healthURL(for: .api))
     }
 
     private func healthHeaders(for service: ManagedService) -> [String: String] {

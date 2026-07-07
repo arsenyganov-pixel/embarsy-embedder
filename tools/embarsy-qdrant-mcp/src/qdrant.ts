@@ -38,7 +38,14 @@ export async function ensureCollection(cfg: Config): Promise<void> {
     {
       method: "PUT",
       headers: headers(cfg),
-      body: JSON.stringify({ vectors: { size: cfg.embeddingDimension, distance: "Cosine" } }),
+      body: JSON.stringify({
+        // Laptop-friendly storage: full-precision originals live on disk and are only
+        // read to rescore the top candidates; searches run on an in-RAM int8 copy
+        // (~4x smaller, SIMD-accelerated) with no practical recall loss for cosine
+        // text embeddings.
+        vectors: { size: cfg.embeddingDimension, distance: "Cosine", on_disk: true },
+        quantization_config: { scalar: { type: "int8", quantile: 0.99, always_ram: true } },
+      }),
     },
     { label: "create collection", retries: 0 },
   );

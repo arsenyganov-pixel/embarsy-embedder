@@ -7,69 +7,48 @@ export interface Chunk {
 }
 
 /**
- * Line-oriented chunking with a character budget and overlap. Chunks prefer to start at a
- * "definition-ish" line (function/class/etc.) when the current chunk is already sizeable, so
- * chunks tend to align with logical code boundaries. Pure-JS, no native parser.
+ * Character-window chunking with a HARD size cap, so no single chunk can ever exceed the
+ * embedding model's context — not even a minified/bundled file that is one enormous line.
+ *
+ * Windows prefer to end at a newline (cleaner code boundaries), but a line longer than the cap
+ * is split by character count instead of being embedded whole. The old line-based chunker sent
+ * a one-line 800 KB JSON as a single chunk, which tokenised past 32k and crashed llama-server.
  */
-const BOUNDARY = /^\s*(export\s+)?(async\s+)?(function|class|struct|enum|interface|trait|impl|def|func|fn|type|module|namespace|public|private|protected|static)\b/;
-
 export function chunkFile(content: string, cfg: Config): Chunk[] {
-  const lines = content.split(/\r?\n/);
-  const chunks: Chunk[] = [];
   const maxChars = Math.max(400, cfg.chunkMaxChars);
-  const overlapChars = Math.max(0, Math.min(cfg.chunkOverlapChars, maxChars - 100));
+  const overlap = Math.max(0, Math.min(cfg.chunkOverlapChars, Math.floor(maxChars / 2)));
+  if (content.trim().length === 0) return [];
 
-  let startIdx = 0; // 0-based line index where the current chunk starts
-  let curChars = 0;
-  let i = 0;
-
-  const flush = (endIdxExclusive: number) => {
-    if (endIdxExclusive <= startIdx) return;
-    const slice = lines.slice(startIdx, endIdxExclusive);
-    const text = slice.join("\n").trim();
-    if (text.length > 0) {
-      chunks.push({ startLine: startIdx + 1, endLine: endIdxExclusive, text: slice.join("\n") });
+  // Line-start offsets → 1-based line number for any character offset (binary search).
+  const lineStarts: number[] = [0];
+  for (let i = 0; i < content.length; i++) {
+    if (content.charCodeAt(i) === 10 /* \n */) lineStarts.push(i + 1);
+  }
+  const lineAt = (offset: number): number => {
+    let lo = 0, hi = lineStarts.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (lineStarts[mid]! <= offset) lo = mid; else hi = mid - 1;
     }
+    return lo + 1;
   };
 
-  while (i < lines.length) {
-    const line = lines[i] ?? "";
-    const lineChars = line.length + 1;
-
-    // Break BEFORE a definition line if the current chunk already has real content.
-    if (i > startIdx && curChars >= maxChars * 0.5 && BOUNDARY.test(line)) {
-      flush(i);
-      startIdx = backfillOverlap(lines, i, overlapChars);
-      curChars = charsBetween(lines, startIdx, i);
+  const chunks: Chunk[] = [];
+  let pos = 0;
+  while (pos < content.length) {
+    let end = Math.min(content.length, pos + maxChars);
+    if (end < content.length) {
+      // Snap to the last newline in the back half of the window for a tidy cut; a window with
+      // no newline (one giant line) falls through and is hard-cut at maxChars.
+      const nl = content.lastIndexOf("\n", end);
+      if (nl > pos + Math.floor(maxChars / 2)) end = nl;
     }
-
-    curChars += lineChars;
-    i++;
-
-    if (curChars >= maxChars) {
-      flush(i);
-      startIdx = backfillOverlap(lines, i, overlapChars);
-      curChars = charsBetween(lines, startIdx, i);
+    const text = content.slice(pos, end);
+    if (text.trim().length > 0) {
+      chunks.push({ startLine: lineAt(pos), endLine: lineAt(Math.max(pos, end - 1)), text });
     }
+    if (end >= content.length) break;
+    pos = Math.max(pos + 1, end - overlap);
   }
-  flush(lines.length);
   return chunks;
-}
-
-/** Walk back from `idx` to include ~overlapChars of trailing context; returns new start index. */
-function backfillOverlap(lines: string[], idx: number, overlapChars: number): number {
-  if (overlapChars <= 0) return idx;
-  let chars = 0;
-  let j = idx;
-  while (j > 0 && chars < overlapChars) {
-    j--;
-    chars += (lines[j]?.length ?? 0) + 1;
-  }
-  return j;
-}
-
-function charsBetween(lines: string[], from: number, to: number): number {
-  let c = 0;
-  for (let k = from; k < to; k++) c += (lines[k]?.length ?? 0) + 1;
-  return c;
 }

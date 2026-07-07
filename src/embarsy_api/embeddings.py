@@ -68,44 +68,46 @@ class EmbeddingService:
         return vectors
 
     async def _embed_batch(self, prepared_inputs: list[str]) -> list[list[float]]:
-        async with httpx.AsyncClient(
-            base_url=self.ollama_base_url.rstrip("/"), timeout=self.timeout_seconds
-        ) as client:
-            response = await client.post(
-                "/api/embed",
-                json={
-                    "model": self.model,
-                    "input": prepared_inputs,
-                    "keep_alive": self.ollama_keep_alive_payload,
-                },
-            )
+        client = _ollama_client()
+        base = self.ollama_base_url.rstrip("/")
+        response = await client.post(
+            f"{base}/api/embed",
+            json={
+                "model": self.model,
+                "input": prepared_inputs,
+                "keep_alive": self.ollama_keep_alive_payload,
+            },
+            timeout=self.timeout_seconds,
+        )
 
-            if response.status_code == 404:
-                return await self._embed_legacy(client, prepared_inputs)
+        if response.status_code == 404:
+            return await self._embed_legacy(client, prepared_inputs)
 
-            try:
-                response.raise_for_status()
-            except httpx.HTTPStatusError as exc:
-                raise EmbeddingError(f"Ollama /api/embed failed: {exc.response.text}") from exc
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise EmbeddingError(f"Ollama /api/embed failed: {exc.response.text}") from exc
 
-            payload = response.json()
-            vectors = payload.get("embeddings")
-            if not isinstance(vectors, list):
-                raise EmbeddingError("Ollama /api/embed response does not contain embeddings[]")
-            return [_coerce_vector(vector) for vector in vectors]
+        payload = response.json()
+        vectors = payload.get("embeddings")
+        if not isinstance(vectors, list):
+            raise EmbeddingError("Ollama /api/embed response does not contain embeddings[]")
+        return [_coerce_vector(vector) for vector in vectors]
 
     async def _embed_legacy(
         self, client: httpx.AsyncClient, prepared_inputs: list[str]
     ) -> list[list[float]]:
+        base = self.ollama_base_url.rstrip("/")
         vectors: list[list[float]] = []
         for prepared in prepared_inputs:
             response = await client.post(
-                "/api/embeddings",
+                f"{base}/api/embeddings",
                 json={
                     "model": self.model,
                     "prompt": prepared,
                     "keep_alive": self.ollama_keep_alive_payload,
                 },
+                timeout=self.timeout_seconds,
             )
             try:
                 response.raise_for_status()
@@ -113,6 +115,18 @@ class EmbeddingService:
                 raise EmbeddingError(f"Ollama /api/embeddings failed: {exc.response.text}") from exc
             vectors.append(_coerce_vector(response.json().get("embedding")))
         return vectors
+
+
+# Shared keep-alive client for Ollama — the old client-per-request pattern paid a TCP
+# setup + teardown for every embedding call.
+_client: httpx.AsyncClient | None = None
+
+
+def _ollama_client() -> httpx.AsyncClient:
+    global _client
+    if _client is None or _client.is_closed:
+        _client = httpx.AsyncClient()
+    return _client
 
 
 def _coerce_vector(value: Any) -> list[float]:

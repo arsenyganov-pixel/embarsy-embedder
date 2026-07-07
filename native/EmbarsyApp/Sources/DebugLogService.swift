@@ -31,10 +31,23 @@ final class DebugLogService: ObservableObject {
                 at: fileURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
+            rotatePreviousSession()
             try header.write(to: fileURL, atomically: true, encoding: .utf8)
         } catch {
             // Debug logging must never break app runtime flows.
         }
+    }
+
+    /// Keep the previous session's debug log as embarsy-debug.1.log (one generation) instead
+    /// of overwriting it — a crash/failure investigated after a relaunch used to lose all
+    /// its evidence to the fresh session header.
+    private func rotatePreviousSession() {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: fileURL.path) else { return }
+        let rotated = fileURL.deletingLastPathComponent()
+            .appendingPathComponent("embarsy-debug.1.log")
+        try? fileManager.removeItem(at: rotated)
+        try? fileManager.moveItem(at: fileURL, to: rotated)
     }
 
     func append(_ message: String, category: String = "app") {

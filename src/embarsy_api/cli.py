@@ -6,6 +6,7 @@ from typing import Any
 
 import uvicorn
 
+from embarsy_api import __version__
 from embarsy_api.main import app
 from embarsy_api.settings import Settings, get_settings
 
@@ -17,6 +18,9 @@ def build_server_config(settings: Settings, *, printable: bool = False) -> dict[
         "port": settings.api_port,
         "factory": False,
         "log_level": "info",
+        # No per-request access lines: the in-app Activity screen shows request history,
+        # and localhost polling traffic was writing to api.log several times a second.
+        "access_log": False,
     }
 
 
@@ -33,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version",
         action="version",
-        version="embarsy-api 0.1.0",
+        version=f"embarsy-api {__version__}",
     )
     return parser
 

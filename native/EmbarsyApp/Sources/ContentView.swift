@@ -16,6 +16,9 @@ struct ContentView: View {
                 store.processManager.markAllStopped(message: "Components are not installed. Run Install first.")
             } else {
                 await store.processManager.refreshAll()
+                // Detect an orphaned pre-update API still serving :8000 right at launch,
+                // so the Status row offers "Update" without a manual Refresh.
+                await store.checkAPIVersion()
             }
         }
         .onChange(of: store.installManager.isInstalled) { isInstalled in
@@ -107,9 +110,9 @@ struct ContentView: View {
         switch store.selectedTab {
         case .status:     StatusView()
         case .install:    InstallView()
-        case .monitoring: MonitoringView(sysMetrics: store.sysMetrics)
-        case .activity:   ActivityView()
-        case .content:    ContentIndexView()
+        case .monitoring: MonitoringView(monitoring: store.monitoring, contentIndex: store.contentIndex, sysMetrics: store.sysMetrics)
+        case .activity:   ActivityView(activity: store.activity)
+        case .content:    ContentIndexView(contentIndex: store.contentIndex)
         case .settings:   SettingsView()
         case .howto:      HowToView()
         }

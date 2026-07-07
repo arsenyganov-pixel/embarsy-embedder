@@ -21,7 +21,7 @@ enum MonitoringScale: Int, CaseIterable, Identifiable {
     }
 }
 
-struct MonitoringSnapshot: Decodable {
+struct MonitoringSnapshot: Decodable, Equatable, Sendable {
     let now: Int
     let bucketSeconds: Int
     let summary: MonitoringSummary
@@ -42,7 +42,7 @@ struct MonitoringSnapshot: Decodable {
     )
 }
 
-struct MonitoringSummary: Decodable {
+struct MonitoringSummary: Decodable, Equatable, Sendable {
     let startedAt: Int
     let embeddingsRequests: Int
     let embeddingsVectors: Int
@@ -75,7 +75,7 @@ struct MonitoringSummary: Decodable {
     )
 }
 
-struct MonitoringPoint: Decodable, Identifiable {
+struct MonitoringPoint: Decodable, Equatable, Identifiable, Sendable {
     let timestamp: Int
     let embeddingsRequests: Int
     let embeddingsVectors: Int
@@ -107,11 +107,19 @@ final class MonitoringService: ObservableObject {
     @Published var message = "Monitoring is waiting for Embarsy API."
     @Published var isRefreshing = false
 
-    private let decoder = JSONDecoder()
+    private var inFlight: Task<Void, Never>?
 
+    /// Cancel-and-replace: the newest request (e.g. a scale change) always wins — the old
+    /// `guard !isRefreshing` used to silently DROP a scale-change fetch while a stale-scale
+    /// request was in flight, leaving old-scale data on screen until the next poll tick.
     func refresh(config: EmbarsyConfig) async {
-        guard !isRefreshing else { return }
+        inFlight?.cancel()
+        let task = Task { await performRefresh(config: config) }
+        inFlight = task
+        await task.value
+    }
 
+    private func performRefresh(config: EmbarsyConfig) async {
         guard config.embarsyAPIKey.isEmpty == false else {
             message = "Monitoring needs local API secrets. Start or install Embarsy first."
             snapshot = .empty
@@ -133,8 +141,18 @@ final class MonitoringService: ObservableObject {
                 message = "Monitoring endpoint is unavailable. Start Embarsy API and refresh."
                 return
             }
-            snapshot = try decoder.decode(MonitoringSnapshot.self, from: data)
-            message = snapshot.series.isEmpty ? "No embedding activity yet." : "Monitoring updated."
+            // Decode off the main actor — a 500-point snapshot decoded on main every 2s
+            // was a steady source of scroll hitches.
+            let decoded = try await Task.detached(priority: .userInitiated) {
+                try JSONDecoder().decode(MonitoringSnapshot.self, from: data)
+            }.value
+            try Task.checkCancellation()
+            snapshot = decoded
+            message = decoded.series.isEmpty ? "No embedding activity yet." : "Monitoring updated."
+        } catch is CancellationError {
+            // Replaced by a newer refresh — keep whatever state the winner publishes.
+        } catch let error as URLError where error.code == .cancelled {
+            // Same: superseded mid-request.
         } catch {
             message = "Monitoring refresh failed: \(error.localizedDescription)"
         }

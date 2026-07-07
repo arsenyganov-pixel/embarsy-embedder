@@ -26,17 +26,31 @@ final class SystemMetricsService: ObservableObject {
 
     private let maxPoints = 1800   // rolling buffer; the view windows it to the selected time scale
     private var prevCPUTicks: CPUTicks?   // previous whole-system CPU tick counters
+    /// When the port-scan fallback found nothing, don't re-run it (4 lsof forks) for a while —
+    /// a stopped stack used to cost 4 process spawns every 2 seconds around the clock.
+    private var lastEmptyPortScanAt: Date?
 
     struct ProcSample { let pid: Int32; let rssKB: Double }
     struct CPUTicks { let user: Double; let system: Double; let idle: Double; let nice: Double }
 
-    func sample(rootPIDs: [Int32], config: EmbarsyConfig) async {
+    func sample(rootPIDs: [Int32], config: EmbarsyConfig, watching: Bool = false) async {
         let ports = [config.qdrantRestPort, config.qdrantGrpcPort, 11434, config.apiPort]
+        // Re-scan sooner while the user is actually looking at Monitoring, so an
+        // externally started stack shows up within ~5s instead of 30s.
+        let portScanBackoff: TimeInterval = watching ? 5 : 30
+        let allowPortScan = rootPIDs.isEmpty
+            && (lastEmptyPortScanAt.map { Date().timeIntervalSince($0) > portScanBackoff } ?? true)
         let (procs, temp, ticks) = await Task.detached(priority: .utility) { () -> ([ProcSample], Double?, CPUTicks?) in
             var roots = rootPIDs
-            if roots.isEmpty { roots = Self.pids(onPorts: ports) }   // fallback: externally started stack
+            if roots.isEmpty, allowPortScan { roots = Self.pids(onPorts: ports) }   // fallback: externally started stack
             return (Self.treeStats(roots: roots), CPUTemperature.read(), Self.systemCPUTicks())
         }.value
+        if rootPIDs.isEmpty {
+            lastEmptyPortScanAt = (allowPortScan && procs.isEmpty) ? Date() : lastEmptyPortScanAt
+            if !procs.isEmpty { lastEmptyPortScanAt = nil }
+        } else {
+            lastEmptyPortScanAt = nil
+        }
 
         let now = Date()
         processCount = procs.count

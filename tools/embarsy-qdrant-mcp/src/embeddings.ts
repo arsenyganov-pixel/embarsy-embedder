@@ -6,8 +6,13 @@ import { requestJSON } from "./http.js";
  * This is the piece other tools get wrong: we send a bearer API key and use the standard
  * POST /v1/embeddings shape, so Embarsy authenticates the call and counts it in Monitoring.
  */
+/** Absolute per-input cap (defense in depth on top of chunking) so no single text can overflow
+ *  the model's context and crash the embedding backend, whatever produced it. */
+const MAX_EMBED_CHARS = 8000;
+
 export async function embedBatch(texts: string[], cfg: Config): Promise<number[][]> {
   if (texts.length === 0) return [];
+  const input = texts.map((t) => (t.length > MAX_EMBED_CHARS ? t.slice(0, MAX_EMBED_CHARS) : t));
   const json = await requestJSON(
     `${cfg.openaiBaseUrl}/embeddings`,
     {
@@ -16,15 +21,17 @@ export async function embedBatch(texts: string[], cfg: Config): Promise<number[]
         "Content-Type": "application/json",
         Authorization: `Bearer ${cfg.openaiApiKey}`,
       },
-      body: JSON.stringify({ model: cfg.embeddingModel, input: texts }),
+      body: JSON.stringify({ model: cfg.embeddingModel, input }),
     },
-    { label: "embeddings" },
+    // Extra retries: if the embedding backend hiccups (e.g. Ollama restarts llama-server), ride
+    // out the restart instead of aborting the whole index.
+    { label: "embeddings", retries: 4 },
   );
 
   const data = json?.data;
-  if (!Array.isArray(data) || data.length !== texts.length) {
+  if (!Array.isArray(data) || data.length !== input.length) {
     throw new Error(
-      `Unexpected embeddings response (got ${Array.isArray(data) ? data.length : "no"} vectors for ${texts.length} inputs).`,
+      `Unexpected embeddings response (got ${Array.isArray(data) ? data.length : "no"} vectors for ${input.length} inputs).`,
     );
   }
   // Respect the `index` field so ordering is guaranteed to match the input.

@@ -45,7 +45,11 @@ final class ContentIndexService: ObservableObject {
 
     private let decoder = JSONDecoder()
 
-    func refresh(config: EmbarsyConfig) async {
+    /// `maxAge` caps how stale the API's server-side content cache may be for this call:
+    /// pass `0` to force a recompute (right after deleting a collection, so the row
+    /// disappears immediately), or the poll interval so cached data is never older than
+    /// one refresh period. `nil` accepts the server default.
+    func refresh(config: EmbarsyConfig, maxAge: Double? = nil) async {
         guard !isRefreshing else { return }
 
         guard config.embarsyAPIKey.isEmpty == false else {
@@ -57,7 +61,14 @@ final class ContentIndexService: ObservableObject {
         defer { isRefreshing = false }
 
         do {
-            let url = config.apiBaseURL.appendingPathComponent("content/collections")
+            var components = URLComponents(
+                url: config.apiBaseURL.appendingPathComponent("content/collections"),
+                resolvingAgainstBaseURL: false
+            )
+            if let maxAge {
+                components?.queryItems = [URLQueryItem(name: "max_age", value: String(maxAge))]
+            }
+            guard let url = components?.url else { return }
             var request = URLRequest(url: url)
             request.timeoutInterval = 12
             request.setValue("Bearer \(config.embarsyAPIKey)", forHTTPHeaderField: "Authorization")
