@@ -2,6 +2,14 @@
 
 All notable changes to Embarsy are documented here. This project follows [Semantic Versioning](https://semver.org).
 
+## 0.2.1 — beta (2026-07-09)
+
+### Added
+- **Benchmark on the Status screen: grep vs meaning, on your own code.** One click runs a duel — questions are sampled from your real indexed chunks (concept words a human would type), and the same query goes to both engines: the semantic index and an actual `grep -riE` over your project folder. You see the three numbers that matter: how often the right file lands in the top-5, the median time to a ranked answer, and how much output there is to sift (thousands of grep lines vs a handful of ranked snippets). A "live duel" section runs the same questions end-to-end through your own coding agent (Claude Code / Codex CLIs, with grep-only vs `search_code` toolsets) and reports wall-clock time, tokens and correctness; Zoo / Roo Code gets paste-ready duel prompts.
+
+### Fixed
+- **Emoji cut in half no longer breaks indexing (HTTP 500).** Clients that slice text by UTF-16 units (editor chunkers) can send half of an emoji — a lone `\ud83d` surrogate. JSON transports it happily, but re-encoding to UTF-8 for Ollama raised `UnicodeEncodeError` and failed the whole embeddings request; the same broken character could 500 the Content overview and silently kill the metrics persister. The API now sanitizes all incoming and Qdrant-sourced text (lone surrogates become `�`, real emoji untouched), and the bridge `embarsy-qdrant-mcp` 0.1.3 stops producing them in the first place — chunk boundaries never split a surrogate pair, plus the same sanitization as defense in depth.
+
 ## 0.2.0 — beta (2026-07-07)
 
 Download `Embarsy-0.2.0-arm64.dmg` from the release assets (see 0.1.0 below for full setup, requirements, and first-launch instructions).
@@ -12,6 +20,7 @@ Download `Embarsy-0.2.0-arm64.dmg` from the release assets (see 0.1.0 below for 
 ### Fixed
 - **Install no longer fails while the API is still warming up.** The final install step used to give the Embarsy API a hard 15-second health budget — but the API's very first start after a fresh install can spend ~20s just unpacking and validating itself, so installs failed moments before the API came up (and only a reboot seemed to help). The health wait now keeps waiting while the process is alive (up to 2 minutes for the API), fails fast with the real exit reason if the process dies, retries the API step once, and no longer claims "Components are not installed" when only the API step failed — Qdrant, Ollama and the model stay put.
 - **Failure evidence survives.** If a service fails to start, its log tail and exit status are copied into the debug log automatically; the debug log is rotated (not overwritten) on every launch; and Remove Components archives the logs to `~/Library/Logs/Embarsy/` before deleting anything.
+- **Stop All now actually stops the stack.** After relaunching the app, the running services belong to the previous app instance — Stop All used to stop only processes the current instance had spawned, so the UI said "Stopped" while Qdrant, Ollama and the API kept running. Stop All now also terminates whatever is listening on the managed ports, exactly like Start All's clean-start path always did.
 - **Service status self-corrects after start.** A service that was slow to pass its health check (usually the API loading its model) no longer stays stuck on "Failed" — the Status page and the menu-bar dropdown now re-check for a while after any start and flip to "Running" automatically, so you don't have to press Refresh.
 
 ### Performance

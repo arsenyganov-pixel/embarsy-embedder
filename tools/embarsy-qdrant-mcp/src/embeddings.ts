@@ -10,9 +10,18 @@ import { requestJSON } from "./http.js";
  *  the model's context and crash the embedding backend, whatever produced it. */
 const MAX_EMBED_CHARS = 8000;
 
+/** Lone surrogates (an emoji cut in half by any UTF-16 slice) are invalid Unicode: the
+ *  Embarsy API's UTF-8 re-encode for Ollama rejects them, failing the whole batch with
+ *  a 500. Replace them with U+FFFD so one broken character can never sink an index run. */
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
+function wellFormed(text: string): string {
+  return text.replace(LONE_SURROGATE, "�");
+}
+
 export async function embedBatch(texts: string[], cfg: Config): Promise<number[][]> {
   if (texts.length === 0) return [];
-  const input = texts.map((t) => (t.length > MAX_EMBED_CHARS ? t.slice(0, MAX_EMBED_CHARS) : t));
+  const input = texts.map((t) => wellFormed(t.length > MAX_EMBED_CHARS ? t.slice(0, MAX_EMBED_CHARS) : t));
   const json = await requestJSON(
     `${cfg.openaiBaseUrl}/embeddings`,
     {

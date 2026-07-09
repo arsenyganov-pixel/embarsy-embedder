@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
-app_version="0.2.0"
+app_version="0.2.1"
 dmg="${EMBARSY_HOME}/build/Embarsy-${app_version}-arm64.dmg"
 profile="${EMBARSY_NOTARY_PROFILE:-embarsy-notary}"
 identity="${EMBARSY_CODESIGN_IDENTITY:-}"

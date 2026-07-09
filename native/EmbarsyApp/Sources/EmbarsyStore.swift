@@ -45,6 +45,9 @@ final class EmbarsyStore: ObservableObject {
     /// App-lifetime Memory / CPU / temperature buffer. Owned by the store (not the Monitoring
     /// view) so its history survives tab navigation and is sampled continuously in the background.
     let sysMetrics = SystemMetricsService()
+    /// App-lifetime benchmark state: a run started on Status keeps going while the user
+    /// browses other tabs, and the last result is always there when they come back.
+    let benchmark: BenchmarkService
     private var metricsSamplingTask: Task<Void, Never>?
     let debugLog: DebugLogService
     private let securityService = SecurityPreflightService()
@@ -71,6 +74,9 @@ final class EmbarsyStore: ObservableObject {
         self.paths = resolvedPaths
         self.debugLog = debugLog
         self.localSecrets = LocalSecretStore(fileURL: resolvedPaths.localSecretsFile)
+        self.benchmark = BenchmarkService(
+            stateFile: resolvedPaths.appSupport.appendingPathComponent("benchmark-last.json")
+        )
         self.processManager = ProcessManager(paths: resolvedPaths, config: defaultConfig, debugLog: debugLog)
         self.installManager = InstallManager(debugLog: debugLog)
         self.installManager.refreshInstalledState(paths: resolvedPaths, processManager: self.processManager)

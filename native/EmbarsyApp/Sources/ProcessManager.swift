@@ -43,6 +43,12 @@ final class ProcessManager: ObservableObject {
         for service in [ManagedService.api, .qdrant, .ollama] {
             stop(service)
         }
+        // stop() only reaches processes THIS app instance spawned. After an app
+        // relaunch the running services are orphans of the previous instance (adopted
+        // via health checks), so "Stop All" must also terminate whatever still listens
+        // on the managed localhost ports — otherwise the UI says Stopped while the
+        // whole stack keeps running.
+        terminateListenersOnManagedPorts()
     }
 
     func hardResetCleanup() {
@@ -53,7 +59,6 @@ final class ProcessManager: ObservableObject {
     func forceCleanStop(message: String = "Stopped for clean start.") {
         debugLog?.append("Force clean stop requested", category: "process")
         stopAll()
-        terminateListenersOnManagedPorts()
         markAllStopped(message: message)
     }
 
@@ -334,7 +339,7 @@ final class ProcessManager: ObservableObject {
     private func terminateListeners(on port: Int) {
         let pids = listenerPIDs(on: port)
         guard !pids.isEmpty else {
-            debugLog?.append("No listener found on port \(port) during hard reset cleanup", category: "process")
+            debugLog?.append("No listener found on port \(port) during managed-port cleanup", category: "process")
             return
         }
 

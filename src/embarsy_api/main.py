@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import json
+import random
+import shlex
 import re
 import time
 from collections import Counter
@@ -15,11 +17,13 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from embarsy_api import __version__
+from embarsy_api import benchmark as bench
 from embarsy_api.embeddings import (
     EmbeddingError,
     EmbeddingService,
     as_input_list,
     encode_float32_base64,
+    to_well_formed,
 )
 from embarsy_api.metrics import (
     DEFAULT_MAX_CHART_POINTS,
@@ -37,6 +41,16 @@ class EmbeddingsRequest(BaseModel):
     model: Optional[str] = None
     encoding_format: Literal["float", "base64"] = "float"
     dimensions: Optional[int] = None
+
+
+class BenchmarkRequest(BaseModel):
+    collection: str
+    workspace_path: str
+    samples: int = 12
+    top_k: int = 5
+    # Paraphrase discipline: swap ONE word of each question for a fixed-table synonym
+    # before the duel — the test literal search cannot ace by construction.
+    paraphrase: bool = False
 
 
 class EmbeddingObject(BaseModel):
@@ -526,7 +540,7 @@ def _workspace_paths_from_roo_cache(cache_file: Path) -> list[str]:
     if not isinstance(raw, dict):
         return []
 
-    paths = [key for key in raw.keys() if isinstance(key, str)]
+    paths = [to_well_formed(key) for key in raw.keys() if isinstance(key, str)]
     _roo_cache_memo[memo_key] = (stat.st_mtime, stat.st_size, paths)
     return paths
 
@@ -672,7 +686,7 @@ def _payload_path(payload: dict[str, Any]) -> str:
     for key in ("file_path", "filePath", "path", "source", "uri", "relative_path", "relativePath"):
         value = payload.get(key)
         if isinstance(value, str) and value:
-            return value
+            return to_well_formed(value)
     return ""
 
 
@@ -681,7 +695,7 @@ def _payload_text_preview(payloads: list[dict[str, Any]]) -> str:
         for key in ("text", "content", "chunk", "preview"):
             value = payload.get(key)
             if isinstance(value, str) and value.strip():
-                return " ".join(value.split())[:180]
+                return to_well_formed(" ".join(value.split())[:180])
     return ""
 
 
@@ -804,6 +818,449 @@ def inject_default_quantization(method: str, path: str, body: bytes) -> bytes:
     return json.dumps(payload).encode()
 
 
+# ── grep-vs-semantic benchmark ────────────────────────────────────────────────
+
+@app.post("/benchmark/retrieval", dependencies=[Depends(require_api_key)])
+async def run_retrieval_benchmark(
+    request: BenchmarkRequest,
+    settings: Settings = Depends(get_settings),
+    service: EmbeddingService = Depends(get_embedding_service),
+) -> dict[str, object]:
+    """Run the same self-generated concept queries through BOTH engines — the
+    semantic index and a real grep over the workspace — and report accuracy,
+    latency and noise. See embarsy_api/benchmark.py for the methodology."""
+    if not settings.api_key:
+        # Without a key this endpoint would let anything on localhost use grep as a
+        # filesystem word-presence oracle over any readable folder.
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Benchmark requires the Embarsy API key to be configured.",
+        )
+    workspace = Path(request.workspace_path).expanduser()
+    if not workspace.is_dir():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Workspace folder not found: {workspace}",
+        )
+    samples = max(4, min(request.samples, 20))
+    top_k = max(1, min(request.top_k, 10))
+    headers = {"api-key": settings.qdrant_api_key} if settings.qdrant_api_key else None
+    client = shared_http_client()
+    qdrant = settings.qdrant_base_url.rstrip("/")
+
+    # 1) Sample random indexed chunks (ground truth = the file each chunk came from).
+    candidates = await _sample_collection_points(client, qdrant, headers, request.collection, samples * 5)
+    random.shuffle(candidates)  # the old-Qdrant scroll fallback is deterministic otherwise
+    provisional: list[tuple[str, str]] = []  # (query, truth_file)
+    seen_files: set[str] = set()
+    for payload in candidates:
+        truth = _payload_path(payload)
+        text = (payload.get("text") or payload.get("content")
+                or payload.get("chunk") or payload.get("codeChunk") or "")
+        if not truth or not isinstance(text, str) or truth in seen_files:
+            continue
+        if not bench.is_benchmarkable(truth, text):
+            continue
+        query = bench.concept_query(to_well_formed(text))
+        if query is None:
+            continue
+        seen_files.add(truth)
+        provisional.append((query, truth))
+        if len(provisional) >= samples * 2:
+            break
+
+    # Fairness gate: grep can only compete for files that actually live under the
+    # chosen folder. A mismatched workspace (or stale index) must fail loudly, not
+    # hand the semantic side a fake sweep. One find pass verifies all samples.
+    verified, workspace_verified, find_hits = await _verify_truths_in_workspace(workspace, [t for _, t in provisional])
+    picked = [(q, t) for q, t in provisional if t in verified][:samples]
+    missing_in_workspace = len(provisional) - sum(1 for _, t in provisional if t in verified)
+    if len(picked) < 4:
+        if missing_in_workspace > len(picked):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    f"This collection does not match the folder {workspace} — "
+                    f"{missing_in_workspace} sampled files are not there (wrong project, or a stale index). "
+                    "Pick the folder this collection indexes."
+                ),
+            )
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Not enough indexed chunks with file metadata to benchmark this collection.",
+        )
+
+    # Fairness: grep must race over the same corpus the collection indexes. When the
+    # chosen workspace is a SUPERSET of the indexed tree (indexers often root at a
+    # child folder), scanning the extra siblings would rig the duel against grep.
+    index_root = bench.detect_index_root(find_hits, [t for _, t in picked])
+    grep_root = (workspace / index_root) if index_root else workspace
+    if not grep_root.is_dir():
+        grep_root = workspace
+
+    # 2) Warm up the embedding model so its one-off load time doesn't pollute latency.
+    try:
+        await service.embed([picked[0][0]])
+    except EmbeddingError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Embedding backend unavailable for benchmark: {exc}",
+        ) from exc
+
+    # 3) The duel: same query, both engines.
+    rows: list[dict[str, object]] = []
+    skipped_errors = 0
+    for query, truth in picked:
+        original_query = query
+        swapped: list[dict[str, str]] = []
+        if request.paraphrase:
+            query, swapped = bench.paraphrase_query(query)
+        try:
+            semantic = await _semantic_run(client, qdrant, headers, request.collection, service, query, top_k)
+        except (EmbeddingError, httpx.HTTPError) as exc:
+            # A transient backend hiccup must not throw away the completed rows.
+            logger.warning("Benchmark query skipped (semantic error): %s", exc)
+            skipped_errors += 1
+            continue
+        grep = await _grep_run(query.split(), grep_root, top_k)
+        row = {"query": query, "truth_file": truth,
+               "semantic": semantic | {"rank": bench.rank_of(truth, semantic.pop("_files"), top_k)},
+               "grep": grep | {"rank": bench.rank_of(truth, grep.pop("_files"), top_k)}}
+        if request.paraphrase:
+            # Full disclosure: what the question was before the synonym swaps.
+            row["original_query"] = original_query
+            row["swapped"] = swapped
+        rows.append(row)
+    if not rows:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Embedding backend failed for every benchmark query. Check that the stack is running.",
+        )
+
+    completed_greps = [row for row in rows if not row["grep"]["timed_out"]]
+    return {
+        "collection": request.collection,
+        "workspace_path": str(workspace),
+        "samples": len(rows),
+        "top_k": top_k,
+        "skipped_errors": skipped_errors,
+        "workspace_verified": workspace_verified,
+        "grep_root": str(grep_root),
+        "paraphrased": request.paraphrase,
+        "queries": rows,
+        "summary": {
+            "semantic": {
+                "hit_top1": sum(1 for row in rows if row["semantic"]["rank"] == 1),
+                "hit_topk": sum(1 for row in rows if row["semantic"]["rank"] is not None),
+                "median_latency_ms": bench.median_ms([row["semantic"]["latency_ms"] for row in rows]),
+                "median_candidates": top_k,
+            },
+            "grep": {
+                "hit_top1": sum(1 for row in rows if row["grep"]["rank"] == 1),
+                "hit_topk": sum(1 for row in rows if row["grep"]["rank"] is not None),
+                # A killed grep never produced a ranked answer — mixing its 15s cap
+                # into the median would inflate it; the timeout count is the honest
+                # signal for those rows.
+                "median_latency_ms": bench.median_ms(
+                    [row["grep"]["latency_ms"] for row in completed_greps]
+                ),
+                # Noise median over runs that actually matched something; a timed-out
+                # or zero-match run saying "0 lines to sift" would flatter grep.
+                "median_matched_lines": bench.median_ms(
+                    [row["grep"]["matched_lines"] for row in completed_greps
+                     if row["grep"]["files_with_matches"] > 0]
+                ),
+                "zero_result_queries": sum(
+                    1 for row in completed_greps if row["grep"]["files_with_matches"] == 0
+                ),
+                "timeouts": sum(1 for row in rows if row["grep"]["timed_out"]),
+            },
+        },
+    }
+
+
+async def _sample_collection_points(
+    client: httpx.AsyncClient,
+    qdrant: str,
+    headers: dict[str, str] | None,
+    collection: str,
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Random points with payloads; falls back to a plain scroll on older Qdrant."""
+    try:
+        response = await client.post(
+            f"{qdrant}/collections/{collection}/points/query",
+            headers=headers,
+            json={"query": {"sample": "random"}, "limit": limit, "with_payload": True},
+            timeout=15.0,
+        )
+        response.raise_for_status()
+        points = response.json().get("result", {}).get("points", [])
+    except httpx.HTTPError:
+        try:
+            response = await client.post(
+                f"{qdrant}/collections/{collection}/points/scroll",
+                headers=headers,
+                json={"limit": limit, "with_payload": True, "with_vector": False},
+                timeout=15.0,
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Collection '{collection}' is not available in Qdrant (HTTP {exc.response.status_code}).",
+            ) from exc
+        points = response.json().get("result", {}).get("points", [])
+    return [p.get("payload", {}) for p in points if isinstance(p.get("payload"), dict)]
+
+
+async def _semantic_run(
+    client: httpx.AsyncClient,
+    qdrant: str,
+    headers: dict[str, str] | None,
+    collection: str,
+    service: EmbeddingService,
+    query: str,
+    top_k: int,
+) -> dict[str, Any]:
+    timer = bench.StageTimer()
+    vectors = await service.embed([query])
+    embed_ms = timer.ms()
+    search_timer = bench.StageTimer()
+    try:
+        response = await client.post(
+            f"{qdrant}/collections/{collection}/points/query",
+            headers=headers,
+            json={"query": vectors[0], "limit": 30, "with_payload": True},
+            timeout=15.0,
+        )
+        response.raise_for_status()
+        points = response.json().get("result", {}).get("points", [])
+    except httpx.HTTPStatusError:
+        # Pre-Query-API Qdrant: same search through the legacy endpoint. Restart the
+        # stage timer — the doomed probe of the modern endpoint is our implementation
+        # detail and must not be billed to the reported search time.
+        search_timer = bench.StageTimer()
+        response = await client.post(
+            f"{qdrant}/collections/{collection}/points/search",
+            headers=headers,
+            json={"vector": vectors[0], "limit": 30, "with_payload": True},
+            timeout=15.0,
+        )
+        response.raise_for_status()
+        points = response.json().get("result", [])
+    search_ms = search_timer.ms()
+    latency = round(embed_ms + search_ms, 1)
+    files: list[str] = []
+    snippet_chars = 0  # context an agent actually receives: the top-K snippets
+    for point in points if isinstance(points, list) else []:
+        payload = point.get("payload") if isinstance(point.get("payload"), dict) else {}
+        path = _payload_path(payload)
+        if path and path not in files:
+            files.append(path)
+            if len(files) <= top_k:
+                text = (payload.get("text") or payload.get("content")
+                        or payload.get("chunk") or payload.get("codeChunk") or "")
+                snippet_chars += len(text) if isinstance(text, str) else 0
+    return {
+        "latency_ms": latency,
+        "embed_ms": embed_ms,
+        "search_ms": search_ms,
+        "snippet_chars": snippet_chars,
+        "_files": files,
+        "top_files": files[:top_k],
+    }
+
+
+async def _verify_truths_in_workspace(workspace: Path, truths: list[str]) -> "tuple[set[str], bool]":
+    """Single find pass locating the sampled files under the workspace.
+
+    Fails OPEN on timeout (giant repos): the gate exists to catch gross
+    mismatches, and a slow find must not block an honest benchmark. The second
+    element says whether the gate actually ran — the log must not claim a
+    verification that was skipped. The third element is the raw find hits,
+    used to detect where the indexed tree lives under the workspace."""
+    if not truths:
+        return set(), True, []
+    process = await asyncio.create_subprocess_exec(
+        *bench.find_truths_command(truths),
+        cwd=str(workspace),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
+    )
+    try:
+        stdout, _ = await asyncio.wait_for(process.communicate(), timeout=20.0)
+    except asyncio.TimeoutError:
+        process.kill()
+        await process.wait()
+        logger.warning("Workspace verification find pass timed out — skipping the gate")
+        return set(truths), False, []
+    except asyncio.CancelledError:
+        process.kill()
+        await process.wait()
+        raise
+    lines = [line for line in stdout.decode("utf-8", errors="replace").splitlines() if line.strip()]
+    return bench.truths_found("\n".join(lines), truths), True, lines
+
+
+_GREP_TIMEOUT_S = 15.0
+_GREP_STDOUT_CAP = 8 * 1024 * 1024  # grep -rc emits a line per scanned file — cap the buffer
+
+
+async def _grep_run(words: list[str], workspace: Path, top_k: int) -> dict[str, Any]:
+    """grep at its competent best, not a strawman.
+
+    Strategy (what a developer or agent actually does with a multi-word query):
+    1) AND-intersect: files containing EVERY query word — the classic
+       `grep -ril w1 . | xargs grep -il w2 | ...` pipeline, longest word first.
+    2) Rank the candidates by total matching lines of the words (density).
+    3) Only if the intersection is empty, fall back to the one-pass OR
+       alternation ranked by matching-line count.
+    One 15 s wall-clock budget covers the whole strategy."""
+    timer = bench.StageTimer()
+    deadline = time.monotonic() + _GREP_TIMEOUT_S
+    ordered = bench.and_order(words)
+    pattern = bench.alternation(words)
+    timed_out = False
+    truncated = False
+    candidates: Optional[list[str]] = None
+
+    # Stage 1: AND-intersection.
+    for index, word in enumerate(ordered):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            timed_out = True
+            break
+        if candidates is None:
+            cmd = ["/usr/bin/grep", "-r", "-i", "-l", "-I", "-s",
+                   *bench.exclude_dir_flags(), "-e", re.escape(word), "."]
+            text, stage_timeout, stage_truncated = await _run_grep_capped(cmd, workspace, remaining)
+            timed_out = timed_out or stage_timeout
+            truncated = truncated or stage_truncated
+            candidates = [line for line in text.splitlines() if line.strip()]
+        else:
+            filtered: list[str] = []
+            for batch_start in range(0, len(candidates), _GREP_BATCH):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    timed_out = True
+                    break
+                batch = candidates[batch_start:batch_start + _GREP_BATCH]
+                cmd = ["/usr/bin/grep", "-i", "-l", "-I", "-s", "-e", re.escape(word), *batch]
+                text, stage_timeout, stage_truncated = await _run_grep_capped(cmd, workspace, remaining)
+                timed_out = timed_out or stage_timeout
+                truncated = truncated or stage_truncated
+                filtered += [line for line in text.splitlines() if line.strip()]
+            candidates = filtered
+        if timed_out or not candidates:
+            break
+
+    strategy = "and"
+    ranked: list[tuple[str, int]] = []
+    if timed_out:
+        candidates = candidates or []
+    elif candidates:
+        # Stage 2: rank the AND set by how densely the query words hit each file.
+        count_lines: list[str] = []
+        for batch_start in range(0, len(candidates), _GREP_BATCH):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                timed_out = True
+                break
+            batch = candidates[batch_start:batch_start + _GREP_BATCH]
+            # /dev/null forces the `path:count` prefix even for a single file.
+            cmd = ["/usr/bin/grep", "-i", "-c", "-E", pattern, *batch, "/dev/null"]
+            text, stage_timeout, stage_truncated = await _run_grep_capped(cmd, workspace, remaining)
+            timed_out = timed_out or stage_timeout
+            truncated = truncated or stage_truncated
+            count_lines += text.splitlines()
+        ranked = [(path, count) for path, count in bench.parse_grep_counts("\n".join(count_lines))
+                  if path != "/dev/null"]
+    else:
+        # Stage 3: nothing contains every word — the honest fallback is the
+        # one-pass OR alternation a developer would broaden to.
+        strategy = "or"
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            timed_out = True
+        else:
+            text, stage_timeout, stage_truncated = await _run_grep_capped(
+                bench.grep_command(words), workspace, remaining)
+            timed_out = timed_out or stage_timeout
+            truncated = truncated or stage_truncated
+            if (stage_timeout or stage_truncated) and "\n" in text:
+                # A cut-off buffer almost certainly ends mid-line: "handlers.py:487"
+                # cut at ":4" would parse as a valid count — drop the partial tail.
+                text = text.rsplit("\n", 1)[0]
+            ranked = bench.parse_grep_counts(text)
+
+    latency = timer.ms()
+    files = [path for path, _ in ranked]
+    command = (bench.and_pipeline_description(words) if strategy == "and"
+               else shlex.join(bench.grep_command(words)))
+    return {
+        "latency_ms": latency,
+        "strategy": strategy,
+        # The reproducible equivalent of what ran (AND stages execute as separate
+        # processes for timeout control; results are identical).
+        "command": command,
+        "_files": files,
+        "top_files": files[:top_k],
+        "top_matches": [{"path": path, "lines": count} for path, count in ranked[:top_k]],
+        "files_with_matches": len(ranked),
+        "matched_lines": sum(count for _, count in ranked),
+        "timed_out": timed_out,
+        # Output overflowed the 8 MB capture cap: counts are lower bounds.
+        "truncated_output": truncated,
+    }
+
+
+_GREP_BATCH = 400  # files per filter/count exec — safely under ARG_MAX
+
+
+async def _run_grep_capped(command: list[str], cwd: Path, timeout_s: float) -> "tuple[str, bool, bool]":
+    """Run one grep pass with the shared drain/cap/kill discipline.
+
+    Returns (stdout_text, timed_out, truncated). Never leaves a process behind:
+    kills on timeout and on task cancellation."""
+    timed_out = False
+    chunks: list[bytes] = []
+    received = 0
+    process = await asyncio.create_subprocess_exec(
+        *command,
+        cwd=str(cwd),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.DEVNULL,
+    )
+    try:
+        async def _drain() -> None:
+            nonlocal received
+            assert process.stdout is not None
+            while True:
+                chunk = await process.stdout.read(65536)
+                if not chunk:
+                    break
+                if received < _GREP_STDOUT_CAP:
+                    chunks.append(chunk)
+                    received += len(chunk)
+                # past the cap: keep draining so grep never blocks on a full pipe
+
+        await asyncio.wait_for(_drain(), timeout=max(timeout_s, 0.05))
+        await process.wait()
+    except asyncio.TimeoutError:
+        timed_out = True
+    except asyncio.CancelledError:
+        # Client disconnected / task cancelled — never leave a grep grinding away.
+        process.kill()
+        await process.wait()
+        raise
+    finally:
+        if process.returncode is None:
+            process.kill()
+            await process.wait()
+    return b"".join(chunks).decode("utf-8", errors="replace"), timed_out, received >= _GREP_STDOUT_CAP
+
+
 @app.api_route(
     "/qdrant/{path:path}",
     methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -891,10 +1348,11 @@ async def build_embeddings_response(
             detail=f"Only dimensions={settings.embedding_dimension} is supported",
         )
 
-    inputs = as_input_list(request.input)
+    inputs = as_input_list(request.input)  # also sanitizes to well-formed Unicode
+    model = to_well_formed(request.model) if request.model else settings.ollama_model
     metrics.record_embedding_request(
         inputs=inputs,
-        model=request.model or settings.ollama_model,
+        model=model,
     )
     started = time.monotonic()
     try:
@@ -932,7 +1390,7 @@ async def build_embeddings_response(
     rough_tokens = sum(max(1, len(text) // 4) for text in inputs)
     response = EmbeddingsResponse(
         data=data,
-        model=request.model or settings.ollama_model,
+        model=model,
         usage=UsageObject(prompt_tokens=rough_tokens, total_tokens=rough_tokens),
     )
     app.state.last_embedding_latency_seconds = latency_seconds

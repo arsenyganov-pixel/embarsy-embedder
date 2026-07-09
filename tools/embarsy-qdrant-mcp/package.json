@@ -1,6 +1,6 @@
 {
   "name": "embarsy-qdrant-mcp",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Codebase-indexing MCP server for Embarsy — semantic code search over a local Qdrant + OpenAI-compatible embeddings stack. Routes embeddings and Qdrant through Embarsy's proxy so auth and Monitoring counters just work.",
   "type": "module",
   "bin": {
@@ -9,7 +9,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
@@ -28,6 +29,17 @@
     "claude-code",
     "codex"
   ],
+  "author": "Arseniy Ganov <arsenyganov@gmail.com>",
+  "license": "PolyForm-Strict-1.0.0",
+  "homepage": "https://github.com/arsenyganov-pixel/embarsy-embedder/tree/main/tools/embarsy-qdrant-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arsenyganov-pixel/embarsy-embedder.git",
+    "directory": "tools/embarsy-qdrant-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/arsenyganov-pixel/embarsy-embedder/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "ignore": "^5.3.2",
@@ -37,7 +49,6 @@
     "@types/node": "^22.5.0",
     "typescript": "^5.6.2"
   },
-  "license": "PolyForm-Strict-1.0.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import math
+import re
 import struct
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -14,10 +15,31 @@ class EmbeddingError(RuntimeError):
     """Raised when the local embedding backend cannot produce valid vectors."""
 
 
+# Matches UNPAIRED UTF-16 surrogates only: json.loads combines valid escaped pairs
+# (😀) into single astral characters, which are outside this range — so
+# anything still in it is a broken half of an emoji/astral char.
+_UNPAIRED_SURROGATES = re.compile("[\ud800-\udfff]")
+
+
+def to_well_formed(text: str) -> str:
+    """Replace unpaired UTF-16 surrogates with U+FFFD so the string is valid Unicode.
+
+    Clients that slice text by UTF-16 code units (editors, chunkers) can cut an emoji
+    in half; JSON happily transports the lone surrogate escape ("\\ud83d") and
+    json.loads accepts it into a Python str — but every later UTF-8 encode (httpx
+    re-packing the Ollama request, a JSONResponse, the metrics persister) raises
+    UnicodeEncodeError and turns into a 500. Sanitizing at ingress fixes the whole
+    class at once; the replacement character keeps the surrounding text intact.
+    """
+    return _UNPAIRED_SURROGATES.sub("�", text)
+
+
 def as_input_list(value: str | list[str]) -> list[str]:
+    """Normalize the OpenAI-style input field AND make every text well-formed —
+    this is the single chokepoint all embedding inputs flow through."""
     if isinstance(value, str):
-        return [value]
-    return value
+        return [to_well_formed(value)]
+    return [to_well_formed(item) for item in value]
 
 
 def prepare_embedding_text(text: str, instruction: str) -> str:

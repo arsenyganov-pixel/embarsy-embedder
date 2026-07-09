@@ -28,8 +28,12 @@ const CODE_EXT = new Set([
   "md", "mdx", "json", "yaml", "yml", "toml", "html", "htm", "css", "scss", "sass", "less",
   "vue", "svelte", "lua", "ex", "exs", "dart", "r", "pl", "pm", "proto", "graphql", "gql",
   "tf", "gradle", "groovy", "m", "mm", "clj", "cljs", "edn", "elm", "erl", "hs", "ml", "nim",
-  "txt", "cfg", "ini", "env",
+  "txt", "cfg", "ini",
 ]);
+// ".env"-family files (prod.env, config.env, …) are deliberately NOT in CODE_EXT: they
+// hold secrets, not code worth semantic-searching, and indexing them would ship
+// credentials to the embeddings endpoint and Qdrant. (A literal ".env" has no extension
+// and is skipped anyway.)
 
 export interface DiscoveredFile {
   abs: string;
@@ -86,7 +90,7 @@ async function walk(
     if (ig.ignores(rel)) continue;
 
     const ext = path.extname(entry.name).replace(/^\./, "").toLowerCase();
-    // Allow dotfiles like ".env" (no extension but a known name) — otherwise require a known ext.
+    // Only index files with a known code/text extension.
     if (!CODE_EXT.has(ext)) continue;
 
     try {

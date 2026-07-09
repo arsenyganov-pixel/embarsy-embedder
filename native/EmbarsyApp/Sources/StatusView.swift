@@ -22,6 +22,8 @@ struct StatusView: View {
                 }
 
                 RooConnectionView()
+
+                BenchmarkView(service: store.benchmark)
             }
             .padding(Theme.padScreen)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -41,6 +43,8 @@ struct StatusView: View {
                         .overlay(alignment: .leading) {
                             EmbarsyMarkView(color: Theme.markTint(store.aggregateStatus), animated: running && !EmbarsyLaunchOverrides.stillMode)
                                 .frame(width: 34, height: 34)
+                                .contentShape(Rectangle())
+                                .chipHelp("Overall status, shown by the mark's colour: teal = all running, amber = starting up, red = a service failed, grey = stopped.")
                         }
                     (Text("Emb").font(.system(size: 19, weight: .heavy))
                         + Text("arsy").font(.system(size: 19, weight: .medium))
@@ -164,6 +168,6 @@ struct StatusView: View {
         .tint(Theme.accent)
         .controlSize(.small)
         .disabled(store.isUpdatingAPI)
-        .help("A newer Embarsy API (\(EmbarsyConfig.bundledAPIVersion)) ships with this app. Update restarts only the API — Qdrant, Ollama and your indexes are not touched.")
+        .chipHelp("A newer Embarsy API (\(EmbarsyConfig.bundledAPIVersion)) ships with this app. Update restarts only the API — Qdrant, Ollama and your indexes are not touched.")
     }
 }
