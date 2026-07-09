@@ -83,6 +83,37 @@ struct EmbarsySection<Content: View>: View {
     }
 }
 
+// MARK: - Tappable DisclosureGroup style
+
+/// A `DisclosureGroup` style whose ENTIRE header row toggles the section — chevron and
+/// label text alike — not just the tiny default arrow. Apply once at a container level
+/// and every descendant `DisclosureGroup` inherits it:
+/// `.disclosureGroupStyle(TappableDisclosureStyle())`.
+struct TappableDisclosureStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { configuration.isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(configuration.isExpanded ? 90 : 0))
+                    configuration.label
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())   // whole row width is the click target
+            }
+            .buttonStyle(.plain)
+
+            if configuration.isExpanded {
+                configuration.content
+            }
+        }
+    }
+}
+
 // MARK: - HelpNote (small secondary caption)
 
 struct HelpNote: View {
@@ -275,6 +306,8 @@ private struct SpinningRefreshIcon: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(angle))
+                    .contentShape(Rectangle())
+                    .chipHelp(busy ? "Refreshing…" : "Spins each time the data refreshes. The label sets how often it auto-refreshes.")
             )
             // Each refresh (busy → true) drives one guaranteed full 360° turn, so the spin is
             // always visible even when the fetch itself finishes in a few ms. `withAnimation`
@@ -303,7 +336,7 @@ struct SupportChip: View {
                 .chipBackground()
             }
             .buttonStyle(.plain)
-            .help("Telegram — @rcgunoff")
+            .chipHelp("Telegram — @rcgunoff")
 
             // Report a bug / request a feature (accent-tinted)
             Link(destination: AppLinks.bugReport) {
@@ -319,7 +352,7 @@ struct SupportChip: View {
                 .overlay(Capsule().stroke(Theme.accent.opacity(0.30)))
             }
             .buttonStyle(.plain)
-            .help("Report a bug or request a feature")
+            .chipHelp("Report a bug or request a feature")
 
             UpdateButton()
         }
@@ -337,7 +370,7 @@ struct UpdateButton: View {
             .chipBackground()
         }
         .buttonStyle(.plain)
-        .help("Check for updates on GitHub")
+        .chipHelp("Check for updates on GitHub")
     }
 }
 

@@ -62,4 +62,6 @@ QDRANT_COLLECTION_NAME=my-app embarsy-mcp --setup-claude
 
 ## License
 
-PolyForm Strict 1.0.0 — see the Embarsy repository.
+**[PolyForm Strict 1.0.0](LICENSE)** — source-available, **not** open source: noncommercial use
+only, no redistribution or modification without a separate written license. The full text ships with
+this package (`LICENSE`). Commercial or modification license → **arsenyganov@gmail.com**.

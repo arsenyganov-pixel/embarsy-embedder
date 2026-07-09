@@ -163,6 +163,8 @@ struct ActivityEventRow: View {
             Image(systemName: iconName)
                 .foregroundStyle(color)
                 .frame(width: 20)
+                .contentShape(Rectangle())
+                .chipHelp(operationHelp)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
@@ -231,6 +233,15 @@ struct ActivityEventRow: View {
         case .embedding: Theme.mVectors    // green
         case .read: Theme.mReads           // cyan
         case .write: Theme.mWrites         // orange
+        }
+    }
+
+    /// Explains the operation icon's glyph + color (the symbol carries the meaning).
+    private var operationHelp: String {
+        switch event.operation {
+        case .embedding: "Embedding request — text turned into a vector (green magnifying glass)."
+        case .read: "Qdrant read — a vector search or fetch (cyan up-arrow)."
+        case .write: "Qdrant write — vectors stored or updated (orange down-arrow)."
         }
     }
 }

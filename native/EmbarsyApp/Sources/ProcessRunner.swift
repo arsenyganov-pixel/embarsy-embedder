@@ -49,24 +49,29 @@ struct ProcessRunner {
                 }
 
                 process.terminationHandler = { process in
-                    pipe.fileHandleForReading.readabilityHandler = nil
-                    let finalData = pipe.fileHandleForReading.readDataToEndOfFile()
-                    state.append(finalData)
-                    if let onOutput, let output = String(data: finalData, encoding: .utf8), !output.isEmpty {
-                        onOutput(output)
+                    // readDataToEndOfFile would block until EVERY writer closes the pipe —
+                    // including grandchildren that inherited it and outlive the child
+                    // (npm-wrapper CLIs do this), hanging the caller forever. Give the
+                    // readability handler a short grace period to drain what is buffered,
+                    // then finish with what we have.
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 0.2) {
+                        pipe.fileHandleForReading.readabilityHandler = nil
+                        state.resume(.success(Result(exitCode: process.terminationStatus, output: state.outputString())))
                     }
-                    state.resume(.success(Result(exitCode: process.terminationStatus, output: state.outputString())))
                 }
                 try process.run()
 
                 if let timeout {
                     DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
-                        let shouldTerminate = !state.hasResumed && process.isRunning
-                        guard shouldTerminate else { return }
-                        process.terminate()
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
-                            if process.isRunning { process.interrupt() }
+                        guard !state.hasResumed else { return }
+                        if process.isRunning {
+                            process.terminate()
+                            DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+                                if process.isRunning { process.interrupt() }
+                            }
                         }
+                        // Resume unconditionally: the child may have exited while a
+                        // grandchild kept the pipe open — the caller must never wait forever.
                         state.resume(.failure(RunnerError.timedOut(
                             command: command,
                             seconds: timeout,

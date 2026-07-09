@@ -43,12 +43,25 @@ export function chunkFile(content: string, cfg: Config): Chunk[] {
       const nl = content.lastIndexOf("\n", end);
       if (nl > pos + Math.floor(maxChars / 2)) end = nl;
     }
+    end = snapToCodePoint(content, end);
     const text = content.slice(pos, end);
     if (text.trim().length > 0) {
       chunks.push({ startLine: lineAt(pos), endLine: lineAt(Math.max(pos, end - 1)), text });
     }
     if (end >= content.length) break;
-    pos = Math.max(pos + 1, end - overlap);
+    pos = snapToCodePoint(content, Math.max(pos + 1, end - overlap));
   }
   return chunks;
+}
+
+/** A boundary that lands between the two halves of a surrogate pair would cut an emoji
+ *  in half; the resulting lone surrogate is invalid Unicode that embedding backends
+ *  reject (Python's UTF-8 encoder raises on it, turning the request into a 500).
+ *  If the index points at a low surrogate, step back one unit to keep the pair whole. */
+function snapToCodePoint(s: string, index: number): number {
+  if (index > 0 && index < s.length) {
+    const code = s.charCodeAt(index);
+    if (code >= 0xdc00 && code <= 0xdfff) return index - 1;
+  }
+  return index;
 }

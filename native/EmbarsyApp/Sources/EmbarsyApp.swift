@@ -77,6 +77,17 @@ struct EmbarsyApp: App {
                         store.monitoring.scale = scale
                     }
                     await store.startStackIfNeededOnLaunch()
+                    // Dev/verification hook (inert normally): EMBARSY_DEV_HARD_RESET=1
+                    // waits for the stack to come up, then runs the exact code path of
+                    // Settings → "Remove Components and Clear Secrets" → "Remove
+                    // Everything" — used to verify removal end-to-end against a RUNNING
+                    // stack (locked DB files, live processes).
+                    if ProcessInfo.processInfo.environment["EMBARSY_DEV_HARD_RESET"] == "1" {
+                        for _ in 0..<60 where store.aggregateStatus != .running {
+                            try? await Task.sleep(for: .seconds(1))
+                        }
+                        await store.removeComponentsAndLocalSecrets()
+                    }
                 }
         }
 

@@ -439,7 +439,10 @@ class EmbarsyMetrics:
             tmp_file = self._state_file.with_suffix(f"{self._state_file.suffix}.tmp")
             tmp_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
             tmp_file.replace(self._state_file)
-        except OSError:
+        except (OSError, ValueError):
+            # ValueError covers UnicodeEncodeError (ill-formed text that slipped past
+            # ingress sanitization): a raise here would silently kill the daemon
+            # flusher thread and stop persistence for the rest of the process.
             with self._lock:
                 self._dirty = True  # retry on the next flush tick
             return

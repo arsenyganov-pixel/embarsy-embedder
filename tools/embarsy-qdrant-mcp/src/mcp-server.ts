@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -5,9 +7,20 @@ import type { Config } from "./config.js";
 import { embedOne } from "./embeddings.js";
 import { search, collectionInfo } from "./qdrant.js";
 
+/** The published package version — read from package.json (which ships in the tarball)
+ *  so the MCP handshake never drifts from the real release. */
+const PKG_VERSION: string = (() => {
+  try {
+    const pkgPath = fileURLToPath(new URL("../package.json", import.meta.url));
+    return JSON.parse(readFileSync(pkgPath, "utf8")).version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+})();
+
 /** Build and run the Embarsy MCP server over stdio (for Claude Code / Codex). */
 export async function runMcpServer(cfg: Config): Promise<void> {
-  const server = new McpServer({ name: "embarsy-qdrant", version: "0.1.0" });
+  const server = new McpServer({ name: "embarsy-qdrant", version: PKG_VERSION });
 
   server.tool(
     "search_code",

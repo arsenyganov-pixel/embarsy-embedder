@@ -148,6 +148,10 @@ struct ContentIndexView: View {
             Image(systemName: "arrow.down").font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(Theme.accent)
                 .rotationEffect(.degrees(sortDescending ? 0 : 180))
+                .contentShape(Rectangle())
+                .chipHelp(sortDescending
+                      ? "Sorted by points, descending (largest first). Click to reverse."
+                      : "Sorted by points, ascending (smallest first). Click to reverse.")
         }
         .padding(.vertical, 4).padding(.horizontal, 12)
         .frame(width: width, alignment: .leading)
@@ -191,6 +195,8 @@ struct ContentIndexView: View {
                             .frame(width: max(2, g.size.width * pct))
                     }
                     .frame(height: 4)
+                    .contentShape(Rectangle())
+                    .chipHelp("Relative size: the bar shows this collection's point count as a share of the largest collection (full width = the biggest one).")
                 }
             }
             cell(width: width * Column.preview) {
@@ -361,6 +367,8 @@ private struct PreviewChipView: View {
                 if chip.kind == "sample" {
                     Image(systemName: copied ? "checkmark" : "doc.text")
                         .font(.system(size: 9, weight: .semibold))
+                        .contentShape(Rectangle())
+                        .chipHelp(copied ? "Copied to clipboard" : "Raw sample text from the index — click to copy it")
                 }
                 Text(chip.label)
                     .lineLimit(1)
@@ -386,7 +394,7 @@ private struct PreviewChipView: View {
             }
             .padding(.horizontal, 10).padding(.vertical, 7)
         }
-        .help(chip.copy)
+        .chipHelp(chip.copy)
         .accessibilityLabel("Copy \(chip.label)")
         .onHover { inside in
             hovering = inside

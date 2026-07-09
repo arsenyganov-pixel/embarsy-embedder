@@ -73,6 +73,10 @@ struct InstallView: View {
                         HStack {
                             Image(systemName: check.isExecutable ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .foregroundStyle(check.isExecutable ? .green : .red)
+                                .contentShape(Rectangle())
+                                .chipHelp(check.isExecutable
+                                      ? "Green check: this binary is present and executable."
+                                      : "Red cross: this binary is missing or not executable.")
                             Text(check.service.title)
                             Spacer()
                             Text(check.path)

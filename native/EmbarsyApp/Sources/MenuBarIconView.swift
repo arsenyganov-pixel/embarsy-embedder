@@ -9,6 +9,7 @@ struct MenuBarIconView: View {
         // blank with custom SwiftUI drawing (Canvas), but an Image/NSImage is reliable.
         Image(nsImage: MenuBarIconView.markImage(color: NSColor(Theme.markTint(status)), height: 20))
             .accessibilityLabel("Embarsy — \(status.title)")
+            .help("Embarsy status, shown by the mark's colour: teal = all running, amber = starting up, red = a service failed, grey = stopped. Currently: \(status.title)")
     }
 
     /// Draws the "Vector Ears" mark cropped to its visible bounds and scaled to fill

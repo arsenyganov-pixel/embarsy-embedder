@@ -7,8 +7,9 @@ import SwiftUI
 /// non-interactive; animation pauses when inactive, when Reduce Motion is on, and
 /// when the window can't be seen (closed / minimized / fully covered).
 ///
-/// Flips are a pure deterministic function of time — the old dedicated 0.65s
-/// main-runloop Timer (an extra app-wide wakeup source) is gone entirely.
+/// Flips PERSIST (the lattice keeps evolving, like the mock) but there is no
+/// dedicated Timer: the epoch change rides the TimelineView tick, so a paused
+/// timeline costs zero wakeups.
 struct BinaryGrainView: View {
     /// Digits keep flipping only while this is true (mock: grain runs only when running).
     var active: Bool = true
@@ -27,12 +28,13 @@ struct BinaryGrainView: View {
     private let colStep: CGFloat = 14
     private let rowStep: CGFloat = 15
     private static let flipInterval: Double = 0.65
+    private let fade: Double = 0.65
 
     private struct Cell {
         var point: CGPoint
         var one: Bool
         var base: Double
-        var seed: UInt64   // per-cell hash input for deterministic time-based flips
+        var ping: Double   // reference-time of last flip; far past = at rest
     }
 
     private var animating: Bool {
@@ -42,19 +44,23 @@ struct BinaryGrainView: View {
     var body: some View {
         GeometryReader { proxy in
             TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: !animating)) { timeline in
+                let now = timeline.date.timeIntervalSinceReferenceDate
                 Canvas { ctx, _ in
                     guard !cells.isEmpty else { return }
-                    let now = timeline.date.timeIntervalSinceReferenceDate
-                    let epoch = Int(now / Self.flipInterval)
                     let font = Font.system(size: 8, design: .monospaced)
                     let zero = ctx.resolve(Text("0").font(font).foregroundColor(tint))
                     let one = ctx.resolve(Text("1").font(font).foregroundColor(tint))
                     for cell in cells {
-                        let flipped = Self.isChosen(seed: cell.seed, epoch: epoch)
                         var c = ctx
-                        c.opacity = opacity(for: cell, now: now, epoch: epoch, flipped: flipped)
-                        c.draw(cell.one != flipped ? one : zero, at: cell.point, anchor: .topLeading)
+                        c.opacity = opacity(for: cell, now: now)
+                        c.draw(cell.one ? one : zero, at: cell.point, anchor: .topLeading)
                     }
+                }
+                // Persistent flips without a Timer: fire once per 0.65s epoch, but only
+                // while the timeline actually ticks (visible + active), so hidden windows
+                // cost nothing.
+                .onChange(of: Int(now / Self.flipInterval)) { _ in
+                    flip(at: now)
                 }
             }
             .onAppear { rebuild(proxy.size) }
@@ -63,23 +69,11 @@ struct BinaryGrainView: View {
         .allowsHitTesting(false)
     }
 
-    /// ~2% of cells are "chosen" each 0.65s epoch via a cheap splitmix-style hash of
-    /// (cell seed, epoch) — same visual cadence as the old random Timer flips.
-    private static func isChosen(seed: UInt64, epoch: Int) -> Bool {
-        var h = seed ^ (UInt64(bitPattern: Int64(epoch)) &* 0x9E37_79B9_7F4A_7C15)
-        h ^= h >> 33
-        h &*= 0xFF51_AFD7_ED55_8CCD
-        h ^= h >> 33
-        return h % 50 == 0   // ~2%
-    }
-
-    /// Chosen cells brighten at the start of their flip epoch and fade back over it.
-    private func opacity(for cell: Cell, now: Double, epoch: Int, flipped: Bool) -> Double {
-        guard flipped else { return cell.base }
-        let elapsed = now - Double(epoch) * Self.flipInterval
-        guard elapsed >= 0, elapsed < Self.flipInterval else { return cell.base }
+    private func opacity(for cell: Cell, now: Double) -> Double {
+        let elapsed = now - cell.ping
+        guard elapsed >= 0, elapsed < fade else { return cell.base }
         let bright = min(0.30, cell.base * 2.8)
-        return bright + (cell.base - bright) * (elapsed / Self.flipInterval)
+        return bright + (cell.base - bright) * (elapsed / fade)
     }
 
     private func rebuild(_ size: CGSize) {
@@ -97,10 +91,22 @@ struct BinaryGrainView: View {
                     point: CGPoint(x: 1 + CGFloat(col) * colStep, y: 2 + CGFloat(r) * rowStep),
                     one: Bool.random(),
                     base: 0.06 + Double.random(in: 0...0.09),
-                    seed: UInt64(r) &* 0x1F1F_1F1F &+ UInt64(col) &* 0x0BAD_C0DE &+ 0x5EED
+                    ping: -1000
                 ))
             }
         }
         cells = fresh
+    }
+
+    /// The mock's behavior: each interval, ~2% of cells toggle their digit FOR GOOD and
+    /// pulse — that persistent churn is what makes the lattice read as alive.
+    private func flip(at now: Double) {
+        guard !cells.isEmpty else { return }
+        let k = max(2, Int(Double(cells.count) * 0.02))
+        for _ in 0..<k {
+            let i = Int.random(in: 0..<cells.count)
+            cells[i].one.toggle()
+            cells[i].ping = now
+        }
     }
 }
