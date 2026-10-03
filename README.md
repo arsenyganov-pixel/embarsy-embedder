@@ -157,9 +157,11 @@ Two ways in, depending on your agent:
    - **Claude Code / Codex** — `npm install -g embarsy-qdrant-mcp`, then `embarsy-index <project>`
      and `embarsy-mcp --setup-claude` (or `--setup-codex`). See **How To** in the app for the exact
      values.
+<p align="center"><img src="assets/status.png" width="840" alt="Connection Parameters on Status — the values to paste into your editor, each with a Copy button"></p>
+
 6. Scroll down on **Status** and hit **Run benchmark** — watch grep and meaning race on your own code.
 
-<p align="center"><img src="assets/status.png" width="840" alt="Status screen with the connection values to paste into your editor"></p>
+<p align="center"><img src="assets/benchmark-result.png" width="840" alt="Benchmark result: grep 4/11 in 7.74 s and 4318 lines to sift, Embarsy 8/11 in 102 ms and 5 snippets"></p>
 
 ---
 
