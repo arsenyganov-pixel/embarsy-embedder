@@ -6,7 +6,6 @@ import SwiftUI
 /// GitHub releases page for "Check for updates". Placeholder until the real URL
 /// is provided — swap the string when the repo is public.
 enum AppLinks {
-    static let telegram = URL(string: "https://t.me/rcgunoff")!
     static let githubReleases = URL(string: "https://github.com/arsenyganov-pixel/embarsy-embedder/releases")!
     static let bugReport = URL(string: "https://docs.google.com/forms/d/e/1FAIpQLSe8PIfJZaJq-ZSpAAkw4gmtUkEIPZYmdkNl4cNyWd_v6ZjeVQ/viewform?usp=publish-editor")!
 }
@@ -318,26 +317,11 @@ private struct SpinningRefreshIcon: View {
     }
 }
 
-// MARK: - App Support chips (Telegram · Report a bug · Check for updates)
+// MARK: - App Support chips (Report a bug · Check for updates)
 
 struct SupportChip: View {
     var body: some View {
         HStack(spacing: 10) {
-            // Telegram
-            Link(destination: AppLinks.telegram) {
-                HStack(spacing: 8) {
-                    Image(systemName: "paperplane.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.white)
-                        .frame(width: 18, height: 18)
-                        .background(Color(red: 0.149, green: 0.647, blue: 0.894), in: Circle())
-                    Text("@rcgunoff").font(.system(size: 12, design: .monospaced)).foregroundStyle(.primary)
-                }
-                .chipBackground()
-            }
-            .buttonStyle(.plain)
-            .chipHelp("Telegram — @rcgunoff")
-
             // Report a bug / request a feature (accent-tinted)
             Link(destination: AppLinks.bugReport) {
                 HStack(spacing: 8) {

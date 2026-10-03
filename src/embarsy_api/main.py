@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import hmac
 import json
+import posixpath
 import random
 import shlex
 import re
@@ -135,6 +137,85 @@ async def _migrate_quantization_on_startup() -> None:
     asyncio.get_running_loop().create_task(migrate())
 
 
+# ── stale-key detection ──────────────────────────────────────────────────────
+# On a localhost-only service a 401 is almost never an attack: it is the user's editor
+# still holding a key from a PREVIOUS Embarsy installation, because Remove Components /
+# a fresh install regenerates BOTH keys. A bare "Invalid API key" sends people hunting
+# for the wrong problem (we watched exactly that happen), so say what actually broke —
+# and record it so the Status screen can surface a banner without anyone reading logs.
+
+_HEX_SECRET = re.compile(r"\A[0-9a-f]+\Z")
+# Embarsy mints hex secrets of a fixed width: the API key is 24 bytes (48 chars) and the
+# Qdrant key 32 bytes (64 chars) — see LocalSecretStore.generateHexSecret. The widths
+# differ per slot, which is what lets us tell "old key" from "wrong field".
+_API_KEY_LENGTH = 48
+_QDRANT_KEY_LENGTH = 64
+
+# Rolling, in-memory only: cheap, and it must not survive an API restart (a restart means
+# the user is re-configuring anyway). `stale_last_at` is deliberately SEPARATE from
+# `last_at`: any 401 (a curl with no header, a browser tab) bumps last_at, and if the
+# banner keyed off that it would resurrect hours later with a diagnosis that no longer
+# applies. Only a genuinely stale-shaped key moves stale_last_at.
+_auth_failures: dict[str, Any] = {"api": 0, "qdrant": 0, "last_at": 0.0, "stale_last_at": 0.0}
+
+
+def _is_hex_secret_of(value: str, length: int) -> bool:
+    return len(value) == length and bool(_HEX_SECRET.match(value))
+
+
+def _looks_like_embarsy_key(value: str) -> bool:
+    """Has Embarsy's own shape (either slot's width)."""
+    return _is_hex_secret_of(value, _API_KEY_LENGTH) or _is_hex_secret_of(value, _QDRANT_KEY_LENGTH)
+
+
+def _record_auth_failure(kind: str, *, stale: bool) -> None:
+    _auth_failures[kind] = int(_auth_failures.get(kind, 0)) + 1
+    now = time.time()
+    _auth_failures["last_at"] = now
+    if stale:
+        _auth_failures["stale_last_at"] = now
+
+
+def _classify_auth_failure(
+    presented: Optional[str], *, expected_length: int, other_key: Optional[str]
+) -> str:
+    """`swapped` | `stale` | `unknown`.
+
+    We hold BOTH secrets, so the most common real-world mistake — pasting the Qdrant key
+    into the API-key field or vice versa — is knowable exactly instead of being guessed at.
+    Telling that user "your key is from a previous install" would send them to re-copy the
+    very keys they just copied, and repeat the swap.
+    """
+    if not presented:
+        return "unknown"
+    if other_key and hmac.compare_digest(presented, other_key):
+        return "swapped"
+    # Only the width that belongs in THIS slot indicates a key from an older install.
+    if _is_hex_secret_of(presented, expected_length):
+        return "stale"
+    return "unknown"
+
+
+def _auth_failure_detail(label: str, kind: str, other_label: str) -> str:
+    if kind == "swapped":
+        return (
+            f"That is your {other_label}, not the {label}. The two are different secrets — "
+            f"paste the {label} here and the {other_label} in its own field (Embarsy → Status "
+            "has a Copy button for each)."
+        )
+    if kind == "stale":
+        return (
+            f"{label} does not match this installation. It looks like a key from a previous "
+            "Embarsy install — reinstalling regenerates BOTH keys. Open Embarsy → Status, copy "
+            "the current API Key and Qdrant API Key, paste them into your editor's indexing "
+            "settings and save."
+        )
+    return (
+        f"{label} is missing or invalid. Copy the current value from Embarsy → Status "
+        "(both the API Key and the Qdrant API Key change after a reinstall)."
+    )
+
+
 def require_api_key(
     settings: Settings = Depends(get_settings), authorization: Optional[str] = Header(default=None)
 ) -> None:
@@ -142,9 +223,14 @@ def require_api_key(
         return
     expected = f"Bearer {settings.api_key}"
     if authorization != expected:
+        presented = authorization[7:].strip() if (authorization or "").startswith("Bearer ") else None
+        kind = _classify_auth_failure(
+            presented, expected_length=_API_KEY_LENGTH, other_key=settings.qdrant_api_key
+        )
+        _record_auth_failure("api", stale=kind == "stale")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Embarsy API key",
+            detail=_auth_failure_detail("Embarsy API key", kind, "Qdrant API key"),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -156,9 +242,13 @@ def require_qdrant_api_key(
     if not settings.qdrant_api_key:
         return
     if qdrant_api_key != settings.qdrant_api_key:
+        kind = _classify_auth_failure(
+            qdrant_api_key, expected_length=_QDRANT_KEY_LENGTH, other_key=settings.api_key
+        )
+        _record_auth_failure("qdrant", stale=kind == "stale")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Qdrant API key",
+            detail=_auth_failure_detail("Qdrant API key", kind, "Embarsy API key"),
         )
 
 
@@ -184,6 +274,17 @@ async def health(settings: Settings = Depends(get_settings)) -> dict[str, Any]:
         "model": settings.ollama_model,
         "dimension": settings.embedding_dimension,
         "ollama_base_url": settings.ollama_base_url,
+        # Rejected-key counters so the app can show "your editor is using an old key"
+        # on Status. /health is already polled, so this costs no extra request.
+        "auth_failures": {
+            "api": _auth_failures["api"],
+            "qdrant": _auth_failures["qdrant"],
+            "last_at": _auth_failures["last_at"],
+            # The app windows the banner off THIS timestamp, so an unrelated 401 can't
+            # resurrect a diagnosis that no longer applies.
+            "stale_last_at": _auth_failures["stale_last_at"],
+            "looks_stale": _auth_failures["stale_last_at"] > 0,
+        },
     }
 
 
@@ -391,7 +492,9 @@ def build_content_collection_row(
     all_paths = [path for path in sample_paths + cache_paths[:200] if path]
     # A resolved workspace name reads well in prose; the collection-id fallback does NOT —
     # the Collection column already shows the id, so the summary drops it entirely.
-    resolved_name = workspace_display_name(collection_name, all_paths, payloads)
+    # Cache paths stay SEPARATE from sample paths here: they are absolute while payload
+    # paths are workspace-relative, and a common prefix over the mix is always empty.
+    resolved_name = workspace_display_name(collection_name, sample_paths, payloads, cache_paths=cache_paths)
     display_name = resolved_name or f"{collection_name} collection"
     points_count = int(info.get("points_count") or info.get("vectors_count") or len(samples))
     indexed_summary = indexed_content_summary(resolved_name, all_paths, payloads, points_count)
@@ -399,6 +502,10 @@ def build_content_collection_row(
     return {
         "collection_name": collection_name,
         "display_name": display_name,
+        # Absolute folder the name refers to, so the app can reveal it in Finder. Omitted
+        # rather than guessed: a name inferred from relative paths has no folder behind it,
+        # and a link that opens the wrong place is worse than plain text.
+        "workspace_path": workspace_folder_path(sample_paths, payloads, cache_paths=cache_paths),
         "points_count": points_count,
         "indexed_summary": indexed_summary,
         "preview": content_preview(all_paths, payloads, indexed_summary),
@@ -482,23 +589,66 @@ def workspace_display_name(
     collection_name: str,
     sample_paths: list[str],
     payloads: list[dict[str, Any]],
+    *,
+    cache_paths: list[str] | None = None,
 ) -> str:
     """Human workspace/project name, or "" when nothing better than the collection id
-    exists — prose builders drop the name entirely rather than echo the id."""
+    exists — prose builders drop the name entirely rather than echo the id.
+
+    Sources in descending confidence: a name the indexer wrote into the payload, the
+    workspace root recovered from absolute cache paths, and finally the common root of
+    the payload paths themselves.
+    """
     explicit_candidates = [
         payload.get(key)
         for payload in payloads
         for key in ("workspace", "workspace_name", "workspaceName", "project", "project_name", "repository")
         if isinstance(payload.get(key), str) and payload.get(key)
     ]
-    if explicit_candidates:
-        return _friendly_project_name(explicit_candidates[0])
+    # A name the indexer STATED. Only its basename is taken — no container cut, which would
+    # read "monorepo/apps/web" as "monorepo" and erase a project called "app". An unusable
+    # one falls through to the paths rather than suppressing them.
+    stated = _stated_project_name(explicit_candidates[0]) if explicit_candidates else ""
+    if stated:
+        return stated
+
+    cache_root = _workspace_root_from_cache(cache_paths or [], sample_paths)
+    if cache_root:
+        return _friendly_project_name(cache_root)
 
     common_root = _common_project_root(sample_paths)
     if common_root:
         return _friendly_project_name(common_root)
 
     return ""
+
+
+def workspace_folder_path(
+    sample_paths: list[str],
+    payloads: list[dict[str, Any]],
+    *,
+    cache_paths: list[str] | None = None,
+) -> str:
+    """Absolute folder this collection was indexed from, or "" when none is known.
+
+    Deliberately narrower than `workspace_display_name`: a NAME can be inferred from
+    relative paths alone, but a path cannot — so the two sources here are an absolute
+    path the indexer stored and the workspace root recovered from the cache, and nothing
+    else. Existence is not checked: the app opens the folder and is the one that can tell
+    the user it has moved, and a flag computed here would be stale by then.
+    """
+    stated = [
+        payload.get(key)
+        for payload in payloads
+        for key in ("workspace_path", "workspacePath", "workspace_root")
+        if isinstance(payload.get(key), str) and payload.get(key)
+    ]
+    for candidate in stated:
+        normalized = _normalize_path(to_well_formed(candidate))
+        if _is_absolute_path(normalized):
+            return normalized
+
+    return _workspace_root_from_cache(cache_paths or [], sample_paths)
 
 
 def load_roo_cache_workspace_hints() -> dict[str, list[str]]:
@@ -617,7 +767,12 @@ def indexed_content_summary(
         if prose_languages:
             head += f", mostly {_human_list(prose_languages)}"
         sentences = [head + "."]
-        domains = _domain_terms(unique_paths)[:5]
+        # The workspace name now opens the sentence — repeating it as its own "key area"
+        # ("service-x — looks like … Key areas: …, service-x") reads as a stutter.
+        domains = [
+            domain for domain in _domain_terms(unique_paths)
+            if domain.casefold() != workspace_name.casefold()
+        ][:5]
         if domains:
             label = "Key areas" if len(domains) > 1 else "Key area"
             sentences.append(f"{label}: {_human_list(domains)}.")
@@ -699,6 +854,24 @@ def _payload_text_preview(payloads: list[dict[str, Any]]) -> str:
     return ""
 
 
+def _deepest_common_directory(paths: set[str]) -> str:
+    """The directory every one of these FILE paths lives under.
+
+    Uses the fact that the common prefix of a set of strings is the common prefix of its
+    lexicographic min and max: two C-level scans instead of splitting every path into
+    segments, which matters because a cache can hold tens of thousands of entries and this
+    runs on the event loop. Truncating that string prefix at the last "/" yields a
+    directory without ever guessing whether a trailing segment is a file name — a guess
+    that gets `example.com` and `.agents` wrong.
+    """
+    low, high = min(paths), max(paths)
+    shared = 0
+    while shared < len(low) and shared < len(high) and low[shared] == high[shared]:
+        shared += 1
+    prefix = low[:shared]
+    return prefix.rsplit("/", 1)[0] if "/" in prefix else ""
+
+
 def _common_project_root(paths: list[str]) -> str:
     candidates = [path for path in paths if path]
     if not candidates:
@@ -720,13 +893,121 @@ def _common_project_root(paths: list[str]) -> str:
     return "/".join(common_parts)
 
 
+# Directories that hold source but never NAME a workspace. Matched casefolded, so a
+# Swift `Sources` and a Go `internal` are treated alike; only ever used to cut a RELATIVE
+# root, where everything from the container down names a layer rather than the project.
+_CONTAINER_DIR_SEGMENTS = {
+    "src", "source", "sources", "lib", "libs", "app", "apps",
+    "internal", "cmd", "pkg", "test", "tests",
+}
+
+# The subset nobody ever names a project after. Used only against a name an indexer
+# STATED; path guessing uses the wider set above, where guessing wrong is the norm.
+_NEVER_A_PROJECT_NAME = _CONTAINER_DIR_SEGMENTS - {"app", "apps"}
+
+_ABSOLUTE_PATH_PREFIX = re.compile(r"\A(?:/|[A-Za-z]:/)")
+
+
+def _workspace_root_from_cache(cache_paths: list[str], sample_paths: list[str]) -> str:
+    """Absolute workspace root recovered from the indexer's cache paths.
+
+    Cache entries are absolute (`/Users/me/proj/src/a.php`) while payload paths are
+    workspace-relative (`src/a.php`), so a root is a directory D with `D + "/" + relative`
+    actually present in the cache. Candidates are drawn ONLY from the ancestors of the
+    cache's own common prefix, because every indexed file lives under the workspace root —
+    so the root is necessarily one of them. That constraint is what makes this safe: a
+    plain "first cache entry ending with this relative path wins" search happily answers
+    with a nested directory (a sample of `README.md` matches the README of some deep
+    subpackage, and the row then leads with that subpackage's name, which is worse than
+    showing no name at all).
+
+    Ancestors are tried deepest-first so the tightest directory that actually hosts the
+    sampled files wins, and set lookups keep it at a handful of hashes per sample instead
+    of scanning every cache entry.
+    """
+    absolute_cache = {_normalize_path(path) for path in cache_paths if path}
+    absolute_cache.discard("")
+    if not absolute_cache:
+        return ""
+
+    # The root is necessarily at or above the deepest directory the cache shares, and the
+    # walk below only ever moves UP — so a root lost here is lost for good.
+    common_root = _deepest_common_directory(absolute_cache)
+
+    relatives = []
+    for path in sample_paths:
+        normalized = _normalize_path(path)
+        if not normalized or _is_absolute_path(normalized):
+            continue
+        # `./src/a.php` and `src/../src/a.php` never equal a stored path verbatim.
+        collapsed = posixpath.normpath(normalized)
+        if not collapsed.startswith(".."):
+            relatives.append(collapsed)
+
+    ancestor_parts = common_root.split("/") if common_root else []
+    while ancestor_parts:
+        ancestor = "/".join(ancestor_parts)
+        if ancestor and any(f"{ancestor}/{relative}" in absolute_cache for relative in relatives):
+            return ancestor
+        ancestor_parts.pop()
+
+    # Nothing corroborated a root, so the deepest shared directory is all there is — and it
+    # is withheld when it names a source container. "src — looks like a Python project" is
+    # a folder masquerading as a service, refused here for the same reason the relative
+    # branch refuses to answer "rpc".
+    if not common_root or common_root.rsplit("/", 1)[-1].casefold() in _CONTAINER_DIR_SEGMENTS:
+        return ""
+    return common_root
+
+
+def _is_absolute_path(path: str) -> bool:
+    """POSIX roots and Windows drive roots alike — `startswith("/")` alone reads
+    `C:/Users/me/proj` as relative and then cuts it at a container segment."""
+    return bool(_ABSOLUTE_PATH_PREFIX.match(_normalize_path(path)))
+
+
+def _path_segments(path: str) -> list[str]:
+    return [part for part in _normalize_path(path).split("/") if part and part not in {"[WORKSPACE]", "[TECH]"}]
+
+
+def _stated_project_name(value: str) -> str:
+    """Basename of a name the indexer put in the payload — trusted as given, minus the few
+    words that are never anybody's project.
+
+    The bar is deliberately higher than for path guessing. A stated name is EVIDENCE, so
+    only words no one ships a project under are refused: an indexer aimed at a `src` folder
+    reports `src`, which would read as "src — looks like a Python project". `app` is not on
+    that list — plenty of real packages are called `app`, and erasing their name to dodge a
+    layout that merely resembles a container is the worse trade.
+    """
+    segments = _path_segments(value)
+    if not segments or segments[-1].casefold() in _NEVER_A_PROJECT_NAME:
+        return ""
+    return segments[-1]
+
+
 def _friendly_project_name(path: str) -> str:
-    normalized = _normalize_path(path)
-    parts = [part for part in normalized.split("/") if part and part not in {"[WORKSPACE]", "[TECH]"}]
-    preferred_markers = {"Autohub", "Automation", "TECH", "WORKSPACE"}
+    """The project's own name, read from a root path — absolute and relative roots differ.
+
+    An ABSOLUTE root is the workspace directory itself, so its last segment is the name;
+    it is walked from the end because nested layouts (`…/WORKSPACE/TECH/Autohub/service-x`)
+    must resolve to the project, and a scan from the front stops at the first container.
+
+    A RELATIVE root is a common prefix of workspace-relative payload paths, which
+    overshoots DOWNWARD into whatever subtree the sample happens to share
+    (`Autohub/service-x/internal/generated/api/schema`). There the name sits above the
+    first source container, so the root is cut there and the last survivor wins — the
+    deepest shared directory (`schema`) names a layer, never the project.
+    Returns "" when nothing above a container survives; callers treat that as "no name",
+    which beats announcing a service called `rpc`.
+    """
+    parts = _path_segments(path)
+    if _is_absolute_path(path):
+        return parts[-1] if parts else path
+
     for index, part in enumerate(parts):
-        if part in preferred_markers and index + 1 < len(parts):
-            return parts[index + 1]
+        if part.casefold() in _CONTAINER_DIR_SEGMENTS:
+            return parts[index - 1] if index else ""
     return parts[-1] if parts else path
 
 
@@ -1287,7 +1568,10 @@ async def proxy_qdrant_request(
         )
     except httpx.HTTPError as exc:
         if operation is not None:
-            metrics.record_qdrant(operation, method=request.method, path=f"/{path}", error=True)
+            metrics.record_qdrant(
+                operation, method=request.method, path=f"/{path}", error=True,
+                client=_client_label(request),
+            )
         logger.warning("Qdrant proxy request failed: %s", exc)
         return JSONResponse(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -1306,6 +1590,7 @@ async def proxy_qdrant_request(
             method=request.method,
             path=f"/{path}",
             error=upstream_response.status_code >= 400,
+            client=_client_label(request),
         )
 
     return Response(
@@ -1314,6 +1599,35 @@ async def proxy_qdrant_request(
         headers=_response_headers(upstream_response),
         media_type=upstream_response.headers.get("content-type"),
     )
+
+
+# Which client made a request, as IT declared itself. Two separate facts: the editor
+# (`claude-code`, `codex`) and the tool inside it (`index` writes vectors, `search` reads
+# them). Claude Code and Codex both spawn the SAME bridge binary, so nothing about the
+# connection can tell them apart — only the bridge can, because `--setup-claude` /
+# `--setup-codex` wrote which editor it was set up for. Anything that does not declare
+# itself stays empty and is shown as unknown rather than guessed from a User-Agent, which
+# for every Node client is the uninformative string "node".
+_CLIENT_LABEL_ALLOWED = re.compile(r"[^A-Za-z0-9 ._/-]")
+_CLIENT_LABEL_MAX = 48
+
+
+def _client_label(request: Request) -> str:
+    """Sanitised `<editor>` or `<editor> · <tool>` label, or "" when undeclared.
+
+    The value is caller-supplied, so it is filtered and length-capped before it can reach
+    a log line or the Activity list: this is a label, never a trust boundary.
+    """
+    def clean(raw: Optional[str]) -> str:
+        if not raw:
+            return ""
+        return _CLIENT_LABEL_ALLOWED.sub("", raw).strip()[:_CLIENT_LABEL_MAX]
+
+    editor = clean(request.headers.get("x-embarsy-client"))
+    tool = clean(request.headers.get("x-embarsy-tool"))
+    if editor and tool:
+        return f"{editor} · {tool}"
+    return editor or tool
 
 
 def _proxy_qdrant_headers(request: Request, settings: Settings) -> dict[str, str]:
@@ -1341,6 +1655,7 @@ async def build_embeddings_response(
     request: EmbeddingsRequest,
     service: EmbeddingService,
     settings: Settings,
+    http_request: Optional[Request] = None,
 ) -> EmbeddingsResponse:
     if request.dimensions is not None and request.dimensions != settings.embedding_dimension:
         raise HTTPException(
@@ -1353,6 +1668,7 @@ async def build_embeddings_response(
     metrics.record_embedding_request(
         inputs=inputs,
         model=model,
+        client=_client_label(http_request) if http_request is not None else "",
     )
     started = time.monotonic()
     try:
@@ -1409,7 +1725,8 @@ async def build_embeddings_response(
 )
 async def create_embeddings(
     request: EmbeddingsRequest,
+    http_request: Request,
     service: EmbeddingService = Depends(get_embedding_service),
     settings: Settings = Depends(get_settings),
 ) -> EmbeddingsResponse:
-    return await build_embeddings_response(request, service, settings)
+    return await build_embeddings_response(request, service, settings, http_request)

@@ -11,6 +11,10 @@ struct ContentView: View {
         }
         .task {
             store.refreshInstalledState()
+            // Immediately, not on the next 30s tick: someone who just installed an update
+            // opens the window to see what changed, and a banner that arrives half a minute
+            // later is one they have already concluded was never coming.
+            store.checkInstalledBuild()
             if !store.installManager.isInstalled {
                 store.selectedTab = .install
                 store.processManager.markAllStopped(message: "Components are not installed. Run Install first.")

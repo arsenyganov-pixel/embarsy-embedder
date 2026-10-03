@@ -100,6 +100,10 @@ class ActivityEvent:
     detail: str
     count: int = 1
     error: bool = False
+    # Who made the request, as the caller declared itself. Empty when nothing declared —
+    # which is normal for clients that talk to the proxy directly, so it is rendered as
+    # "unknown", never guessed at.
+    client: str = ""
 
     def as_dict(self) -> dict[str, bool | int | str]:
         return {
@@ -111,6 +115,7 @@ class ActivityEvent:
             "detail": self.detail,
             "count": self.count,
             "error": self.error,
+            "client": self.client,
         }
 
 
@@ -194,6 +199,7 @@ class EmbarsyMetrics:
         inputs: list[str],
         model: str,
         error: bool = False,
+        client: str = "",
     ) -> None:
         title = f"Embedding request · {len(inputs)} input{'s' if len(inputs) != 1 else ''}"
         detail = _preview_inputs(inputs)
@@ -205,6 +211,7 @@ class EmbarsyMetrics:
                 detail=f"model={model} · {detail}",
                 count=len(inputs),
                 error=error,
+                client=client,
             )
             self._persist_state_locked()
 
@@ -215,6 +222,7 @@ class EmbarsyMetrics:
         method: str | None = None,
         path: str | None = None,
         error: bool = False,
+        client: str = "",
     ) -> None:
         with self._lock:
             bucket = self._current_bucket()
@@ -234,6 +242,7 @@ class EmbarsyMetrics:
                     title=f"Qdrant {operation}",
                     detail=f"{method.upper()} {_normalize_qdrant_path(path)}",
                     error=error,
+                    client=client,
                 )
             self._persist_state_locked()
 
@@ -354,6 +363,7 @@ class EmbarsyMetrics:
         detail: str,
         count: int = 1,
         error: bool = False,
+        client: str = "",
     ) -> None:
         self._activity_events.append(ActivityEvent(
             id=self._next_activity_id,
@@ -364,6 +374,7 @@ class EmbarsyMetrics:
             detail=detail,
             count=count,
             error=error,
+            client=client,
         ))
         self._next_activity_id += 1
 

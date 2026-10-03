@@ -5,7 +5,7 @@ struct EmbarsyConfig {
     /// `src/embarsy_api/__init__.py`). The Status screen compares it with what the
     /// running process reports at /health: after an app update the previous API process
     /// can still be serving on :8000, and a mismatch surfaces the "Update" button.
-    static let bundledAPIVersion = "0.2.1"
+    static let bundledAPIVersion = "0.2.2"
 
     var host = "127.0.0.1"
     var apiPort = 8000

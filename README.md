@@ -74,14 +74,23 @@ service is healthy before it reports ready.
 
 ### ② See what your agent understands — per project, one-swipe cleanup
 
-Every workspace becomes a Qdrant collection. The **Content** tab shows a safe, high-level summary of
-each cluster — languages, areas, file globs and point totals — so you can tell at a glance what's
-indexed for which project. Slide **`‹‹‹ delete`** on any collection you no longer need and reclaim its
-vector storage.
+Every workspace becomes a Qdrant collection. The **Content** tab leads each row with **the project's
+name — and clicking it reveals that folder in Finder**, so you never have to decode a collection id
+again. Under it: a safe, high-level summary — languages, areas, file globs and point totals. Slide
+**`‹‹‹ delete`** on any collection you no longer need and reclaim its vector storage.
 
-<p align="center"><img src="assets/content.png" width="840" alt="Browse embedding clusters per project and slide to delete unused ones"></p>
+<p align="center"><img src="assets/content.png" width="840" alt="Content tab: each collection led by its project name, which opens the folder in Finder"></p>
 
-### ③ Monitoring + resource usage at a glance
+### ③ Know which of your agents actually uses the index
+
+Running Claude Code, Codex and Roo Code side by side? **Activity** labels every request with the
+client that made it and whether it was **indexing** or **searching** — so "is this editor even wired
+up?" stops being a guess. Embedding rows show the exact text being embedded; Qdrant rows show every
+read and write.
+
+<p align="center"><img src="assets/activity.png" width="840" alt="Activity log with each request labelled by client — Claude Code searching, Codex indexing"></p>
+
+### ④ Monitoring + resource usage at a glance
 
 Grafana-style dashboards for embedding throughput, latency, and Qdrant reads/writes/errors — **plus
 live Memory, CPU and temperature** of the running stack. Know exactly what indexing is costing your
@@ -89,7 +98,7 @@ machine, over the last hour, day or week.
 
 <p align="center"><img src="assets/monitoring.png" width="840" alt="Monitoring dashboards with Memory, CPU and temperature panels"></p>
 
-### ④ Start &amp; stop the whole stack — one button, or the menu bar
+### ⑤ Start &amp; stop the whole stack — one button, or the menu bar
 
 Run everything with **Start All**, or control the stack without leaving your workflow straight from the
 macOS **menu bar** — Start, Stop, Refresh and open your project, all a click away. One button removes
@@ -107,10 +116,23 @@ every component again — database, model, secrets — leaving your Mac exactly 
 | **Ollama** | Runs the `qwen3-embedding` model | `127.0.0.1:11434` |
 | **Embarsy API** (FastAPI) | OpenAI-compatible `/v1/embeddings` + a Qdrant proxy | `127.0.0.1:8000` |
 
-Your editor (Roo Code, Zoo Code, …) does the Tree-sitter chunking, file watching and delta indexing.
 **Embarsy manages the infrastructure** and hands you the exact connection values to paste in — the
 embeddings endpoint is OpenAI-compatible, so anything that speaks it just works. Everything runs on
 `127.0.0.1`; **no cloud, no telemetry, no data leaves your Mac.**
+
+Two ways in, depending on your agent:
+
+- **Roo Code / Zoo Code** have indexing built in — they do the chunking, file watching and delta
+  indexing themselves. Paste the connection values and you're done.
+- **Claude Code / Codex** connect through [`embarsy-qdrant-mcp`](https://www.npmjs.com/package/embarsy-qdrant-mcp),
+  Embarsy's own MCP bridge: `embarsy-index` indexes a project, and a `search_code` tool answers your
+  agent's questions from the index. One command wires up each editor:
+
+  ```bash
+  npm install -g embarsy-qdrant-mcp
+  embarsy-index /path/to/your/project      # index it
+  embarsy-mcp --setup-claude               # or --setup-codex
+  ```
 
 ---
 
@@ -128,8 +150,13 @@ embeddings endpoint is OpenAI-compatible, so anything that speaks it just works.
      ```
 4. Open **Install → Install and Start**. Embarsy fetches Qdrant, Ollama and the embedding model, then
    starts the stack (the first model download takes a few minutes).
-5. Open **Status**, copy the connection values, and paste them into your editor's codebase-indexing
-   settings. Point the **Qdrant URL** at the Embarsy proxy so Monitoring can count reads/writes.
+5. Connect your agent:
+   - **Roo Code / Zoo Code** — open **Status**, copy the connection values into the editor's
+     codebase-indexing settings. Point the **Qdrant URL** at the Embarsy proxy so Monitoring can
+     count reads/writes.
+   - **Claude Code / Codex** — `npm install -g embarsy-qdrant-mcp`, then `embarsy-index <project>`
+     and `embarsy-mcp --setup-claude` (or `--setup-codex`). See **How To** in the app for the exact
+     values.
 6. Scroll down on **Status** and hit **Run benchmark** — watch grep and meaning race on your own code.
 
 <p align="center"><img src="assets/status.png" width="840" alt="Status screen with the connection values to paste into your editor"></p>
