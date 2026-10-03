@@ -9,6 +9,7 @@ import {
   upsertPoints,
   deleteByFilePath,
   scrollFileHashes,
+  setWorkspacePayload,
   type QdrantPoint,
 } from "./qdrant.js";
 import { sha256, pointId, languageForExtension } from "./util.js";
@@ -45,10 +46,35 @@ function maxLineLength(s: string): number {
   return cur > max ? cur : max;
 }
 
+/** Directories that hold source but never name a project. */
+const CONTAINER_DIRS = new Set([
+  "src", "source", "sources", "lib", "libs", "app", "apps",
+  "internal", "cmd", "pkg", "test", "tests",
+]);
+
+/** The folder that NAMES this project: the indexed directory, or its nearest ancestor that
+ *  isn't a source container — indexing `~/code/myproj/src` is still the `myproj` project.
+ *
+ *  Name and path are derived from this one value on purpose. Embarsy shows the name and
+ *  reveals the path in Finder, so a name taken from `myproj` while the path pointed at
+ *  `myproj/src` would open a folder the label never mentioned. */
+export function workspaceRootFor(rootAbs: string): string {
+  let current = rootAbs;
+  for (;;) {
+    const name = path.basename(current);
+    const parent = path.dirname(current);
+    if (!name || parent === current) return rootAbs;
+    if (!CONTAINER_DIRS.has(name.toLowerCase())) return current;
+    current = parent;
+  }
+}
+
 /** Full/incremental index of a directory into the configured Qdrant collection. */
 export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = {}): Promise<IndexResult> {
   const log = opts.onProgress ?? (() => {});
   const rootAbs = path.resolve(root);
+  const workspaceRoot = workspaceRootFor(rootAbs);
+  const workspace = path.basename(workspaceRoot);
 
   await ensureCollection(cfg);
   const files = await discoverFiles(rootAbs, cfg);
@@ -106,6 +132,7 @@ export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = 
         text: `${file.rel}\n\n${c.text}`, // path gives the embedder useful context
         payload: {
           file_path: file.rel,
+          workspace,
           language,
           start_line: c.startLine,
           end_line: c.endLine,
@@ -128,6 +155,11 @@ export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = 
       result.removed++;
     }
   }
+
+  // Backfills points this run skipped as unchanged, and points indexed by an older bridge
+  // that never wrote the field — without it the name would stay missing until every file
+  // in the project happened to change.
+  await setWorkspacePayload(cfg, workspace, workspaceRoot);
 
   return result;
 }

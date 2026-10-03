@@ -24,6 +24,7 @@ struct ContentIndexCollection: Decodable, Identifiable {
     let indexedSummary: String
     let preview: String
     let previewTags: [PreviewTag]?   // optional: nil when decoded from an older API payload
+    let workspacePath: String?       // absent when no folder is known for this collection
 
     var id: String { collectionName }
 
@@ -34,6 +35,23 @@ struct ContentIndexCollection: Decodable, Identifiable {
         case indexedSummary = "indexed_summary"
         case preview
         case previewTags = "preview_tags"
+        case workspacePath = "workspace_path"
+    }
+
+    /// The folder to reveal in Finder, or nil when the name is not backed by one — a name
+    /// inferred from relative paths has no folder, and the API sends "" for those.
+    var revealableFolder: URL? {
+        guard let path = workspacePath, !path.isEmpty else { return nil }
+        return URL(fileURLWithPath: path)
+    }
+
+    /// The summary with its leading "<name> — " stripped, so the name can be drawn as a
+    /// link and the rest as prose without the name appearing twice. Returns nil when the
+    /// summary does not open with the name (a nameless collection).
+    var summaryWithoutName: String? {
+        let prefix = "\(displayName) — "
+        guard indexedSummary.hasPrefix(prefix) else { return nil }
+        return String(indexedSummary.dropFirst(prefix.count))
     }
 }
 

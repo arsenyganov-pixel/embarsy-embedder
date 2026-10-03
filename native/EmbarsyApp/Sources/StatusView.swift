@@ -9,6 +9,7 @@ struct StatusView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.gapSection) {
                 brandHero
+                if store.newerBuildInstalled { relaunchBanner }
                 servicesSection
 
                 Text(store.localSecretsMessage)
@@ -28,6 +29,38 @@ struct StatusView: View {
             .padding(Theme.padScreen)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    // MARK: Newer build installed
+
+    /// Not a failure — nothing is broken, the window is simply older than what is on disk —
+    /// so it stays neutral rather than borrowing the colour that means "something went
+    /// wrong". The one thing that must be loud is the action, because without a relaunch
+    /// everything the new version changed stays invisible.
+    private var relaunchBanner: some View {
+        HStack(alignment: .top, spacing: 9) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
+                .chipHelp("Shown when the Embarsy in \(EmbarsyBuildInfo.bundlePath) is no longer the build this window is running. macOS leaves a running app on its old executable when the bundle is replaced, so this can only clear on relaunch.")
+            VStack(alignment: .leading, spacing: 3) {
+                Text("A newer Embarsy is installed")
+                    .font(.system(size: 12.5, weight: .semibold))
+                Text("This window is still running build \(EmbarsyBuildInfo.bundleVersion); \(EmbarsyBuildInfo.shortVersionOnDisk.map { "version \($0)" } ?? "a different build") (build \(EmbarsyBuildInfo.bundleVersionOnDisk ?? "unknown")) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            Button("Relaunch") { store.relaunchIntoInstalledBuild() }
+                .buttonStyle(.borderedProminent).tint(Theme.accent).controlSize(.small)
+                .chipHelp("Quits this window and opens the installed version. Qdrant, Ollama and the API keep running; if the API is left over from the previous version, the Update button above it will offer to restart just that.")
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9))
+        .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color.primary.opacity(0.12)))
     }
 
     // MARK: Brand hero

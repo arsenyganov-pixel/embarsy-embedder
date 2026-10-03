@@ -170,6 +170,7 @@ struct ActivityEventRow: View {
                 HStack(spacing: 8) {
                     Text(event.title)
                         .font(.callout.weight(.semibold))
+                    clientChip
                     if event.error {
                         Text("error")
                             .font(.caption.weight(.semibold))
@@ -197,6 +198,23 @@ struct ActivityEventRow: View {
                 isExpanded.toggle()
             }
         }
+    }
+
+    /// Which client made this request. Deliberately quiet — it is context for the row, not
+    /// its headline — and always present, because "Unknown client" is itself the answer to
+    /// "is this editor using the index at all?".
+    private var clientChip: some View {
+        Text(event.clientLabel)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Color.primary.opacity(0.07), in: Capsule())
+            .contentShape(Capsule())
+            .chipHelp(
+                event.client?.isEmpty == false
+                    ? "The client that made this request, as it identified itself: \(event.clientLabel). Editors that go through Embarsy's bridge report which editor they are; the label is self-reported, not verified."
+                    : "This request arrived without identifying its client. Clients that talk to the proxy directly (Zoo / Roo Code) cannot be named, and a bridge set up before this release reports nothing until you re-run its setup command."
+            )
     }
 
     @ViewBuilder

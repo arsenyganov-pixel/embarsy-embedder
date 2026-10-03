@@ -33,6 +33,8 @@ final class ProcessManager: ObservableObject {
     }
 
     func startAll() async {
+        beginMutation()
+        defer { endMutation() }
         for service in [ManagedService.qdrant, .ollama, .api] {
             await start(service)
             if statuses[service] == .failed { break }
@@ -40,6 +42,8 @@ final class ProcessManager: ObservableObject {
     }
 
     func stopAll() {
+        beginMutation()
+        defer { endMutation() }
         for service in [ManagedService.api, .qdrant, .ollama] {
             stop(service)
         }
@@ -63,6 +67,11 @@ final class ProcessManager: ObservableObject {
     }
 
     func markAllStopped(message: String) {
+        // Downtime while stopped must not count toward a crash verdict; bump the generation so an
+        // in-flight probe (this method is synchronous, so it can run inside one) can't overwrite us.
+        unhealthySince.removeAll()
+        unhealthyProbes.removeAll()
+        mutationGeneration &+= 1
         statuses = Dictionary(uniqueKeysWithValues: ManagedService.allCases.map { ($0, .stopped) })
         messages = Dictionary(uniqueKeysWithValues: ManagedService.allCases.map { ($0, message) })
         debugLog?.append("All service statuses forced to stopped: \(message)", category: "process")
@@ -94,6 +103,8 @@ final class ProcessManager: ObservableObject {
     }
 
     func start(_ service: ManagedService) async {
+        beginMutation()
+        defer { endMutation() }
         if statuses[service] == .running {
             if await isServiceReady(service) {
                 setStatus(service, .running, message: "Already running.")
@@ -133,12 +144,16 @@ final class ProcessManager: ObservableObject {
     }
 
     func stop(_ service: ManagedService) {
+        beginMutation()
+        defer { endMutation() }
         processes[service]?.stop()
         setStatus(service, .stopped, message: "Stopped.")
         debugLog?.append("Stopped \(service.title)", category: "process")
     }
 
     func restart(_ service: ManagedService, reason: String) async {
+        beginMutation()
+        defer { endMutation() }
         debugLog?.append("Restarting \(service.title): \(reason)", category: "process")
         stop(service)
         terminateListeners(on: managedPort(for: service))
@@ -146,25 +161,98 @@ final class ProcessManager: ObservableObject {
         await start(service)
     }
 
+    /// How long a service must stay continuously unhealthy before the periodic poll may call it
+    /// crashed. Long enough to ride out a slow health probe while a service is merely busy.
+    private static let unhealthyGraceSeconds: TimeInterval = 25
+    /// Minimum number of *observed* failed probes before a crash may be declared, on top of the
+    /// elapsed grace: the poll can be suspended for minutes (a long start, an install, system
+    /// sleep), and elapsed time alone would bank grace nobody actually watched.
+    private static let unhealthyProbesRequired = 3
+    /// When each service first failed a health check (absent = healthy), plus how many failures
+    /// have actually been observed since then.
+    private var unhealthySince: [ManagedService: Date] = [:]
+    private var unhealthyProbes: [ManagedService: Int] = [:]
+    private var isRefreshing = false
+
+    /// True while a start/stop/restart is in flight — the health poll must not write statuses then,
+    /// because its probe results race the deliberate transitions.
+    private var mutationDepth = 0
+    /// Bumped by every mutation. A depth flag alone is not enough: `stop()` / `stopAll()` are fully
+    /// synchronous, so they begin AND end inside a single suspension of an in-flight `refresh`,
+    /// which would then resume with depth back at 0 and write its pre-stop answer over the stop.
+    private var mutationGeneration = 0
+    var isMutating: Bool { mutationDepth > 0 }
+    private func beginMutation() { mutationDepth += 1; mutationGeneration &+= 1 }
+    private func endMutation() { mutationDepth = max(0, mutationDepth - 1) }
+
     func refreshAll() async {
+        // Serialize: the periodic poll, the post-start reconcile loop, the Refresh buttons and the
+        // window's .task can all land here at once. `refresh` suspends on a 2s health probe, so
+        // overlapping passes would each observe — and each count — the very same outage.
+        guard !isRefreshing, !isMutating else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         for service in ManagedService.allCases {
+            if isMutating { return }   // a start/stop began mid-pass; its statuses win
             await refresh(service)
         }
     }
 
     func refresh(_ service: ManagedService) async {
         let url = healthURL(for: service)
+        let generation = mutationGeneration
         let isReady = await isServiceReady(service)
-        // Keep precise startup-failure diagnostics (exit status, code-signing guidance)
-        // on screen: a dead service already reported .failed must not be downgraded to a
-        // generic .stopped by the periodic post-start status reconciliation.
-        if !isReady, statuses[service] == .failed, processes[service]?.isRunning != true {
+        // A start/stop ran while this probe was in flight: the answer is already stale (it may even
+        // come from the process that was just replaced), so it must not overwrite the transition.
+        // Compare the generation, not just `isMutating` — a synchronous stop begins and ends
+        // entirely inside this suspension and would leave the depth flag back at 0.
+        if isMutating || mutationGeneration != generation { return }
+
+        if isReady {
+            unhealthySince[service] = nil
+            unhealthyProbes[service] = 0
+        } else {
+            if unhealthySince[service] == nil { unhealthySince[service] = Date() }
+            unhealthyProbes[service, default: 0] += 1
+        }
+        let unhealthyFor = unhealthySince[service].map { Date().timeIntervalSince($0) } ?? 0
+
+        // Keep precise startup-failure diagnostics (exit status, code-signing guidance) on screen:
+        // a service already reported .failed must not be downgraded to a generic .stopped/.starting
+        // by the periodic reconciliation — whether its process is dead OR still alive but wedged.
+        // Only a successful health check (isReady, handled above) promotes it back to .running.
+        if !isReady, statuses[service] == .failed {
             return
         }
+
+        // A service believed to be up that stops answering is usually just BUSY — a health probe
+        // times out under load, and for a stack this app did not spawn `isRunning` is always false.
+        // Never demote on suspicion: keep the badge until death is actually proven (unhealthy long
+        // enough, repeatedly observed, no owned process, and nothing listening on its port).
+        if !isReady, statuses[service] == .running || statuses[service] == .starting {
+            guard unhealthyFor >= Self.unhealthyGraceSeconds,
+                  unhealthyProbes[service, default: 0] >= Self.unhealthyProbesRequired,
+                  processes[service]?.isRunning != true else { return }
+            let port = managedPort(for: service)
+            let listening = await Self.hasListener(onPort: port)
+            if isMutating || mutationGeneration != generation { return }
+            // Still bound to its port → alive but unresponsive. Leave the status alone.
+            guard !listening else { return }
+            setStatus(service, .failed, message: "Stopped unexpectedly (crashed). Check \(logFile(for: service).path).")
+            debugLog?.append("\(service.title) crashed: unhealthy for \(Int(unhealthyFor))s and nothing is listening on port \(port)", category: "process.error")
+            return
+        }
+
         setStatus(
             service,
             isReady ? .running : (processes[service]?.isRunning == true ? .starting : .stopped),
-            message: isReady ? "Health check OK." : "Health check is not ready at \(url.absoluteString) with current configuration."
+            message: isReady
+                ? "Health check OK."
+                // A service the user deliberately stopped keeps its own "Stopped." wording — the
+                // not-ready diagnostic only makes sense for something that is supposed to be up.
+                : (statuses[service] == .stopped
+                    ? messages[service, default: "Stopped."]
+                    : "Health check is not ready at \(url.absoluteString) with current configuration.")
         )
     }
 
@@ -279,6 +367,11 @@ final class ProcessManager: ObservableObject {
         await health.reportedAPIVersion(healthURL: healthURL(for: .api))
     }
 
+    /// Full /health read: version plus the API's rejected-key counters.
+    func apiHealthReport() async -> APIHealthReport? {
+        await health.report(healthURL: healthURL(for: .api))
+    }
+
     private func healthHeaders(for service: ManagedService) -> [String: String] {
         switch service {
         case .qdrant:
@@ -322,6 +415,16 @@ final class ProcessManager: ObservableObject {
     }
 
     private func setStatus(_ service: ManagedService, _ status: ServiceStatus, message: String) {
+        // Reaching a settled state clears the unhealthy timer, so a stretch of downtime can't be
+        // counted against the service after it is started again.
+        if status == .running || status == .stopped {
+            unhealthySince[service] = nil
+            unhealthyProbes[service] = 0
+        }
+        // Republishing an identical value still fires objectWillChange, which the store fans out
+        // to every view — the steady-state poll would re-render the whole window every 10s and
+        // jerk any in-progress scroll.
+        guard statuses[service] != status || messages[service] != message else { return }
         var nextStatuses = statuses
         var nextMessages = messages
         nextStatuses[service] = status
@@ -352,6 +455,49 @@ final class ProcessManager: ObservableObject {
 
         debugLog?.append("Force killing listener PID(s) on port \(port): \(remainingPIDs.joined(separator: ", "))", category: "process")
         _ = runSystemCommand(executable: "/bin/kill", arguments: ["-KILL"] + remainingPIDs)
+    }
+
+    /// Off-main-actor port probe. `lsof` is a blocking fork/exec and `refresh` runs on the main
+    /// actor, so calling the synchronous `listenerPIDs` there would stall the UI.
+    /// Holds the lsof child so a watchdog task can reach it to kill it. `@unchecked Sendable`:
+    /// the two tasks touch it in a disciplined way (one runs it, the other only SIGKILLs it).
+    private final class LsofProbe: @unchecked Sendable {
+        let process = Process()
+        let out = Pipe()
+    }
+
+    private nonisolated static func hasListener(onPort port: Int) async -> Bool {
+        // `lsof` can wedge (stuck mount, name lookups). Bound it with a watchdog that actually
+        // SIGKILLs the child after 3s — task-group / Task cancellation alone cannot unblock a
+        // Process parked in readDataToEndOfFile()/waitUntilExit(), so a hung lsof would otherwise
+        // freeze the whole refresh pass. A timeout answers "listening": the conservative reply,
+        // since this probe only ever *prevents* a crash verdict.
+        let probe = LsofProbe()
+        probe.process.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
+        // -n / -P: never resolve host names or port names — the classic lsof stall.
+        probe.process.arguments = ["-nP", "-tiTCP:\(port)", "-sTCP:LISTEN"]
+        probe.process.standardOutput = probe.out
+        probe.process.standardError = Pipe()
+
+        let watchdog = Task.detached {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if probe.process.isRunning { kill(probe.process.processIdentifier, SIGKILL) }
+        }
+        defer { watchdog.cancel() }
+
+        return await Task.detached { () -> Bool in
+            do {
+                try probe.process.run()
+                let data = probe.out.fileHandleForReading.readDataToEndOfFile()
+                probe.process.waitUntilExit()
+                // Killed by the watchdog → we never got a real answer; assume "listening".
+                if probe.process.terminationReason == .uncaughtSignal { return true }
+                let output = String(data: data, encoding: .utf8) ?? ""
+                return output.split(whereSeparator: \.isNewline).contains { !$0.isEmpty }
+            } catch {
+                return false
+            }
+        }.value
     }
 
     private func listenerPIDs(on port: Int) -> [String] {

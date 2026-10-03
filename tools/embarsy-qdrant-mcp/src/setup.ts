@@ -15,9 +15,13 @@ function resolveSpawn(): { command: string; args: string[] } {
   return { command: process.execPath, args: [mcpJs] };
 }
 
-/** Env block written into the editor config so the server has everything it needs. */
-function serverEnv(cfg: Config): Record<string, string> {
+/** Env block written into the editor config so the server has everything it needs.
+ *  `EMBARSY_CLIENT` is the only way Embarsy can ever name the editor: Claude Code and
+ *  Codex spawn the identical binary, so the editor is knowable only here, at the moment
+ *  we write the config FOR a specific one. */
+function serverEnv(cfg: Config, client: string): Record<string, string> {
   return {
+    EMBARSY_CLIENT: client,
     OPENAI_BASE_URL: cfg.openaiBaseUrl,
     OPENAI_API_KEY: cfg.openaiApiKey,
     EMBEDDING_MODEL: cfg.embeddingModel,
@@ -40,7 +44,7 @@ export async function setupCodex(cfg: Config): Promise<string> {
     throw new Error(`~/.codex/config.toml already has [mcp_servers.${SERVER_NAME}]. Remove it first to re-run setup.`);
   }
   const { command, args } = resolveSpawn();
-  const env = serverEnv(cfg);
+  const env = serverEnv(cfg, "codex");
   const lines = [
     "",
     `[mcp_servers.${SERVER_NAME}]`,
@@ -67,7 +71,7 @@ export async function setupClaude(cfg: Config): Promise<string> {
   if (typeof json !== "object" || json === null) json = {};
   json.mcpServers = json.mcpServers ?? {};
   const { command, args } = resolveSpawn();
-  json.mcpServers[SERVER_NAME] = { command, args, env: serverEnv(cfg) };
+  json.mcpServers[SERVER_NAME] = { command, args, env: serverEnv(cfg, "claude-code") };
   await fs.writeFile(file, JSON.stringify(json, null, 2) + "\n", "utf8");
   return file;
 }

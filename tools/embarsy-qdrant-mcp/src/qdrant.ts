@@ -1,9 +1,10 @@
 import type { Config } from "./config.js";
 import { requestJSON } from "./http.js";
+import { clientHeaders } from "./client.js";
 
 /** Qdrant authenticates with the `api-key` header; Embarsy's proxy validates the same header. */
 function headers(cfg: Config): Record<string, string> {
-  return { "Content-Type": "application/json", "api-key": cfg.qdrantApiKey };
+  return { "Content-Type": "application/json", "api-key": cfg.qdrantApiKey, ...clientHeaders() };
 }
 
 function base(cfg: Config): string {
@@ -93,6 +94,33 @@ export async function deleteByFilePath(cfg: Config, filePath: string): Promise<v
       body: JSON.stringify({ filter: { must: [{ key: "file_path", match: { value: filePath } }] } }),
     },
     { label: "delete points" },
+  );
+}
+
+/** Stamp `workspace` (the project's name) and `workspace_path` (the folder it was indexed
+ *  from) onto EVERY point in the collection.
+ *
+ *  Setting them only on freshly embedded points would leave them off almost everything: an
+ *  index run skips unchanged files, so on the second run nearly no point is rewritten.
+ *  This is one payload write over the whole collection — no re-embedding — which also
+ *  backfills collections indexed before the fields existed.
+ *
+ *  The absolute path is stored so Embarsy can offer "reveal this project in Finder"; it
+ *  stays on the machine that indexed it, in that machine's own local Qdrant. */
+export async function setWorkspacePayload(
+  cfg: Config,
+  workspace: string,
+  workspacePath: string,
+): Promise<void> {
+  await requestJSON(
+    `${base(cfg)}/points/payload?wait=true`,
+    {
+      method: "POST",
+      headers: headers(cfg),
+      // An empty filter selects every point in the collection.
+      body: JSON.stringify({ payload: { workspace, workspace_path: workspacePath }, filter: {} }),
+    },
+    { label: "set workspace payload" },
   );
 }
 

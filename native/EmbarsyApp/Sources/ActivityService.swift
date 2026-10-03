@@ -29,8 +29,30 @@ struct ActivityEvent: Decodable, Equatable, Identifiable, Sendable {
     let detail: String
     let count: Int
     let error: Bool
+    /// Absent when decoding from an API older than this field, empty when the caller did
+    /// not declare itself — both render the same way, as an unknown client.
+    let client: String?
 
     var date: Date { Date(timeIntervalSince1970: TimeInterval(timestamp)) }
+
+    /// `<editor> · <tool>` as declared, prettified for display. Editors are named the way
+    /// their own product does; anything unrecognised is shown verbatim rather than guessed.
+    var clientLabel: String {
+        guard let client, !client.isEmpty else { return "Unknown client" }
+        let parts = client.split(separator: "·", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+        let editor = parts.first.map(Self.prettyEditor) ?? client
+        guard parts.count > 1, !parts[1].isEmpty else { return editor }
+        return "\(editor) · \(parts[1] == "index" ? "indexing" : parts[1])"
+    }
+
+    private static func prettyEditor(_ raw: String) -> String {
+        switch raw {
+        case "claude-code": return "Claude Code"
+        case "codex": return "Codex"
+        case "embarsy-qdrant-mcp": return "Bridge"
+        default: return raw
+        }
+    }
 }
 
 enum ActivityKind: String, Decodable, Sendable {

@@ -180,9 +180,22 @@ struct ContentIndexView: View {
                 }
             }
             cell(width: width * Column.indexed) {
-                Text(collection.indexedSummary)
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(open ? nil : 5).truncationMode(.tail)
+                VStack(alignment: .leading, spacing: 4) {
+                    // The project name leads the column as its own line: it is what people
+                    // scan for, and only a standalone control can carry the hover tooltip
+                    // that a link buried mid-sentence could not.
+                    if let folder = collection.revealableFolder, let rest = collection.summaryWithoutName {
+                        FinderLink(label: collection.displayName, folder: folder)
+                            .padding(.leading, -7)   // cancel the chip's inset so it aligns with the prose
+                        Text(rest)
+                            .font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(open ? nil : 4).truncationMode(.tail)
+                    } else {
+                        Text(collection.indexedSummary)
+                            .font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(open ? nil : 5).truncationMode(.tail)
+                    }
+                }
             }
             cell(width: width * Column.points) {
                 VStack(alignment: .leading, spacing: 5) {

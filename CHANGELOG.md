@@ -2,6 +2,36 @@
 
 All notable changes to Embarsy are documented here. This project follows [Semantic Versioning](https://semver.org).
 
+## 0.2.2 — beta (2026-09-28)
+
+### Fixed
+
+- **Content says which project each collection holds — and opens it in Finder.** Rows began with a bare "Looks like a Go project: 220 files…", missing the one thing you scan the column for. The name now leads the row as a link. Retroactive: collections you already indexed get it without re-indexing. Rows with no real folder behind them stay plain text rather than link somewhere wrong.
+
+  ![The project name leads each row and reveals its folder in Finder](docs/images/content-project-name.png)
+
+- **"Authentication failed" now says what actually broke.** A reinstall regenerates both keys, so an editor configured earlier fails forever with a bare "authentication failed". The API now names the cause — a key from a previous install, or the two keys swapped — and Status raises this while it is happening, with one-click Copy for each key.
+
+  ![Status banner explaining that the editor holds keys from a previous installation](docs/images/stale-key-banner.png)
+
+- **Installing over a running Embarsy no longer does nothing, quietly.** macOS leaves the old app running when its bundle is replaced, so a new version appeared to change nothing — and the API Update button could not help, since it compares against the version inside the code still running. Status now reads the installed bundle from disk and offers Relaunch; services keep running.
+
+  ![Status banner offering to relaunch into the newly installed build](docs/images/relaunch-banner.png)
+
+- **Activity says which client made each request.** With Claude Code, Codex and Zoo / Roo Code installed side by side it was impossible to tell which of them was actually using the index — every row looked the same. Each row now carries the client and whether it was indexing or searching. Two honest limits: Claude Code and Codex spawn the identical bridge binary, so the editor is known only because its setup command wrote it down — re-run `embarsy-mcp --setup-claude` / `--setup-codex` once to get the name; and clients that talk to the proxy directly cannot be named at all, so they read "Unknown client".
+
+  ![Each request labelled with the client that made it and whether it was indexing or searching](docs/images/activity-client.png)
+
+- **Service status is no longer stale.** Health is re-checked every ~10s for the app's lifetime, so a service that dies later stops reading "Running · Health check OK"; one that crashed says so, with the path to its log. Two consecutive failures are required, so a single timeout can't make a healthy service flicker.
+
+- **The uptime on Status counts again.** It was computed on demand, so it only ever changed when something else on the screen did — and the quieter the status poll became, the longer it sat at "0m".
+
+- **The support row no longer shows a personal Telegram contact.** Bug reports go through the form; releases through GitHub.
+
+### Changed
+
+- Bridge [`embarsy-qdrant-mcp`](https://www.npmjs.com/package/embarsy-qdrant-mcp) 0.1.7 identifies itself to Embarsy (which editor, and whether it is indexing or searching) and records the indexed folder's name and path, so collections indexed through Claude Code / Codex get the name and the Finder link too — re-run `embarsy-index` once per project, no re-embedding.
+
 ## 0.2.1 — beta (2026-07-09)
 
 ### Added

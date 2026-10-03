@@ -23,6 +23,9 @@ final class EmbarsyStore: ObservableObject {
     @Published var contentIndex = ContentIndexService()
     @Published var preferences = PreferencesStore()
     @Published var loginItemService = LoginItemService()
+    /// True while the running API is rejecting keys that look like they came from a
+    /// previous Embarsy installation — i.e. an editor was configured before a reinstall.
+    @Published private(set) var staleEditorKeyDetected = false
     @Published var workspaceMessage = ""
     @Published var localSecretsMessage = "Local secrets will be prepared before Install or Start."
     @Published var rooConnectionMessage = ""
@@ -39,6 +42,14 @@ final class EmbarsyStore: ObservableObject {
     /// :8000). Surfaces the "Update" button on the Status screen.
     @Published private(set) var apiUpdateAvailable = false
     @Published private(set) var isUpdatingAPI = false
+
+    /// True when a different Embarsy has been installed over the one this process is
+    /// running. macOS keeps the old executable alive when the bundle underneath is
+    /// replaced, and nothing tells the user — they see an unchanged app and conclude the
+    /// new version did nothing. It also disables the API Update button by construction:
+    /// that button compares against the version baked into the RUNNING code, which is the
+    /// old one, so it sees no difference and stays hidden.
+    @Published private(set) var newerBuildInstalled = false
 
     let localSecrets: LocalSecretStore
     let workspaceService = WorkspaceService()
@@ -110,6 +121,7 @@ final class EmbarsyStore: ObservableObject {
             var tick = 0
             while !Task.isCancelled {
                 guard let self else { return }
+                self.refreshUptimeText()
                 let watching = WindowVisibility.mainWindowVisible && self.selectedTab == .monitoring
                 if watching || tick % 8 == 0 {
                     await self.sysMetrics.sample(
@@ -121,6 +133,27 @@ final class EmbarsyStore: ObservableObject {
                     // hundreds of MB/day) — one file-attribute check per service.
                     self.processManager.capRunningLogs()
                 }
+                // Every ~30s while the window is visible, re-read /health. It carries the
+                // API's rejected-key counters, so the "editor is using an old key" banner
+                // appears on its own — the person whose editor says "authentication failed"
+                // is exactly the one who will never think to press Refresh here.
+                if tick % 15 == 0, WindowVisibility.mainWindowVisible,
+                   self.processManager.statuses[.api] == .running {
+                    await self.checkAPIVersion()
+                }
+                // One plist read on the same cadence — it must not depend on the API being
+                // up, because a reinstall is exactly when the stack may be down.
+                if tick % 15 == 0, WindowVisibility.mainWindowVisible {
+                    self.checkInstalledBuild()
+                }
+                // Every ~10s, re-check service health for the app's lifetime. Without this the
+                // badges keep showing the last known state forever: a service that dies after
+                // startup (e.g. Qdrant panicking on a locked WAL) still reads "Running" on the
+                // Status page and in the menu bar until someone presses Refresh. Skipped while
+                // the stack is being started/installed so in-flight transitions aren't clobbered.
+                if tick % 5 == 0, self.installManager.isInstalled, !self.installManager.isInstalling {
+                    await self.processManager.refreshAll()   // self-guards against in-flight starts/stops
+                }
                 tick += 1
                 try? await Task.sleep(for: .seconds(2), tolerance: .milliseconds(500))
             }
@@ -130,10 +163,19 @@ final class EmbarsyStore: ObservableObject {
     private let launchedAt = Date()
 
     /// Human-readable time since the app launched (shown on the Status hero).
-    var uptimeText: String {
+    ///
+    /// Published rather than computed: a computed property is only re-read when SwiftUI
+    /// re-renders for some OTHER reason, so the label sat at its first value — and the
+    /// more the status poll avoids publishing unchanged state, the longer it sat there.
+    /// Recomputed on the sampling tick but assigned only when the rendered MINUTE changes,
+    /// so it costs at most one re-render per minute instead of one every two seconds.
+    @Published private(set) var uptimeText = "0m"
+
+    private func refreshUptimeText() {
         let elapsed = max(0, Int(Date().timeIntervalSince(launchedAt)))
-        let h = elapsed / 3600, m = (elapsed % 3600) / 60
-        return h > 0 ? "\(h)h \(m)m" : "\(m)m"
+        let hours = elapsed / 3600, minutes = (elapsed % 3600) / 60
+        let text = hours > 0 ? "\(hours)h \(minutes)m" : "\(minutes)m"
+        if text != uptimeText { uptimeText = text }
     }
 
     var aggregateStatus: ServiceStatus {
@@ -168,14 +210,52 @@ final class EmbarsyStore: ObservableObject {
         await checkAPIVersion()
     }
 
+    /// Notice that the app bundle on disk is no longer the one running. Deliberately NOT
+    /// folded into `checkAPIVersion`, which returns early whenever the API is stopped —
+    /// a replaced bundle matters just as much with the stack down.
+    func checkInstalledBuild() {
+        let replaced = EmbarsyBuildInfo.installedBundleDiffersFromRunning
+        guard replaced != newerBuildInstalled else { return }
+        newerBuildInstalled = replaced
+        if replaced {
+            debugLog.append(
+                "Installed bundle is build \(EmbarsyBuildInfo.bundleVersionOnDisk ?? "unknown"); this process runs \(EmbarsyBuildInfo.bundleVersion) — prompting relaunch",
+                category: "store"
+            )
+        }
+    }
+
+    /// Quit and come back on the installed bundle. The services are deliberately left
+    /// running: they are what holds the indexed data warm, and the relaunched app checks
+    /// their versions itself — an API left over from the previous bundle then surfaces as
+    /// the usual Update button rather than being silently adopted.
+    func relaunchIntoInstalledBuild() {
+        let bundlePath = Bundle.main.bundleURL.path
+        let relaunch = Process()
+        relaunch.executableURL = URL(fileURLWithPath: "/bin/sh")
+        // The path travels as $0, not inside the script text, so spaces in it cannot break
+        // the command (nor be used to inject one).
+        relaunch.arguments = ["-c", "sleep 1; exec /usr/bin/open \"$0\"", bundlePath]
+        do {
+            try relaunch.run()
+        } catch {
+            debugLog.append("Relaunch failed to spawn: \(error.localizedDescription)", category: "store")
+            return
+        }
+        NSApp.terminate(nil)
+    }
+
     /// Compare the running API's reported version against the bundled one and flag an
     /// available update. Cheap (one localhost GET), only meaningful while the API runs.
     func checkAPIVersion() async {
         guard processManager.statuses[.api] == .running,
-              let running = await processManager.reportedAPIVersion() else {
+              let report = await processManager.apiHealthReport() else {
             apiUpdateAvailable = false
+            staleEditorKeyDetected = false
             return
         }
+        let running = report.version
+        updateStaleKeyWarning(from: report)
         let outdated = running != EmbarsyConfig.bundledAPIVersion
         if outdated != apiUpdateAvailable {
             apiUpdateAvailable = outdated
@@ -187,6 +267,29 @@ final class EmbarsyStore: ObservableObject {
             }
         }
     }
+
+    /// A reinstall regenerates BOTH keys, but editors keep the old ones in their own
+    /// storage and just fail with "authentication failed" forever. The API counts rejected
+    /// keys that still have Embarsy's shape; surface that as a banner instead of making
+    /// the user read logs. Expires on its own once the retries stop.
+    private func updateStaleKeyWarning(from report: APIHealthReport) {
+        guard report.looksStale, let last = report.lastFailureAt else {
+            staleEditorKeyDetected = false
+            return
+        }
+        let recent = Date().timeIntervalSince(last) < Self.staleKeyWindow
+        if recent != staleEditorKeyDetected {
+            staleEditorKeyDetected = recent
+            if recent {
+                debugLog.append(
+                    "API rejected \(report.rejectedKeys) request(s) carrying an Embarsy-shaped key from another installation — showing the stale-key banner",
+                    category: "store"
+                )
+            }
+        }
+    }
+
+    private static let staleKeyWindow: TimeInterval = 15 * 60
 
     /// Restart ONLY the API so the binary bundled with this app takes over :8000 —
     /// Qdrant, Ollama, the model and all indexed data stay untouched. restart() also

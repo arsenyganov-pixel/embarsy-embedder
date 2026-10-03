@@ -1,5 +1,6 @@
 import type { Config } from "./config.js";
 import { requestJSON } from "./http.js";
+import { clientHeaders } from "./client.js";
 
 /**
  * Embed a batch of texts through the OpenAI-COMPATIBLE endpoint (Embarsy's /v1 proxy).
@@ -29,6 +30,7 @@ export async function embedBatch(texts: string[], cfg: Config): Promise<number[]
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${cfg.openaiApiKey}`,
+        ...clientHeaders(),
       },
       body: JSON.stringify({ model: cfg.embeddingModel, input }),
     },
