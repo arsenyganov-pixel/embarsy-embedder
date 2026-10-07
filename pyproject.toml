@@ -1,6 +1,6 @@
 [project]
 name = "embarsy"
-version = "0.2.1"
+version = "0.2.3"
 description = "Local OpenAI-compatible embeddings wrapper for Roo Code semantic codebase indexing."
 requires-python = ">=3.9"
 license = { text = "PolyForm Strict License 1.0.0" }

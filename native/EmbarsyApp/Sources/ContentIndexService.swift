@@ -25,6 +25,11 @@ struct ContentIndexCollection: Decodable, Identifiable {
     let preview: String
     let previewTags: [PreviewTag]?   // optional: nil when decoded from an older API payload
     let workspacePath: String?       // absent when no folder is known for this collection
+    /// "indexer" when Embarsy's own bridge wrote the folder (safe to re-index from the app),
+    /// "editor" when it was recovered from an editor's cache (that editor owns the index).
+    let workspaceSource: String?
+    /// Epoch seconds of the last finished bridge run; 0 or absent when unknown.
+    let indexedAt: Int?
 
     var id: String { collectionName }
 
@@ -36,10 +41,20 @@ struct ContentIndexCollection: Decodable, Identifiable {
         case preview
         case previewTags = "preview_tags"
         case workspacePath = "workspace_path"
+        case workspaceSource = "workspace_source"
+        case indexedAt = "indexed_at"
     }
 
     /// The folder to reveal in Finder, or nil when the name is not backed by one — a name
     /// inferred from relative paths has no folder, and the API sends "" for those.
+    /// A folder Embarsy's bridge indexed — the ones the Connections screen lists and may refresh.
+    var isBridgeIndexed: Bool { workspaceSource == "indexer" && revealableFolder != nil }
+
+    var lastIndexedDate: Date? {
+        guard let indexedAt, indexedAt > 0 else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(indexedAt))
+    }
+
     var revealableFolder: URL? {
         guard let path = workspacePath, !path.isEmpty else { return nil }
         return URL(fileURLWithPath: path)
@@ -60,6 +75,9 @@ final class ContentIndexService: ObservableObject {
     @Published var snapshot: ContentIndexSnapshot = .empty
     @Published var message = "Content overview is waiting for Embarsy API."
     @Published var isRefreshing = false
+    /// False until one refresh has succeeded — an empty snapshot before that means "not
+    /// known yet", not "nothing indexed", and screens must not present it as the latter.
+    @Published private(set) var hasLoaded = false
 
     private let decoder = JSONDecoder()
 
@@ -97,6 +115,7 @@ final class ContentIndexService: ObservableObject {
             }
 
             snapshot = try decoder.decode(ContentIndexSnapshot.self, from: data)
+            hasLoaded = true
             message = snapshot.collections.isEmpty
                 ? "No Qdrant collections found yet. Start Watcher indexing first."
                 : "Content overview updated."

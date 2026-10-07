@@ -22,7 +22,7 @@ struct StatusView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                RooConnectionView()
+                StaleKeyBanner()
 
                 BenchmarkView(service: store.benchmark)
             }

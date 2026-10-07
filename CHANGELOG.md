@@ -2,6 +2,31 @@
 
 All notable changes to Embarsy are documented here. This project follows [Semantic Versioning](https://semver.org).
 
+## 0.2.3 — beta (2026-10-05)
+
+### Added
+
+- **Connections: Claude Code and Codex in one click, nothing to install.** The How To tab became **Connections**, right after Status, with a tab per agent. **Connect** writes `~/.claude.json` or `~/.codex/config.toml` for you, and leaves every other server and setting in them untouched. Both editors can be connected at once. Node and the MCP bridge now ship inside Embarsy, so there is no npm, no Node and no setup command any more. The Zoo / Roo Code connection values moved here from Status.
+
+  ![Connections: one tab per agent, the bundled bridge connected, and the folders it can search](docs/images/connections.png)
+
+- **Index folders from the app.** Under **Indexed folders**: **Add folder…** indexes a project, **Re-index** refreshes one (only changed files are re-embedded), and each row shows its size and when it was last indexed.
+
+- **One connection serves every project.** The bridge picks the index from the folder the editor is working in, so nothing names a collection any more. Index a parent folder and every project inside it is covered; an agent working in one of them searches that project first and widens to the rest only when it finds nothing convincing there. Results come back as paths that open from where the agent stands.
+
+- **Agents reach for the index instead of grep.** The bridge tells the agent, before its first step, what search by meaning is for and when grep is still the better tool. When the best match is weak, the result says so, and suggests grep, instead of presenting it as an answer.
+
+### Fixed
+
+- **The benchmark compares each collection with its own folder.** It used to race every collection against the single project folder from Settings, so any other collection stopped with "This collection does not match the folder". The folder now follows the selected collection and opens in Finder.
+- **Every `.gitignore` in a folder counts, not just the top one.** A folder holding several projects was indexed with only its own rules, so each project's build output went in too. Xcode / SwiftPM build folders are skipped as well.
+- **The Connections folder list no longer reads "No folders indexed yet" right after launch,** before it has heard back from the API.
+- **Monitoring no longer shows 0 for numbers it doesn't know yet.** "Points indexed" asked for its total once, when the tab opened; if the API was still starting, it read 0 for the rest of the session. It now retries until it gets an answer and follows indexing while the tab is open. Every tile, and CPU before its first real reading, shows "—" until its value is known.
+
+### Changed
+
+- Bridge `embarsy-qdrant-mcp` 0.1.8 is bundled with the app; installing it from npm is no longer needed.
+
 ## 0.2.2 — beta (2026-09-28)
 
 ### Fixed

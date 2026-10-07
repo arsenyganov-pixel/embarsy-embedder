@@ -75,8 +75,14 @@ export async function upsertPoints(cfg: Config, points: QdrantPoint[]): Promise<
   );
 }
 
-export async function search(cfg: Config, vector: number[], limit: number): Promise<SearchHit[]> {
+export async function search(
+  cfg: Config,
+  vector: number[],
+  limit: number,
+  filter?: Record<string, unknown>,
+): Promise<SearchHit[]> {
   const body: Record<string, unknown> = { vector, limit, with_payload: true };
+  if (filter) body.filter = filter;
   const json = await requestJSON(
     `${base(cfg)}/points/search`,
     { method: "POST", headers: headers(cfg), body: JSON.stringify(body) },
@@ -111,6 +117,7 @@ export async function setWorkspacePayload(
   cfg: Config,
   workspace: string,
   workspacePath: string,
+  indexRoot: string,
 ): Promise<void> {
   await requestJSON(
     `${base(cfg)}/points/payload?wait=true`,
@@ -118,7 +125,20 @@ export async function setWorkspacePayload(
       method: "POST",
       headers: headers(cfg),
       // An empty filter selects every point in the collection.
-      body: JSON.stringify({ payload: { workspace, workspace_path: workspacePath }, filter: {} }),
+      // `indexed_at` lets Embarsy show when this folder was last refreshed — stamped here,
+      // at the end of a successful run, so it never claims a run that failed partway.
+      body: JSON.stringify({
+        // `index_root` is the folder every `file_path` is relative to. It differs from
+        // `workspace_path` when a source container was indexed (`myproj/src` is the `myproj`
+        // project), and the bridge needs the exact one to map a hit back onto the disk.
+        payload: {
+          workspace,
+          workspace_path: workspacePath,
+          index_root: indexRoot,
+          indexed_at: Math.floor(Date.now() / 1000),
+        },
+        filter: {},
+      }),
     },
     { label: "set workspace payload" },
   );
@@ -152,9 +172,72 @@ export async function scrollFileHashes(cfg: Config): Promise<Map<string, string>
   return out;
 }
 
+/** One point's `index_root`, `workspace_path` and `file_path` — enough to work out which
+ *  folder the collection's relative file paths hang off. Null when the collection is empty
+ *  or unreadable. */
+export async function sampleLocation(
+  cfg: Config,
+): Promise<{ indexRoot: string; workspacePath: string; filePath: string } | null> {
+  try {
+    const json = await requestJSON(
+      `${base(cfg)}/points/scroll`,
+      {
+        method: "POST",
+        headers: headers(cfg),
+        body: JSON.stringify({
+          limit: 1,
+          with_payload: ["index_root", "workspace_path", "file_path"],
+          with_vector: false,
+        }),
+      },
+      { label: "sample collection", retries: 0 },
+    );
+    const p = json?.result?.points?.[0]?.payload;
+    if (!p) return null;
+    const str = (v: unknown) => (typeof v === "string" ? v : "");
+    return { indexRoot: str(p.index_root), workspacePath: str(p.workspace_path), filePath: str(p.file_path) };
+  } catch {
+    return null;
+  }
+}
+
 export async function collectionInfo(cfg: Config): Promise<{ pointsCount: number } | null> {
   const res = await fetch(base(cfg), { headers: headers(cfg) });
   if (res.status === 404) return null;
   const json = JSON.parse(await res.text());
   return { pointsCount: json?.result?.points_count ?? 0 };
+}
+
+/** Names of every collection in this Qdrant. */
+export async function listCollections(cfg: Config): Promise<string[]> {
+  const json = await requestJSON(
+    `${cfg.qdrantUrl}/collections`,
+    { method: "GET", headers: headers(cfg) },
+    { label: "list collections" },
+  );
+  const items = json?.result?.collections;
+  return Array.isArray(items)
+    ? items.map((c: any) => String(c?.name ?? "")).filter(Boolean)
+    : [];
+}
+
+/** The folder a collection was indexed from, or null when it carries no `workspace_path`
+ *  (collections written by other tools). One sampled point is enough — the field is stamped
+ *  across every point in the collection by the same run. */
+export async function workspacePathOf(cfg: Config, collection: string): Promise<string | null> {
+  try {
+    const json = await requestJSON(
+      `${cfg.qdrantUrl}/collections/${encodeURIComponent(collection)}/points/scroll`,
+      {
+        method: "POST",
+        headers: headers(cfg),
+        body: JSON.stringify({ limit: 1, with_payload: ["workspace_path"], with_vector: false }),
+      },
+      { label: "sample collection", retries: 0 },
+    );
+    const value = json?.result?.points?.[0]?.payload?.workspace_path;
+    return typeof value === "string" && value ? value : null;
+  } catch {
+    return null; // an unreadable collection simply is not a candidate
+  }
 }

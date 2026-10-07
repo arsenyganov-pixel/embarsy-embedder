@@ -28,7 +28,8 @@ Stops the running Embarsy stack, quits the app, installs build/Embarsy.app over 
 installed copy, and relaunches it.
 
 Options:
-  --build             Package build/Embarsy.app first (reuses the existing API binary).
+  --build             Rebuild the editor bridge and package build/Embarsy.app first
+                      (reuses the existing API binary).
   --no-relaunch       Install but do not start the app again.
   --install-dir PATH  Where the app lives (default: EMBARSY_INSTALL_DIR or /Applications).
   -h, --help          Show this help.
@@ -51,6 +52,10 @@ done
 target_app="${install_dir}/${app_name}.app"
 
 if [[ "${build_app}" == true ]]; then
+  # Packaging copies whatever bridge is already staged in bin/bridge; without restaging it,
+  # a rebuilt app silently ships the bridge from the last time someone remembered to.
+  echo "==> Staging the editor bridge"
+  "${SCRIPT_DIR}/prepare-bridge.sh"
   echo "==> Packaging ${app_name}.app"
   "${SCRIPT_DIR}/package-macos-app.sh" --skip-binary-validation
 fi

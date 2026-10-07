@@ -50,6 +50,7 @@ struct ActivityEvent: Decodable, Equatable, Identifiable, Sendable {
         case "claude-code": return "Claude Code"
         case "codex": return "Codex"
         case "embarsy-qdrant-mcp": return "Bridge"
+        case "embarsy-app": return "Embarsy"
         default: return raw
         }
     }

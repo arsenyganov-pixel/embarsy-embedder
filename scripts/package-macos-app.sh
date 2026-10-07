@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 app_name="Embarsy"
-app_version="0.2.2"
+app_version="0.2.3"
 bundle_version="${EMBARSY_BUNDLE_VERSION:-$(date -u +%Y%m%d%H%M)}"
 native_dir="${EMBARSY_HOME}/native/EmbarsyApp"
 bundle_dir="${EMBARSY_HOME}/build/${app_name}.app"
@@ -96,6 +96,7 @@ binary_sources=(
   "${EMBARSY_QDRANT_BIN}:qdrant"
   "${EMBARSY_OLLAMA_BIN}:ollama"
   "${EMBARSY_API_BIN}:embarsy-api"
+  "${EMBARSY_NODE_BIN}:node"
 )
 
 ollama_runner_source="${OLLAMA_LLAMA_SERVER_BIN:-}"
@@ -169,6 +170,7 @@ if [[ "${dry_run}" == true ]]; then
     echo "  copy resource ${entry%%:*} -> ${resources_dir}/${entry##*:}"
   done
   echo "  copy Ollama runner ${ollama_runner_source} -> ${resources_dir}/lib/ollama/llama-server"
+  echo "  copy editor bridge ${EMBARSY_BRIDGE_DIR} -> ${resources_dir}/bridge"
   echo "  write Info.plist"
   echo "  ad-hoc sign: ${sign_app}"
   echo "  codesign identity: ${codesign_identity}"
@@ -204,6 +206,15 @@ for entry in "${binary_sources[@]}"; do
     echo "Skipping missing optional binary: ${target_name} (${source_path})"
   fi
 done
+
+# The editor bridge ships inside the bundle so connecting Claude Code / Codex needs no npm,
+# no Node on PATH and no network: the config we write points at paths that always exist.
+if [[ -d "${EMBARSY_BRIDGE_DIR}" ]]; then
+  rm -rf "${resources_dir}/bridge"
+  cp -R "${EMBARSY_BRIDGE_DIR}" "${resources_dir}/bridge"
+else
+  echo "Skipping missing editor bridge (${EMBARSY_BRIDGE_DIR}) — run scripts/prepare-bridge.sh"
+fi
 
 if [[ -x "${ollama_runner_source}" ]]; then
   mkdir -p "${resources_dir}/lib/ollama"

@@ -12,6 +12,9 @@ struct AppPaths {
     let bundledQdrant: URL
     let bundledOllama: URL
     let bundledAPI: URL
+    let bundledNode: URL
+    let bundledBridgeMCP: URL
+    let bundledBridgeIndex: URL
 
     static func live(bundle: Bundle = .main) throws -> AppPaths {
         let fileManager = FileManager.default
@@ -34,7 +37,10 @@ struct AppPaths {
             localSecretsFile: appSupportRoot.appendingPathComponent(".local-secrets.json"),
             bundledQdrant: resources.appendingPathComponent("qdrant"),
             bundledOllama: resources.appendingPathComponent("ollama"),
-            bundledAPI: resources.appendingPathComponent("embarsy-api")
+            bundledAPI: resources.appendingPathComponent("embarsy-api"),
+            bundledNode: resources.appendingPathComponent("node"),
+            bundledBridgeMCP: resources.appendingPathComponent("bridge/mcp.js"),
+            bundledBridgeIndex: resources.appendingPathComponent("bridge/index.js")
         )
     }
 

@@ -209,3 +209,31 @@ def test_row_carries_the_folder_for_the_app_to_reveal():
     # The name the link is labelled with must be the folder it opens.
     assert row["display_name"] == "service-autohub-call"
     assert str(row["workspace_path"]).rsplit("/", 1)[-1] == row["display_name"]
+
+
+# ── who owns the index (decides whether the app may re-index it) ──────────────
+
+def test_bridge_written_folder_is_marked_as_indexer_owned():
+    row = build_content_collection_row(
+        "cc-billing", {"points_count": 10},
+        [{"payload": {"file_path": "a.go", "workspace_path": "/Users/me/code/billing", "indexed_at": 1700000000}}],
+    )
+    assert row["workspace_source"] == "indexer"
+    assert row["indexed_at"] == 1700000000
+
+
+def test_cache_recovered_folder_is_marked_as_editor_owned():
+    """Roo/Zoo collections must never be offered for re-indexing by the bridge: their payload
+    shape differs, and writing ours into them would corrupt the editor's own index."""
+    row = build_content_collection_row(
+        "ws-1", {"points_count": 10},
+        [{"payload": {"filePath": "src/a.php"}}],
+        cache_paths=["/Users/me/code/shop/src/a.php", "/Users/me/code/shop/README.md"],
+    )
+    assert row["workspace_source"] == "editor"
+    assert row["indexed_at"] == 0
+
+
+def test_unknown_origin_has_no_source():
+    row = build_content_collection_row("x", {"points_count": 1}, [{"payload": {"text": "hello"}}])
+    assert row["workspace_source"] == ""
