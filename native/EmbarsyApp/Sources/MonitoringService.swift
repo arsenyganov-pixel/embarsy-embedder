@@ -106,6 +106,9 @@ final class MonitoringService: ObservableObject {
     @Published var snapshot: MonitoringSnapshot = .empty
     @Published var message = "Monitoring is waiting for Embarsy API."
     @Published var isRefreshing = false
+    /// False until one refresh has succeeded — the empty snapshot before that means "not
+    /// known yet", and the tiles must not present it as zero activity.
+    @Published private(set) var hasLoaded = false
 
     private var inFlight: Task<Void, Never>?
 
@@ -148,6 +151,7 @@ final class MonitoringService: ObservableObject {
             }.value
             try Task.checkCancellation()
             snapshot = decoded
+            hasLoaded = true
             message = decoded.series.isEmpty ? "No embedding activity yet." : "Monitoring updated."
         } catch is CancellationError {
             // Replaced by a newer refresh — keep whatever state the winner publishes.

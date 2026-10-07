@@ -55,11 +55,13 @@ struct ContentView: View {
     private let allTabs: [TabDescriptor] = [
         TabDescriptor(tab: .status,     title: "Status",     icon: "square.grid.2x2"),
         TabDescriptor(tab: .install,    title: "Install",    icon: "square.and.arrow.down"),
+        // Right after Status: connecting agents is the next step once the stack is up,
+        // before anything there is to monitor.
+        TabDescriptor(tab: .howto,      title: "Connections", icon: "point.3.connected.trianglepath.dotted"),
         TabDescriptor(tab: .monitoring, title: "Monitoring", icon: "chart.line.uptrend.xyaxis"),
         TabDescriptor(tab: .activity,   title: "Activity",   icon: "list.bullet"),
         TabDescriptor(tab: .content,    title: "Content",    icon: "tablecells"),
         TabDescriptor(tab: .settings,   title: "Settings",   icon: "gearshape"),
-        TabDescriptor(tab: .howto,      title: "How To",     icon: "questionmark.circle"),
     ]
 
     // Install is only offered while the stack isn't installed (matches the old TabView).
@@ -118,7 +120,7 @@ struct ContentView: View {
         case .activity:   ActivityView(activity: store.activity)
         case .content:    ContentIndexView(contentIndex: store.contentIndex)
         case .settings:   SettingsView()
-        case .howto:      HowToView()
+        case .howto:      ConnectionsView()
         }
     }
 }

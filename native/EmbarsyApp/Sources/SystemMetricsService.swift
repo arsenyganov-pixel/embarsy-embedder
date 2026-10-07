@@ -20,6 +20,9 @@ final class SystemMetricsService: ObservableObject {
     @Published private(set) var lastCPU: Double = 0
     @Published private(set) var lastMemGB: Double = 0
     @Published private(set) var lastTempC: Double?          // nil when sensors unavailable
+    /// CPU load is a difference between two tick readings, so the first sample has nothing
+    /// to compare against and its 0 is a placeholder, not a measurement.
+    @Published private(set) var hasCPUReading = false
     @Published private(set) var processCount: Int = 0
     @Published private(set) var sampleDates: [Date] = []    // timestamps aligned with mem/cpu series
     @Published private(set) var tempDates: [Date] = []      // timestamps aligned with tempSeries
@@ -66,6 +69,7 @@ final class SystemMetricsService: ObservableObject {
                 let idle = max(0, ticks.idle - prev.idle)
                 let total = user + system + nice + idle
                 cpu = total > 0 ? (user + system + nice) / total * 100.0 : 0
+                hasCPUReading = true
             }
             prevCPUTicks = ticks
         }

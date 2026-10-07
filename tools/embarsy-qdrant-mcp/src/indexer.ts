@@ -159,7 +159,7 @@ export async function indexRepo(root: string, cfg: Config, opts: IndexOptions = 
   // Backfills points this run skipped as unchanged, and points indexed by an older bridge
   // that never wrote the field — without it the name would stay missing until every file
   // in the project happened to change.
-  await setWorkspacePayload(cfg, workspace, workspaceRoot);
+  await setWorkspacePayload(cfg, workspace, workspaceRoot, rootAbs);
 
   return result;
 }

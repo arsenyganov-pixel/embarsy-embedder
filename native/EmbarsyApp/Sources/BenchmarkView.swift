@@ -29,7 +29,19 @@ struct BenchmarkView: View {
     private var activeCollection: String? {
         service.selectedCollection ?? collections.first?.collectionName
     }
-    private var workspacePath: String { store.preferences.defaultProjectPath }
+    /// The folder the selected collection was indexed from, when Embarsy knows it and it
+    /// still exists — the only folder grep can fairly race over. Previously every collection
+    /// was paired with the single default folder from Settings, so the benchmark worked for
+    /// exactly one collection and refused (correctly, with a mismatch error) for all others.
+    private var collectionFolder: URL? {
+        guard let name = activeCollection,
+              let folder = collections.first(where: { $0.collectionName == name })?.revealableFolder,
+              FileManager.default.fileExists(atPath: folder.path) else { return nil }
+        return folder
+    }
+
+    /// The Settings default is now only the fallback for a collection whose folder is unknown.
+    private var workspacePath: String { collectionFolder?.path ?? store.preferences.defaultProjectPath }
 
     var body: some View {
         EmbarsySection(title: "Benchmark", right: "grep vs meaning") {
@@ -186,11 +198,16 @@ struct BenchmarkView: View {
                     .buttonStyle(.bordered)
                 Text("grep needs the folder this collection indexes")
                     .font(.caption).foregroundStyle(.tertiary)
+            } else if let folder = collectionFolder {
+                // A path is navigation: it reveals the folder grep will race over.
+                FinderLink(label: abbreviatedPath(folder.path), folder: folder,
+                           font: .system(.caption, design: .monospaced))
             } else {
                 Text(abbreviatedPath(workspacePath))
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.head)
+                    .chipHelp("Embarsy doesn't know which folder this collection indexes, so grep uses the default project folder from Settings. If the two don't match, the benchmark stops with a mismatch error rather than racing over the wrong code.")
             }
 
             Spacer()

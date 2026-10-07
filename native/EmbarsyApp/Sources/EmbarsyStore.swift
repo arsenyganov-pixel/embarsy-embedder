@@ -51,6 +51,15 @@ final class EmbarsyStore: ObservableObject {
     /// old one, so it sees no difference and stays hidden.
     @Published private(set) var newerBuildInstalled = false
 
+    /// Owned by the store, not the Connections view: a first index can run for half an hour,
+    /// and it must survive the user switching tabs while it does.
+    let indexing = IndexingService()
+
+    /// Whether Claude Code / Codex are registered with this copy of Embarsy. Read from their
+    /// own config files, so it reflects reality even if the user edited those by hand.
+    @Published private(set) var editorStates: [EditorAgent: EditorConnectionState] = [:]
+    @Published private(set) var editorConnectionError: String?
+
     let localSecrets: LocalSecretStore
     let workspaceService = WorkspaceService()
     /// App-lifetime Memory / CPU / temperature buffer. Owned by the store (not the Monitoring
@@ -77,7 +86,10 @@ final class EmbarsyStore: ObservableObject {
             localSecretsFile: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("Embarsy/.local-secrets.json"),
             bundledQdrant: URL(fileURLWithPath: "qdrant"),
             bundledOllama: URL(fileURLWithPath: "ollama"),
-            bundledAPI: URL(fileURLWithPath: "embarsy-api")
+            bundledAPI: URL(fileURLWithPath: "embarsy-api"),
+            bundledNode: URL(fileURLWithPath: "node"),
+            bundledBridgeMCP: URL(fileURLWithPath: "bridge/mcp.js"),
+            bundledBridgeIndex: URL(fileURLWithPath: "bridge/index.js")
         )
         let defaultConfig = EmbarsyConfig()
         let debugLog = DebugLogService(logsDirectory: resolvedPaths.logsDirectory)
@@ -208,6 +220,44 @@ final class EmbarsyStore: ObservableObject {
         }
         await processManager.refreshAll()
         await checkAPIVersion()
+    }
+
+    // MARK: Editor connections
+
+    private var editorConnections: EditorConnectionService { EditorConnectionService(paths: paths) }
+
+    func refreshEditorConnections() {
+        editorStates = Dictionary(
+            uniqueKeysWithValues: EditorAgent.allCases.map { ($0, editorConnections.state(of: $0)) }
+        )
+    }
+
+    func connectEditor(_ agent: EditorAgent) {
+        do {
+            try editorConnections.connect(agent, config: config)
+            editorConnectionError = nil
+            debugLog.append("Connected \(agent.label) to the bundled bridge", category: "connections")
+        } catch {
+            editorConnectionError = "Couldn't connect \(agent.label). \(error.localizedDescription)"
+        }
+        refreshEditorConnections()
+    }
+
+    func disconnectEditor(_ agent: EditorAgent) {
+        do {
+            try editorConnections.disconnect(agent)
+            editorConnectionError = nil
+            debugLog.append("Disconnected \(agent.label)", category: "connections")
+        } catch {
+            editorConnectionError = "Couldn't disconnect \(agent.label). \(error.localizedDescription)"
+        }
+        refreshEditorConnections()
+    }
+
+    /// Index (or refresh) a folder, then reload Content so the new numbers show at once.
+    func indexFolder(_ folder: URL, collection: String) async {
+        let ok = await indexing.index(folder: folder, collection: collection, paths: paths, config: config)
+        if ok { await contentIndex.refresh(config: config, maxAge: 0) }
     }
 
     /// Notice that the app bundle on disk is no longer the one running. Deliberately NOT

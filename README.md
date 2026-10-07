@@ -49,8 +49,8 @@ through your own coding agent, with and without Embarsy, and compares wall-clock
 ## Simple. Clear. Transparent.
 
 **Simple** — one button installs and wires the entire stack: Qdrant, Ollama, the
-`qwen3-embedding` model. No terminal, no Docker, no Python, no API keys to mint. Your editor gets
-copy-paste connection values and just works.
+`qwen3-embedding` model. No terminal, no Docker, no Python, no API keys to mint. Claude Code and
+Codex connect with one more click; Zoo / Roo Code get copy-paste connection values.
 
 **Clear** — you always see what's indexed (per-project clusters with languages and areas), what
 it costs your machine (live CPU, memory, temperature), and what's happening right now (every
@@ -72,7 +72,16 @@ service is healthy before it reports ready.
 
 <p align="center"><img src="assets/install.png" width="840" alt="One-click install of Qdrant, Ollama and the embedding model"></p>
 
-### ② See what your agent understands — per project, one-swipe cleanup
+### ② Connect Claude Code and Codex — one click, nothing to install
+
+**Connections** has a tab per agent. **Connect** writes the editor's own config for you — both can be
+connected at once — and the MCP bridge and Node ship inside Embarsy, so there is no npm and no setup
+command. Add the folders your agents should know with **Add folder…**: one connection then serves
+every project, picking the index from the folder the agent is working in.
+
+<p align="center"><img src="assets/connections.png" width="840" alt="Connections: one tab per agent, the bundled bridge connected, and the indexed folders it searches"></p>
+
+### ③ See what your agent understands — per project, one-swipe cleanup
 
 Every workspace becomes a Qdrant collection. The **Content** tab leads each row with **the project's
 name — and clicking it reveals that folder in Finder**, so you never have to decode a collection id
@@ -81,7 +90,7 @@ again. Under it: a safe, high-level summary — languages, areas, file globs and
 
 <p align="center"><img src="assets/content.png" width="840" alt="Content tab: each collection led by its project name, which opens the folder in Finder"></p>
 
-### ③ Know which of your agents actually uses the index
+### ④ Know which of your agents actually uses the index
 
 Running Claude Code, Codex and Roo Code side by side? **Activity** labels every request with the
 client that made it and whether it was **indexing** or **searching** — so "is this editor even wired
@@ -90,7 +99,7 @@ read and write.
 
 <p align="center"><img src="assets/activity.png" width="840" alt="Activity log with each request labelled by client — Claude Code searching, Codex indexing"></p>
 
-### ④ Monitoring + resource usage at a glance
+### ⑤ Monitoring + resource usage at a glance
 
 Grafana-style dashboards for embedding throughput, latency, and Qdrant reads/writes/errors — **plus
 live Memory, CPU and temperature** of the running stack. Know exactly what indexing is costing your
@@ -98,7 +107,7 @@ machine, over the last hour, day or week.
 
 <p align="center"><img src="assets/monitoring.png" width="840" alt="Monitoring dashboards with Memory, CPU and temperature panels"></p>
 
-### ⑤ Start &amp; stop the whole stack — one button, or the menu bar
+### ⑥ Start &amp; stop the whole stack — one button, or the menu bar
 
 Run everything with **Start All**, or control the stack without leaving your workflow straight from the
 macOS **menu bar** — Start, Stop, Refresh and open your project, all a click away. One button removes
@@ -124,15 +133,10 @@ Two ways in, depending on your agent:
 
 - **Roo Code / Zoo Code** have indexing built in — they do the chunking, file watching and delta
   indexing themselves. Paste the connection values and you're done.
-- **Claude Code / Codex** connect through [`embarsy-qdrant-mcp`](https://www.npmjs.com/package/embarsy-qdrant-mcp),
-  Embarsy's own MCP bridge: `embarsy-index` indexes a project, and a `search_code` tool answers your
-  agent's questions from the index. One command wires up each editor:
-
-  ```bash
-  npm install -g embarsy-qdrant-mcp
-  embarsy-index /path/to/your/project      # index it
-  embarsy-mcp --setup-claude               # or --setup-codex
-  ```
+- **Claude Code / Codex** connect with one click in **Connections** — nothing to install. Embarsy ships
+  its own MCP bridge, registers it with the editor, and indexes the folders you add; a `search_code`
+  tool then answers the agent's questions from the index. The bridge tells the agent when to search by
+  meaning and when grep is still the better tool, and says so plainly when a match is weak.
 
 ---
 
@@ -150,14 +154,15 @@ Two ways in, depending on your agent:
      ```
 4. Open **Install → Install and Start**. Embarsy fetches Qdrant, Ollama and the embedding model, then
    starts the stack (the first model download takes a few minutes).
-5. Connect your agent:
-   - **Roo Code / Zoo Code** — open **Status**, copy the connection values into the editor's
-     codebase-indexing settings. Point the **Qdrant URL** at the Embarsy proxy so Monitoring can
-     count reads/writes.
-   - **Claude Code / Codex** — `npm install -g embarsy-qdrant-mcp`, then `embarsy-index <project>`
-     and `embarsy-mcp --setup-claude` (or `--setup-codex`). See **How To** in the app for the exact
-     values.
-<p align="center"><img src="assets/status.png" width="840" alt="Connection Parameters on Status — the values to paste into your editor, each with a Copy button"></p>
+5. Connect your agent in **Connections**:
+   - **Claude Code / Codex** — click **Connect** on the agent's tab, add your project with
+     **Add folder…**, then restart the editor.
+<p align="center"><img src="assets/connections-connect.png" width="840" alt="Codex tab in Connections, not connected yet: the Connect button, and Add folder… under Indexed folders"></p>
+
+   - **Roo Code / Zoo Code** — open the **Zoo / Roo Code** tab and copy the connection values into
+     the editor's codebase-indexing settings. Point the **Qdrant URL** at the Embarsy proxy so
+     Monitoring can count reads/writes.
+<p align="center"><img src="assets/connections-roo.png" width="840" alt="Zoo / Roo Code tab in Connections — the values to paste into your editor, each with a Copy button"></p>
 
 6. Scroll down on **Status** and hit **Run benchmark** — watch grep and meaning race on your own code.
 

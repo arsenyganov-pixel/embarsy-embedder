@@ -506,6 +506,13 @@ def build_content_collection_row(
         # rather than guessed: a name inferred from relative paths has no folder behind it,
         # and a link that opens the wrong place is worse than plain text.
         "workspace_path": workspace_folder_path(sample_paths, payloads, cache_paths=cache_paths),
+        # "indexer" — written by Embarsy's bridge, so the app may re-index it; "editor" — recovered
+        # from an editor's own cache, never to be overwritten by the bridge (different payloads).
+        "workspace_source": (
+            "indexer" if stated_workspace_path(payloads)
+            else ("editor" if _workspace_root_from_cache(cache_paths or [], sample_paths) else "")
+        ),
+        "indexed_at": last_indexed_at(payloads),
         "points_count": points_count,
         "indexed_summary": indexed_summary,
         "preview": content_preview(all_paths, payloads, indexed_summary),
@@ -623,6 +630,30 @@ def workspace_display_name(
     return ""
 
 
+def stated_workspace_path(payloads: list[dict[str, Any]]) -> str:
+    """The absolute folder an indexer WROTE into the payload, or "" if none did.
+
+    Kept separate from the cache-derived root because the two mean different things to the
+    app: a folder written by Embarsy's own bridge can be re-indexed by it, while one recovered
+    from an editor's cache belongs to that editor's indexer and has a different payload shape.
+    """
+    for payload in payloads:
+        for key in ("workspace_path", "workspacePath", "workspace_root"):
+            value = payload.get(key)
+            if isinstance(value, str) and value:
+                normalized = _normalize_path(to_well_formed(value))
+                if _is_absolute_path(normalized):
+                    return normalized
+    return ""
+
+
+def last_indexed_at(payloads: list[dict[str, Any]]) -> int:
+    """When the bridge last finished indexing this collection (epoch seconds), or 0."""
+    stamps = [p.get("indexed_at") for p in payloads]
+    values = [int(v) for v in stamps if isinstance(v, (int, float)) and v > 0]
+    return max(values, default=0)
+
+
 def workspace_folder_path(
     sample_paths: list[str],
     payloads: list[dict[str, Any]],
@@ -637,16 +668,9 @@ def workspace_folder_path(
     else. Existence is not checked: the app opens the folder and is the one that can tell
     the user it has moved, and a flag computed here would be stale by then.
     """
-    stated = [
-        payload.get(key)
-        for payload in payloads
-        for key in ("workspace_path", "workspacePath", "workspace_root")
-        if isinstance(payload.get(key), str) and payload.get(key)
-    ]
-    for candidate in stated:
-        normalized = _normalize_path(to_well_formed(candidate))
-        if _is_absolute_path(normalized):
-            return normalized
+    stated = stated_workspace_path(payloads)
+    if stated:
+        return stated
 
     return _workspace_root_from_cache(cache_paths or [], sample_paths)
 

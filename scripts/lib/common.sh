@@ -34,6 +34,8 @@ export OLLAMA_KEEP_ALIVE="${OLLAMA_KEEP_ALIVE:--1}"
 export OLLAMA_MODELS="${OLLAMA_MODELS:-${EMBARSY_APP_SUPPORT}/ollama}"
 export EMBARSY_OLLAMA_BIN="${EMBARSY_OLLAMA_BIN:-${EMBARSY_BIN_DIR}/ollama}"
 export EMBARSY_API_BIN="${EMBARSY_API_BIN:-${EMBARSY_BIN_DIR}/embarsy-api}"
+export EMBARSY_NODE_BIN="${EMBARSY_NODE_BIN:-${EMBARSY_BIN_DIR}/node}"
+export EMBARSY_BRIDGE_DIR="${EMBARSY_BRIDGE_DIR:-${EMBARSY_BIN_DIR}/bridge}"
 
 has_command() {
   command -v "$1" >/dev/null 2>&1
@@ -86,3 +88,5 @@ pid_alive() {
 EMBARSY_QDRANT_BIN="$(resolve_path "${EMBARSY_QDRANT_BIN}")"
 EMBARSY_OLLAMA_BIN="$(resolve_path "${EMBARSY_OLLAMA_BIN}")"
 EMBARSY_API_BIN="$(resolve_path "${EMBARSY_API_BIN}")"
+EMBARSY_NODE_BIN="$(resolve_path "${EMBARSY_NODE_BIN}")"
+EMBARSY_BRIDGE_DIR="$(resolve_path "${EMBARSY_BRIDGE_DIR}")"

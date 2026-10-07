@@ -62,9 +62,9 @@ struct MonitoringView: View {
                             .equatable()
                             .frame(height: 220)
                         HStack {
-                            legendSwatch("memory \(String(format: "%.2f", sysMetrics.lastMemGB)) GB", color: Theme.mReads)
+                            legendSwatch(sysMetrics.memSeries.isEmpty ? "memory \u{2014}" : "memory \(String(format: "%.2f", sysMetrics.lastMemGB)) GB", color: Theme.mReads)
                             Spacer()
-                            legendSwatch("cpu \(String(format: "%.0f", sysMetrics.lastCPU))%", color: Theme.mErrors)
+                            legendSwatch(sysMetrics.hasCPUReading ? "cpu \(String(format: "%.0f", sysMetrics.lastCPU))%" : "cpu \u{2014}", color: Theme.mErrors)
                         }
                         .padding(.top, 10)
                         .overlay(alignment: .top) { Rectangle().fill(Theme.separator).frame(height: 1).offset(y: -1) }
@@ -139,21 +139,27 @@ struct MonitoringView: View {
         }
         .task(id: refreshInterval) {
             selectedScale = monitoring.scale
-            // The "Points indexed" tile reads the Content service — populate it once if
-            // the user opens Monitoring before ever visiting Content (it used to show 0).
-            if contentIndex.snapshot.collections.isEmpty {
-                await store.refreshContentIndex()
-            }
             // Sleep in short slices and track the last fetch: while the window is
             // closed/minimized/covered nothing is fetched (nobody can see the result),
             // and on becoming visible again the next ≤2s slice refreshes immediately
             // instead of waiting out a full interval.
             var lastRefresh = Date.distantPast
+            var lastContentRefresh = Date.distantPast
             while !Task.isCancelled {
                 if WindowVisibility.mainWindowVisible,
                    Date().timeIntervalSince(lastRefresh) >= refreshInterval.seconds {
                     busy = true
                     await store.refreshMonitoring()
+                    // The "Points indexed" tile reads the Content service. Retried on every
+                    // tick until it has answered once — a single attempt at launch often
+                    // lands while the API is still starting, and the tile then sat at 0 for
+                    // the whole session — and refreshed each minute after that, so the
+                    // total follows indexing that happens while the tab is open.
+                    if !contentIndex.hasLoaded
+                        || Date().timeIntervalSince(lastContentRefresh) >= Self.contentRefreshSeconds {
+                        await store.refreshContentIndex()
+                        lastContentRefresh = Date()
+                    }
                     busy = false
                     lastRefresh = Date()
                 }
@@ -234,6 +240,10 @@ struct MonitoringView: View {
     /// rendered line matches the full series at the 44pt sparkline's resolution.
     private static let sparkPoints = 120
 
+    /// How often the "Points indexed" total is re-read once known. The API caches the
+    /// content overview, so this is cheap; it only needs to keep up with indexing.
+    private static let contentRefreshSeconds: TimeInterval = 60
+
     private var metricTiles: [MetricTile] {
         let s = monitoring.snapshot.summary
         let series = monitoring.snapshot.series
@@ -244,17 +254,22 @@ struct MonitoringView: View {
             ChartDownsample.minMaxPoints(values, to: Self.sparkPoints)
         }
         let points = contentIndex.snapshot.collections.reduce(0) { $0 + $1.pointsCount }
+        // "—" until a source has answered: an unknown value is not zero, and a 0 shown while
+        // the API is still starting reads as "nothing happened".
+        let dash = "\u{2014}"
+        let known = monitoring.hasLoaded
+        func count(_ v: Int) -> String { known ? v.formatted() : dash }
         return [
-            MetricTile(title: "Embedding requests", value: s.embeddingsRequests.formatted(), color: Theme.mRequests, spark: spark { Double($0.embeddingsRequests) }),
-            MetricTile(title: "Vectors generated", value: s.embeddingsVectors.formatted(), color: Theme.mVectors, spark: spark { Double($0.embeddingsVectors) }),
-            MetricTile(title: "Avg latency", value: String(format: "%.0f ms", s.embeddingsLatencyMSAverage), color: Theme.mLatency, spark: spark { $0.embeddingsLatencyMSAverage }),
-            MetricTile(title: "Embedding errors", value: s.embeddingsErrors.formatted(), color: Theme.mErrors, spark: spark { Double($0.embeddingsErrors) }),
-            MetricTile(title: "Qdrant reads", value: s.qdrantReads.formatted(), color: Theme.mReads, spark: spark { Double($0.qdrantReads) }),
-            MetricTile(title: "Qdrant writes", value: s.qdrantWrites.formatted(), color: Theme.mWrites, spark: spark { Double($0.qdrantWrites) }),
-            MetricTile(title: "Points indexed", value: points.formatted(), color: Theme.accent, spark: spark { Double($0.embeddingsVectors) }),
-            MetricTile(title: "Memory", value: String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: spark(sysMetrics.memSeries)),
-            MetricTile(title: "CPU", value: String(format: "%.0f %%", sysMetrics.lastCPU), color: Theme.mErrors, spark: spark(sysMetrics.cpuSeries)),
-            MetricTile(title: "Temperature", value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? "\u{2014}", color: Theme.mTemp, spark: spark(sysMetrics.tempSeries)),
+            MetricTile(title: "Embedding requests", value: count(s.embeddingsRequests), color: Theme.mRequests, spark: spark { Double($0.embeddingsRequests) }),
+            MetricTile(title: "Vectors generated", value: count(s.embeddingsVectors), color: Theme.mVectors, spark: spark { Double($0.embeddingsVectors) }),
+            MetricTile(title: "Avg latency", value: known ? String(format: "%.0f ms", s.embeddingsLatencyMSAverage) : dash, color: Theme.mLatency, spark: spark { $0.embeddingsLatencyMSAverage }),
+            MetricTile(title: "Embedding errors", value: count(s.embeddingsErrors), color: Theme.mErrors, spark: spark { Double($0.embeddingsErrors) }),
+            MetricTile(title: "Qdrant reads", value: count(s.qdrantReads), color: Theme.mReads, spark: spark { Double($0.qdrantReads) }),
+            MetricTile(title: "Qdrant writes", value: count(s.qdrantWrites), color: Theme.mWrites, spark: spark { Double($0.qdrantWrites) }),
+            MetricTile(title: "Points indexed", value: contentIndex.hasLoaded ? points.formatted() : dash, color: Theme.accent, spark: spark { Double($0.embeddingsVectors) }),
+            MetricTile(title: "Memory", value: sysMetrics.memSeries.isEmpty ? dash : String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: spark(sysMetrics.memSeries)),
+            MetricTile(title: "CPU", value: sysMetrics.hasCPUReading ? String(format: "%.0f %%", sysMetrics.lastCPU) : dash, color: Theme.mErrors, spark: spark(sysMetrics.cpuSeries)),
+            MetricTile(title: "Temperature", value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? dash, color: Theme.mTemp, spark: spark(sysMetrics.tempSeries)),
         ]
     }
 

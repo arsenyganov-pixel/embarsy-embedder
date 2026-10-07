@@ -19,6 +19,10 @@ const SKIP_DIRS = new Set([
   ".pytest_cache", "dist", "build", "out", "target", ".next", ".nuxt", ".svelte-kit",
   ".turbo", ".cache", "coverage", ".idea", ".vscode", ".gradle", "Pods", ".terraform",
   "vendor", "bin", "obj", ".DS_Store",
+  // Xcode / SwiftPM build output. Usually covered by the project's own .gitignore, but a
+  // folder that holds several projects is indexed from above them, and a checkout without
+  // a .gitignore still builds into these.
+  ".build", "DerivedData", ".swiftpm",
 ]);
 
 /** Extensions we treat as indexable source/text. */
@@ -40,30 +44,51 @@ export interface DiscoveredFile {
   rel: string; // POSIX-style relative path from root
 }
 
+/** One `.gitignore`, with the folder (relative to the indexed root, POSIX, "" for the root
+ *  itself) its patterns are relative to. */
+interface IgnoreLayer {
+  base: string;
+  ig: Ignorer;
+}
+
 export async function discoverFiles(root: string, cfg: Config): Promise<DiscoveredFile[]> {
   const rootAbs = path.resolve(root);
-  const ig = createIgnorer();
-  await loadGitignore(ig, rootAbs);
-
   const out: DiscoveredFile[] = [];
-  await walk(rootAbs, rootAbs, ig, cfg, out);
+  await walk(rootAbs, rootAbs, [], cfg, out);
   out.sort((a, b) => a.rel.localeCompare(b.rel));
   return out;
 }
 
-async function loadGitignore(ig: Ignorer, rootAbs: string): Promise<void> {
+async function loadGitignore(dirAbs: string, base: string): Promise<IgnoreLayer | null> {
   try {
-    const text = await fs.readFile(path.join(rootAbs, ".gitignore"), "utf8");
+    const text = await fs.readFile(path.join(dirAbs, ".gitignore"), "utf8");
+    const ig = createIgnorer();
     ig.add(text);
+    return { base, ig };
   } catch {
-    /* no .gitignore — fine */
+    return null; // no .gitignore here — fine
   }
+}
+
+/** Whether any `.gitignore` on the way down to `rel` excludes it.
+ *
+ *  Every level counts, not just the indexed root: a folder that holds several projects is
+ *  indexed from above them, and each project's own .gitignore is the only thing that knows
+ *  its build output is not source. A deeper `!pattern` cannot re-include what a shallower
+ *  file excludes — a simplification of git's precedence rules that only errs towards
+ *  indexing less. */
+function isIgnored(layers: IgnoreLayer[], rel: string, isDir: boolean): boolean {
+  for (const { base, ig } of layers) {
+    const sub = base ? rel.slice(base.length + 1) : rel;
+    if (sub && ig.ignores(isDir ? sub + "/" : sub)) return true;
+  }
+  return false;
 }
 
 async function walk(
   dir: string,
   rootAbs: string,
-  ig: Ignorer,
+  inherited: IgnoreLayer[],
   cfg: Config,
   out: DiscoveredFile[],
 ): Promise<void> {
@@ -73,6 +98,9 @@ async function walk(
   } catch {
     return;
   }
+  const here = await loadGitignore(dir, toPosix(path.relative(rootAbs, dir)));
+  const layers = here ? [...inherited, here] : inherited;
+
   for (const entry of entries) {
     const abs = path.join(dir, entry.name);
     const rel = toPosix(path.relative(rootAbs, abs));
@@ -82,12 +110,12 @@ async function walk(
 
     if (entry.isDirectory()) {
       if (SKIP_DIRS.has(entry.name)) continue;
-      if (ig.ignores(rel + "/")) continue;
-      await walk(abs, rootAbs, ig, cfg, out);
+      if (isIgnored(layers, rel, true)) continue;
+      await walk(abs, rootAbs, layers, cfg, out);
       continue;
     }
     if (!entry.isFile()) continue;
-    if (ig.ignores(rel)) continue;
+    if (isIgnored(layers, rel, false)) continue;
 
     const ext = path.extname(entry.name).replace(/^\./, "").toLowerCase();
     // Only index files with a known code/text extension.
