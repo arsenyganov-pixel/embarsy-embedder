@@ -68,6 +68,7 @@ class EmbeddingService:
     dimension: int
     instruction: str
     timeout_seconds: float
+    num_ctx: int = 8192
 
     @property
     def ollama_keep_alive_payload(self) -> str | int:
@@ -98,6 +99,7 @@ class EmbeddingService:
                 "model": self.model,
                 "input": prepared_inputs,
                 "keep_alive": self.ollama_keep_alive_payload,
+                "options": {"num_ctx": self.num_ctx},
             },
             timeout=self.timeout_seconds,
         )
@@ -128,6 +130,7 @@ class EmbeddingService:
                     "model": self.model,
                     "prompt": prepared,
                     "keep_alive": self.ollama_keep_alive_payload,
+                    "options": {"num_ctx": self.num_ctx},
                 },
                 timeout=self.timeout_seconds,
             )

@@ -1,0 +1,380 @@
+{
+ "%@ timed out after %lld seconds. Output: %@": {
+  "format": "%1$@ timed out after %2$#@n@. Output: %3$@",
+  "one": "%lld second",
+  "other": "%lld seconds"
+ },
+ "%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.": {
+  "format": "%#@n@",
+  "one": "%lld collection · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.",
+  "other": "%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata."
+ },
+ "%lld copies": {
+  "format": "%#@n@",
+  "one": "%lld copy",
+  "other": "%lld copies"
+ },
+ "%lld copies of %@ differ": {
+  "format": "%1$#@n@ of %2$@ differ",
+  "one": "%lld copy",
+  "other": "%lld copies"
+ },
+ "%lld files": {
+  "format": "%#@n@",
+  "one": "%lld file",
+  "other": "%lld files"
+ },
+ "%lld files on this Mac match; Embarsy can't tell which one. The link is removed, its text stays.": {
+  "format": "%#@n@; Embarsy can't tell which one. The link is removed, its text stays.",
+  "one": "%lld file on this Mac matches",
+  "other": "%lld files on this Mac match"
+ },
+ "%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.": {
+  "format": "%#@n@",
+  "one": "%lld grep run exceeded the 15 s budget and was stopped — excluded from the medians above.",
+  "other": "%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above."
+ },
+ "%lld knowledge notes were last verified over %lld months ago": {
+  "format": "%1$#@a@ last verified over %2$#@b@ ago",
+  "vars": {
+   "a": {
+    "one": "%lld knowledge note was",
+    "other": "%lld knowledge notes were"
+   },
+   "b": {
+    "one": "%lld month",
+    "other": "%lld months"
+   }
+  }
+ },
+ "%lld leftover copies in a folder no agent reads": {
+  "format": "%#@n@ in a folder no agent reads",
+  "one": "%lld leftover copy",
+  "other": "%lld leftover copies"
+ },
+ "%lld lines": {
+  "format": "%#@n@",
+  "one": "%lld line",
+  "other": "%lld lines"
+ },
+ "%lld lines · %@": {
+  "format": "%1$#@n@ · %2$@",
+  "one": "%lld line",
+  "other": "%lld lines"
+ },
+ "%lld links to old copies in %@": {
+  "format": "%1$#@n@ to old copies in %2$@",
+  "one": "%lld link",
+  "other": "%lld links"
+ },
+ "%lld links with line numbers in %@": {
+  "format": "%1$#@n@ with line numbers in %2$@",
+  "one": "%lld link",
+  "other": "%lld links"
+ },
+ "%lld links with line numbers in %@ across %lld files": {
+  "format": "%1$#@a@ with line numbers in %2$@ across %3$#@b@",
+  "vars": {
+   "a": {
+    "one": "%lld link",
+    "other": "%lld links"
+   },
+   "b": {
+    "one": "%lld file",
+    "other": "%lld files"
+   }
+  }
+ },
+ "%lld notes": {
+  "format": "%#@n@",
+  "one": "%lld note",
+  "other": "%lld notes"
+ },
+ "%lld notes nothing links to": {
+  "format": "%#@n@",
+  "one": "%lld note nothing links to",
+  "other": "%lld notes nothing links to"
+ },
+ "%lld of your skills are available to other agents, but none is in %@, where %@ looks for them.": {
+  "format": "%1$#@n@ available to other agents, but none is in %2$@, where %3$@ looks for them.",
+  "one": "%lld of your skills is",
+  "other": "%lld of your skills are"
+ },
+ "%lld of your skills are available to other agents, but none is in %@, where %@ looks for them. Publish them for %@ in Memory → Core.": {
+  "format": "%1$#@n@ available to other agents, but none is in %2$@, where %3$@ looks for them. Publish them for %4$@ in Memory → Core.",
+  "one": "%lld of your skills is",
+  "other": "%lld of your skills are"
+ },
+ "%lld places where notes disagree — see below.": {
+  "format": "%#@n@ where notes disagree — see below.",
+  "one": "%lld place",
+  "other": "%lld places"
+ },
+ "%lld problems and %lld warnings. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.": {
+  "format": "%1$#@a@ and %2$#@b@. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.",
+  "vars": {
+   "a": {
+    "one": "%lld problem",
+    "other": "%lld problems"
+   },
+   "b": {
+    "one": "%lld warning",
+    "other": "%lld warnings"
+   }
+  }
+ },
+ "%lld proposals from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.": {
+  "format": "%#@n@ from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.",
+  "one": "%lld proposal",
+  "other": "%lld proposals"
+ },
+ "%lld proposals have waited in the inbox for over two weeks": {
+  "format": "%#@n@ in the inbox for over two weeks",
+  "one": "%lld proposal has waited",
+  "other": "%lld proposals have waited"
+ },
+ "%lld pts": {
+  "format": "%#@n@",
+  "one": "%lld pt",
+  "other": "%lld pts"
+ },
+ "%lld questions · top-%lld": {
+  "format": "%1$#@n@ · top-%2$lld",
+  "one": "%lld question",
+  "other": "%lld questions"
+ },
+ "%lld skills": {
+  "format": "%#@n@",
+  "one": "%lld skill",
+  "other": "%lld skills"
+ },
+ "%lld skills have a problem: %lld skipped by an agent that reads their folder, %lld with copies that differ, %lld that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.": {
+  "format": "%1$#@a@ a problem: %2$#@b@ skipped by an agent that reads their folder, %3$#@c@ with copies that differ, %4$#@d@ that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.",
+  "vars": {
+   "a": {
+    "one": "%lld skill has",
+    "other": "%lld skills have"
+   },
+   "b": {
+    "one": "%lld",
+    "other": "%lld"
+   },
+   "c": {
+    "one": "%lld",
+    "other": "%lld"
+   },
+   "d": {
+    "one": "%lld",
+    "other": "%lld"
+   }
+  }
+ },
+ "%lld skills have copies that differ — choose which to keep.": {
+  "format": "%#@n@ copies that differ — choose which to keep.",
+  "one": "%lld skill has",
+  "other": "%lld skills have"
+ },
+ "%lld skills · %lld notes": {
+  "format": "%1$#@a@ · %2$#@b@",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld note",
+    "other": "%lld notes"
+   }
+  }
+ },
+ "%lld skills · %lld notes · core": {
+  "format": "%1$#@a@ · %2$#@b@ · core",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld note",
+    "other": "%lld notes"
+   }
+  }
+ },
+ "%lld snippets": {
+  "format": "%#@n@",
+  "one": "%lld snippet",
+  "other": "%lld snippets"
+ },
+ "%lld warnings, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.": {
+  "format": "%#@n@, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.",
+  "one": "%lld warning",
+  "other": "%lld warnings"
+ },
+ "Brought over %lld skills and %lld notes. A backup of every source is in %@. Restart your agents so they load the new memory.": {
+  "format": "Brought over %1$#@a@ and %2$#@b@. A backup of every source is in %3$@. Restart your agents so they load the new memory.",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld note",
+    "other": "%lld notes"
+   }
+  }
+ },
+ "Brought over %lld skills and %lld notes. Not brought over:\n%@": {
+  "format": "Brought over %1$#@a@ and %2$#@b@. Not brought over:\n%3$@",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld note",
+    "other": "%lld notes"
+   }
+  }
+ },
+ "Codex lists this skill %lld times — once per copy.": {
+  "format": "Codex lists this skill %#@n@ — once per copy.",
+  "one": "%lld time",
+  "other": "%lld times"
+ },
+ "Embarsy found %lld skills (%lld with copies that differ), %lld instruction files, %lld Claude Code memories and %lld journal entries. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.": {
+  "format": "Embarsy found %1$#@a@ (%2$#@b@ with copies that differ), %3$#@c@, %4$#@d@ and %5$#@e@. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld",
+    "other": "%lld"
+   },
+   "c": {
+    "one": "%lld instruction file",
+    "other": "%lld instruction files"
+   },
+   "d": {
+    "one": "%lld Claude Code memory",
+    "other": "%lld Claude Code memories"
+   },
+   "e": {
+    "one": "%lld journal entry",
+    "other": "%lld journal entries"
+   }
+  }
+ },
+ "Fix %lld issues": {
+  "format": "Fix %#@n@",
+  "one": "%lld issue",
+  "other": "%lld issues"
+ },
+ "Fix %lld issues…": {
+  "format": "Fix %#@n@…",
+  "one": "%lld issue",
+  "other": "%lld issues"
+ },
+ "Fix %lld links": {
+  "format": "Fix %#@n@",
+  "one": "%lld link",
+  "other": "%lld links"
+ },
+ "Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.": {
+  "format": "%#@n@",
+  "one": "Memory has %lld problem: an agent is missing something or getting it wrong right now. See Memory → Health.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.",
+  "other": "Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health."
+ },
+ "Moves %lld folders to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.": {
+  "format": "Moves %#@n@ to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.",
+  "one": "%lld folder",
+  "other": "%lld folders"
+ },
+ "Nested %lld folders deep. Claude Code only looks one level into its skills folder.": {
+  "format": "Nested %#@n@ deep. Claude Code only looks one level into its skills folder.",
+  "one": "%lld folder",
+  "other": "%lld folders"
+ },
+ "Nested %lld folders deep. Codex stops at 6.": {
+  "format": "Nested %#@n@ deep. Codex stops at 6.",
+  "one": "%lld folder",
+  "other": "%lld folders"
+ },
+ "Nested %lld folders deep. Zoo / Roo only looks one level into its skills folder.": {
+  "format": "Nested %#@n@ deep. Zoo / Roo only looks one level into its skills folder.",
+  "one": "%lld folder",
+  "other": "%lld folders"
+ },
+ "Planned by the local model: %lld skills, %lld notes, %lld rules in the core, %lld items left behind.": {
+  "format": "Planned by the local model: %1$#@a@, %2$#@b@, %3$#@c@ in the core, %4$#@d@ left behind.",
+  "vars": {
+   "a": {
+    "one": "%lld skill",
+    "other": "%lld skills"
+   },
+   "b": {
+    "one": "%lld note",
+    "other": "%lld notes"
+   },
+   "c": {
+    "one": "%lld rule",
+    "other": "%lld rules"
+   },
+   "d": {
+    "one": "%lld item",
+    "other": "%lld items"
+   }
+  }
+ },
+ "Publish %lld changes…": {
+  "format": "Publish %#@n@…",
+  "one": "%lld change",
+  "other": "%lld changes"
+ },
+ "Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample.": {
+  "format": "%#@n@",
+  "one": "Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled question is an indication, not a paper — run it again for a fresh sample.",
+  "other": "Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample."
+ },
+ "Remove %lld line numbers": {
+  "format": "Remove %#@n@",
+  "one": "%lld line number",
+  "other": "%lld line numbers"
+ },
+ "Sampling %@ and running %lld duels — real grep vs the semantic index…": {
+  "format": "Sampling %1$@ and running %2$#@n@ — real grep vs the semantic index…",
+  "one": "%lld duel",
+  "other": "%lld duels"
+ },
+ "Turns links like file.md:36 into file.md in %lld files: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.": {
+  "format": "Turns links like file.md:36 into file.md in %#@n@: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.",
+  "one": "%lld file",
+  "other": "%lld files"
+ },
+ "You put %lld similar facts in %@/ before — like %@.": {
+  "format": "You put %1$#@n@ in %2$@/ before — like %3$@.",
+  "one": "%lld similar fact",
+  "other": "%lld similar facts"
+ },
+ "You put %lld similar facts in %@/ before.": {
+  "format": "You put %1$#@n@ in %2$@/ before.",
+  "one": "%lld similar fact",
+  "other": "%lld similar facts"
+ },
+ "You rejected %lld similar proposals before — like %@.": {
+  "format": "You rejected %1$#@n@ before — like %2$@.",
+  "one": "%lld similar proposal",
+  "other": "%lld similar proposals"
+ },
+ "You rejected %lld similar proposals before.": {
+  "format": "You rejected %#@n@ before.",
+  "one": "%lld similar proposal",
+  "other": "%lld similar proposals"
+ },
+ "description is %lld characters; Zoo / Roo skips anything over 1024.": {
+  "format": "description is %#@n@; Zoo / Roo skips anything over 1024.",
+  "one": "%lld character",
+  "other": "%lld characters"
+ }
+}

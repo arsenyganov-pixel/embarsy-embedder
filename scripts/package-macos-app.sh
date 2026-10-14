@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 app_name="Embarsy"
-app_version="0.2.3"
+app_version="0.3.0"
 bundle_version="${EMBARSY_BUNDLE_VERSION:-$(date -u +%Y%m%d%H%M)}"
 native_dir="${EMBARSY_HOME}/native/EmbarsyApp"
 bundle_dir="${EMBARSY_HOME}/build/${app_name}.app"
@@ -102,10 +102,7 @@ binary_sources=(
 ollama_runner_source="${OLLAMA_LLAMA_SERVER_BIN:-}"
 if [[ -z "${ollama_runner_source}" ]]; then
   ollama_runner_candidates=(
-    "$(dirname "${EMBARSY_OLLAMA_BIN}")/lib/ollama/llama-server"
-    "/opt/homebrew/opt/ollama/libexec/lib/ollama/llama-server"
-    "/opt/homebrew/Cellar/ollama/0.30.11/libexec/lib/ollama/llama-server"
-    "/usr/local/opt/ollama/libexec/lib/ollama/llama-server"
+    "$(dirname "${EMBARSY_OLLAMA_BIN}")/llama-server"
   )
   for candidate in "${ollama_runner_candidates[@]}"; do
     if [[ -x "${candidate}" ]]; then
@@ -139,7 +136,7 @@ for entry in "${binary_sources[@]}"; do
 done
 
 if [[ ! -x "${ollama_runner_source}" ]]; then
-  missing+=("llama-server: set OLLAMA_LLAMA_SERVER_BIN or install Ollama with lib/ollama/llama-server")
+  missing+=("llama-server: run scripts/prepare-ollama-binary.sh (puts llama-server next to bin/ollama)")
 fi
 
 if [[ ${#missing[@]} -gt 0 && "${allow_missing_binaries}" != true ]]; then
@@ -169,7 +166,7 @@ if [[ "${dry_run}" == true ]]; then
   for entry in "${binary_sources[@]}"; do
     echo "  copy resource ${entry%%:*} -> ${resources_dir}/${entry##*:}"
   done
-  echo "  copy Ollama runner ${ollama_runner_source} -> ${resources_dir}/lib/ollama/llama-server"
+  echo "  copy Ollama runner ${ollama_runner_source} -> ${resources_dir}/llama-server"
   echo "  copy editor bridge ${EMBARSY_BRIDGE_DIR} -> ${resources_dir}/bridge"
   echo "  write Info.plist"
   echo "  ad-hoc sign: ${sign_app}"
@@ -193,6 +190,11 @@ mkdir -p "${macos_dir}" "${resources_dir}"
 cp "${swift_product_path}" "${macos_dir}/${app_name}"
 chmod +x "${macos_dir}/${app_name}"
 cp "${icon_path}" "${resources_dir}/Embarsy.icns"
+# Interface translations: one <lang>.lproj per language next to the code's English.
+for lproj in "${REPO_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}/native/EmbarsyApp/Localization/"*.lproj; do
+  [[ -d "${lproj}" ]] && cp -R "${lproj}" "${resources_dir}/"
+done
+mkdir -p "${resources_dir}/en.lproj"
 # The status-bar / brand mark is now drawn natively (Sources/EmbarsyMark.swift),
 # so the EmbarsyIndex_* toolbar PNGs no longer need to be bundled.
 
@@ -217,9 +219,9 @@ else
 fi
 
 if [[ -x "${ollama_runner_source}" ]]; then
-  mkdir -p "${resources_dir}/lib/ollama"
-  cp "${ollama_runner_source}" "${resources_dir}/lib/ollama/llama-server"
-  chmod +x "${resources_dir}/lib/ollama/llama-server"
+  # Ollama 0.40 starts the llama-server next to its own binary.
+  cp "${ollama_runner_source}" "${resources_dir}/llama-server"
+  chmod +x "${resources_dir}/llama-server"
 else
   echo "Skipping missing Ollama runner: llama-server (${ollama_runner_source})"
 fi
@@ -231,6 +233,11 @@ cat > "${contents_dir}/Info.plist" <<EOF
 <dict>
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
+  <key>CFBundleLocalizations</key>
+  <array>
+    <string>en</string>
+    <string>ru</string>
+  </array>
   <key>CFBundleExecutable</key>
   <string>${app_name}</string>
   <key>CFBundleIconFile</key>

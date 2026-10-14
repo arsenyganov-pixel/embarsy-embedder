@@ -38,17 +38,18 @@ struct ActivityEvent: Decodable, Equatable, Identifiable, Sendable {
     /// `<editor> · <tool>` as declared, prettified for display. Editors are named the way
     /// their own product does; anything unrecognised is shown verbatim rather than guessed.
     var clientLabel: String {
-        guard let client, !client.isEmpty else { return "Unknown client" }
+        guard let client, !client.isEmpty else { return L("Unknown client") }
         let parts = client.split(separator: "·", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
         let editor = parts.first.map(Self.prettyEditor) ?? client
         guard parts.count > 1, !parts[1].isEmpty else { return editor }
-        return "\(editor) · \(parts[1] == "index" ? "indexing" : parts[1])"
+        return "\(editor) · \(parts[1] == "index" ? L("indexing") : parts[1])"
     }
 
     private static func prettyEditor(_ raw: String) -> String {
         switch raw {
         case "claude-code": return "Claude Code"
         case "codex": return "Codex"
+        case "roo": return "Zoo / Roo"
         case "embarsy-qdrant-mcp": return "Bridge"
         case "embarsy-app": return "Embarsy"
         default: return raw
@@ -73,7 +74,7 @@ enum ActivityOperation: String, Decodable, Sendable {
 @MainActor
 final class ActivityService: ObservableObject {
     @Published var snapshot: ActivitySnapshot = .empty
-    @Published var message = "Activity is waiting for Embarsy API."
+    @Published var message = L("Activity is waiting for Embarsy API.")
     @Published var isRefreshing = false
 
     private static let windowSeconds = 86_400
@@ -90,7 +91,7 @@ final class ActivityService: ObservableObject {
         guard !isRefreshing else { return }
 
         guard config.embarsyAPIKey.isEmpty == false else {
-            message = "Activity needs local API secrets. Start or install Embarsy first."
+            message = L("Activity needs local API secrets. Start or install Embarsy first.")
             snapshot = .empty
             lastEventID = 0
             return
@@ -122,7 +123,7 @@ final class ActivityService: ObservableObject {
             request.setValue("Bearer \(config.embarsyAPIKey)", forHTTPHeaderField: "Authorization")
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
-                message = "Activity endpoint is unavailable. Start Embarsy API and refresh."
+                message = L("Activity endpoint is unavailable. Start Embarsy API and refresh.")
                 return
             }
             // Multi-MB on a busy first fetch — decode off the main actor.
@@ -148,9 +149,9 @@ final class ActivityService: ObservableObject {
 
             snapshot = merged(decoded, sinceID: sinceID)
             lastEventID = snapshot.events.first?.id ?? lastEventID
-            message = snapshot.events.isEmpty ? "No request activity in the last 24 hours." : "Activity updated. Showing the last 24 hours."
+            message = snapshot.events.isEmpty ? L("No request activity in the last 24 hours.") : L("Activity updated. Showing the last 24 hours.")
         } catch {
-            message = "Activity refresh failed: \(error.localizedDescription)"
+            message = L("Activity refresh failed: \(error.localizedDescription)")
         }
     }
 

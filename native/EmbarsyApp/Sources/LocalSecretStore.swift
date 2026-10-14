@@ -7,7 +7,7 @@ enum LocalSecretError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .randomGenerationFailed(let status):
-            "Local secret generation failed with status \(status)."
+            L("Local secret generation failed with status \(status).")
         }
     }
 }

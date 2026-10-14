@@ -5,16 +5,46 @@
 <h1 align="center">Embarsy</h1>
 
 <p align="center">
-  <b>Give your AI agent an understanding of your code. One click. 100% local.</b>
+  <b>Memory and search by meaning for all your agents. One click. 100% local.</b>
 </p>
 
 <p align="center">
-  Your coding agent is brilliant — and blind. It greps your codebase for words and drowns in
-  thousands of matching lines. <b>Embarsy gives it meaning instead</b>: a private, local
-  <b>semantic index</b> of your code that answers <i>"where is the logic that…"</i> in ~100&nbsp;ms
-  with five ranked snippets — not a wall of grep output. Built for <b>Roo&nbsp;Code, Zoo&nbsp;Code,
-  Claude&nbsp;&amp; Codex</b>. Nothing ever leaves your Mac.
+  Your coding agents are brilliant — and blind, and forgetful. They grep your code for words and
+  drown in thousands of matching lines. Each keeps its own scraps of memory and its own copies of
+  your skills, drifting apart. <b>Embarsy fixes both</b>: a private <b>semantic index</b> of your
+  code, a shared <b>memory base</b> you control, and an optional <b>local assistant</b> that moves your
+  existing memory in and keeps it correct. Built for <b>Claude&nbsp;Code, Codex, Zoo&nbsp;Code
+  &amp; Roo&nbsp;Code</b>. Nothing ever leaves your Mac.
 </p>
+
+---
+
+## Three things Embarsy gives your agents
+
+**① Understanding of your code.** Your projects, indexed locally so agents find code *by meaning*:
+*"where is the logic that…"* gets five ranked snippets in ~100&nbsp;ms instead of a wall of grep
+output. One click connects Claude Code and Codex; Zoo / Roo Code get copy-paste values.
+
+**② Control over memory and skills.** One memory base — your profile, your skills, your notes — that
+every agent loads. Embarsy shows exactly which skill each agent sees and why it skips one, keeps
+copies from drifting apart, and lets agents *propose* memories that become memory only when you
+accept them. Every change is kept in a quiet git history.
+
+**③ A local assistant that keeps your memory correct — for free.** Memory only helps while it's
+right: an outdated note or a skill copy that drifted makes every agent confidently wrong. The
+optional assistant — a Qwen model running on your Mac — does the tedious part for you:
+
+- **Moves your memory in.** Sorts the skills, instructions and agent memories you already have into
+  a plan for the base — about ten minutes instead of hours by hand.
+- **Catches outdated facts.** Finds notes that say different things about the same subject, so your
+  agents stop following the outdated one.
+- **Drafts the fixes that need judgment.** Shortens a profile or skill description that's too long,
+  says which of two drifted copies to keep, suggests a name that doesn't clash.
+
+No cloud tokens, nothing leaves your Mac, and it holds no memory while idle. It only drafts —
+nothing changes until you apply it.
+
+<p align="center"><img src="assets/tabs.png" width="840" alt="Embarsy's sections: Status, Connections, Memory, Code search, Settings"></p>
 
 ---
 
@@ -46,25 +76,93 @@ through your own coding agent, with and without Embarsy, and compares wall-clock
 
 ---
 
+## One memory for every agent — under your control
+
+Claude Code, Codex and Zoo / Roo each keep their own skills, rules and memories — in different
+folders, in different formats. Embarsy gives them **one memory base**: a plain folder of Markdown
+(`~/EmbarsyMemory`) that every agent reads, published into each agent's own folders as links.
+
+**Your profile, in every session.** Who you are, who your agent is, your standing rules — written
+once in **Memory → Core**, loaded by every agent at the start of every session, kept under 4 KB.
+
+<p align="center"><img src="assets/memory-profile.png" width="840" alt="Memory → Core: the profile every agent loads — who you are, your agent, your rules"></p>
+
+**Skills every agent actually loads.** Each agent has its own loader rules — how deep it looks, what
+the name must match, how strictly it reads YAML. Embarsy checks every skill against each one and
+shows a check per agent, or exactly why that agent skips it.
+
+<p align="center"><img src="assets/memory-skills.png" width="840" alt="Memory → Skills: every skill with a check for Claude Code, Codex and Zoo / Roo"></p>
+
+**Health that fixes things.** Broken links, copies that drifted apart, a skill only one agent sees,
+someone else's skill edited in place, notes that disagree, a profile over budget. Every finding says
+what to do; most have a button — **Publish**, **Bring into the base**, **Fix links**, **Merge** — and
+for the rest **Ask the assistant** drafts a fix with the local model. Only files inside the base are
+edited, and each change is a commit in the base's history.
+
+<p align="center"><img src="assets/memory-health.png" width="840" alt="Memory → Health: findings with their fixes, and the local assistant's draft"></p>
+
+**Agents remember through you.** With Embarsy's tools connected, agents call `recall` to search the
+memory by meaning and `remember` to propose a new fact. Proposals wait in the **Inbox** — with a hint
+from your earlier decisions — and become memory only when you accept them. **Knowledge** lets you
+read and search the whole base without leaving Embarsy.
+
+<p align="center"><img src="assets/memory-inbox.png" width="840" alt="Memory → Inbox: a fact an agent proposed, waiting for your decision"></p>
+
+<p align="center"><img src="assets/memory-knowledge.png" width="840" alt="Memory → Knowledge: notes by topic, year and person, searchable by meaning"></p>
+
+**Bring what you already have.** **Bring existing memory** finds the skills, instructions and
+memories your agents already keep, groups copies of each skill and flags the ones that drifted
+apart. Your own agent — or the local model — sorts them into a plan; you review every item before
+anything moves. Old copies go to backups and become links; **Undo setup** puts it all back.
+
+---
+
+## A local assistant that sorts and maintains your memory
+
+The memory work above doesn't need a cloud agent. **Memory → Assistant** downloads a Qwen sized
+for your Mac (Qwen&nbsp;3.6 35B-A3B on 48&nbsp;GB) and runs it in the Ollama that ships inside
+Embarsy:
+
+- **Moves your memory in** — sorts your existing skills, files and journal entries into the base, condenses
+  your profile, and writes the same plan an agent would. On a real migration it agreed with Claude's
+  plan on about nine items in ten.
+- **Catches outdated facts** — finds notes that state different facts about the same thing (an old fix
+  one note still recommends, a version another note says was dropped) and lets you pick the right one.
+- **Drafts the fixes that need judgment** — shortens a profile over its budget or a description an
+  agent would reject, explains which of two drifted copies to keep, suggests a name that doesn't clash.
+
+It **costs nothing while idle**: downloaded, it's only disk space; it loads when Embarsy asks it
+something and leaves memory after the idle time you choose. The tab shows whether it's in memory
+right now, with **Unload now**; the embedding model behind the code index works the same way, in
+Settings. Until the model is downloaded, the tab says so, and wherever the assistant could help —
+Health, the migration — a **Set up the assistant** button leads there.
+
+<p align="center"><img src="assets/memory-assistant.png" width="840" alt="Memory → Assistant: what the local model does for your memory, and the model itself — download, state, idle time"></p>
+
+The whole interface speaks **English and Russian** (Settings → Language).
+
+---
+
 ## Simple. Clear. Transparent.
 
 **Simple** — one button installs and wires the entire stack: Qdrant, Ollama, the
 `qwen3-embedding` model. No terminal, no Docker, no Python, no API keys to mint. Claude Code and
-Codex connect with one more click; Zoo / Roo Code get copy-paste connection values.
+Codex connect with one more click; Zoo / Roo Code get copy-paste connection values. **Start fresh**
+sets up the memory base in a few questions.
 
-**Clear** — you always see what's indexed (per-project clusters with languages and areas), what
-it costs your machine (live CPU, memory, temperature), and what's happening right now (every
-embedding and vector operation, streamed).
+**Clear** — you always see which skill each agent loads, what's indexed (per-project clusters with
+languages and areas), what it costs your machine (live CPU, memory, temperature), and what's
+happening right now (every search, embedding and vector operation, streamed).
 
-**Transparent** — the numbers are measured on your code, the methodology is disclosed in the app,
-the logs are exportable, and everything runs on `127.0.0.1`. No cloud. No telemetry. No trust
-required.
+**Transparent** — the numbers are measured on your code, the memory is plain Markdown with its own
+git history, the logs are exportable, and everything runs on `127.0.0.1`. No cloud. No telemetry.
+No trust required.
 
 ---
 
 ## Highlights
 
-### ① One-click install of the entire embedder stack
+### ① One-click install of the entire stack
 
 No terminal, no Docker, no Python setup. Embarsy downloads and wires up the whole local stack —
 **Qdrant**, **Ollama** and the **`qwen3-embedding`** model — from a single button, then verifies every
@@ -72,46 +170,39 @@ service is healthy before it reports ready.
 
 <p align="center"><img src="assets/install.png" width="840" alt="One-click install of Qdrant, Ollama and the embedding model"></p>
 
-### ② Connect Claude Code and Codex — one click, nothing to install
+### ② Connect Claude Code, Codex and Zoo / Roo — nothing to install
 
-**Connections** has a tab per agent. **Connect** writes the editor's own config for you — both can be
-connected at once — and the MCP bridge and Node ship inside Embarsy, so there is no npm and no setup
-command. Add the folders your agents should know with **Add folder…**: one connection then serves
-every project, picking the index from the folder the agent is working in.
+**Connections** has a tab per agent. **Connect** writes the editor's own config for you, and the MCP
+bridge and Node ship inside Embarsy — no npm, no setup command. One connection gives the agent both
+halves: `search_code` over your indexed folders, and `recall` / `remember` over your memory. Add the
+folders your agents should know with **Add folder…**; the memory base is indexed on its own.
 
-<p align="center"><img src="assets/connections.png" width="840" alt="Connections: one tab per agent, the bundled bridge connected, and the indexed folders it searches"></p>
+<p align="center"><img src="assets/connections.png" width="840" alt="Connections: one tab per agent, the bundled bridge connected, the indexed folders and the memory base"></p>
 
-### ③ See what your agent understands — per project, one-swipe cleanup
+### ③ Code search: what's indexed, who's searching, what it costs
 
-Every workspace becomes a Qdrant collection. The **Content** tab leads each row with **the project's
-name — and clicking it reveals that folder in Finder**, so you never have to decode a collection id
-again. Under it: a safe, high-level summary — languages, areas, file globs and point totals. Slide
-**`‹‹‹ delete`** on any collection you no longer need and reclaim its vector storage.
+**Code search** gathers the index in three tabs:
 
-<p align="center"><img src="assets/content.png" width="840" alt="Content tab: each collection led by its project name, which opens the folder in Finder"></p>
+- **Code index** — every project as a collection, led by its name (click it to reveal the folder in
+  Finder), with languages, areas and point totals. Slide **`‹‹‹ delete`** to reclaim a project's
+  vector storage.
+- **Search requests** — every request labelled with the client that made it and whether it was
+  indexing or searching, so "is this editor even wired up?" stops being a guess.
+- **Load** — embedding throughput, latency, Qdrant reads/writes/errors, plus live memory, CPU and
+  temperature of the stack, over the last hour, day or week.
 
-### ④ Know which of your agents actually uses the index
+<p align="center"><img src="assets/content.png" width="840" alt="Code search → Code index: each collection led by its project name"></p>
 
-Running Claude Code, Codex and Roo Code side by side? **Activity** labels every request with the
-client that made it and whether it was **indexing** or **searching** — so "is this editor even wired
-up?" stops being a guess. Embedding rows show the exact text being embedded; Qdrant rows show every
-read and write.
+<p align="center"><img src="assets/activity.png" width="840" alt="Code search → Search requests: each request labelled by client"></p>
 
-<p align="center"><img src="assets/activity.png" width="840" alt="Activity log with each request labelled by client — Claude Code searching, Codex indexing"></p>
+<p align="center"><img src="assets/monitoring.png" width="840" alt="Code search → Load: throughput, latency, memory, CPU and temperature"></p>
 
-### ⑤ Monitoring + resource usage at a glance
+### ④ Start &amp; stop the whole stack — one button, or the menu bar
 
-Grafana-style dashboards for embedding throughput, latency, and Qdrant reads/writes/errors — **plus
-live Memory, CPU and temperature** of the running stack. Know exactly what indexing is costing your
-machine, over the last hour, day or week.
-
-<p align="center"><img src="assets/monitoring.png" width="840" alt="Monitoring dashboards with Memory, CPU and temperature panels"></p>
-
-### ⑥ Start &amp; stop the whole stack — one button, or the menu bar
-
-Run everything with **Start All**, or control the stack without leaving your workflow straight from the
-macOS **menu bar** — Start, Stop, Refresh and open your project, all a click away. One button removes
-every component again — database, model, secrets — leaving your Mac exactly as it was.
+Run everything with **Start All**, or control the stack straight from the macOS **menu bar** —
+Start, Stop, Refresh and open your project, all a click away. Services keep running when Embarsy
+restarts, and Embarsy picks them up again. One button removes every component — database, model,
+secrets — leaving your Mac exactly as it was.
 
 <p align="center"><img src="assets/menubar-popup.png" width="440" alt="Start and stop the stack from the macOS menu bar popup"></p>
 
@@ -119,11 +210,13 @@ every component again — database, model, secrets — leaving your Mac exactly 
 
 ## How it works
 
-| Component | Role | Endpoint |
+| Component | Role | Where |
 | --- | --- | --- |
-| **Qdrant** | Vector database — stores your embeddings locally | `127.0.0.1:6333` |
-| **Ollama** | Runs the `qwen3-embedding` model | `127.0.0.1:11434` |
+| **Qdrant** | Vector database — the code index and the memory index | `127.0.0.1:6333` |
+| **Ollama** | Runs `qwen3-embedding`, and the optional local Qwen | `127.0.0.1:11434` |
 | **Embarsy API** (FastAPI) | OpenAI-compatible `/v1/embeddings` + a Qdrant proxy | `127.0.0.1:8000` |
+| **MCP bridge** | `search_code`, `recall`, `remember`, `memory_status` … for your agents | bundled |
+| **Memory base** | Plain Markdown with a git history, published to agents as links | `~/EmbarsyMemory` |
 
 **Embarsy manages the infrastructure** and hands you the exact connection values to paste in — the
 embeddings endpoint is OpenAI-compatible, so anything that speaks it just works. Everything runs on
@@ -131,12 +224,12 @@ embeddings endpoint is OpenAI-compatible, so anything that speaks it just works.
 
 Two ways in, depending on your agent:
 
-- **Roo Code / Zoo Code** have indexing built in — they do the chunking, file watching and delta
-  indexing themselves. Paste the connection values and you're done.
 - **Claude Code / Codex** connect with one click in **Connections** — nothing to install. Embarsy ships
-  its own MCP bridge, registers it with the editor, and indexes the folders you add; a `search_code`
-  tool then answers the agent's questions from the index. The bridge tells the agent when to search by
-  meaning and when grep is still the better tool, and says so plainly when a match is weak.
+  its own MCP bridge, registers it with the editor, and indexes the folders you add. The bridge tells
+  the agent when to search by meaning and when grep is still the better tool, and says so plainly
+  when a match is weak.
+- **Roo Code / Zoo Code** have code indexing built in — paste the connection values and you're done.
+  **Connect** on their tab adds the same bridge for memory.
 
 ---
 
@@ -161,10 +254,13 @@ Two ways in, depending on your agent:
 
    - **Roo Code / Zoo Code** — open the **Zoo / Roo Code** tab and copy the connection values into
      the editor's codebase-indexing settings. Point the **Qdrant URL** at the Embarsy proxy so
-     Monitoring can count reads/writes.
+     Code search → Load can count reads/writes.
 <p align="center"><img src="assets/connections-roo.png" width="840" alt="Zoo / Roo Code tab in Connections — the values to paste into your editor, each with a Copy button"></p>
 
-6. Scroll down on **Status** and hit **Run benchmark** — watch grep and meaning race on your own code.
+6. Set up **Memory**: **Start fresh** answers a few questions about you and your agent; **Bring
+   existing memory** moves in what your agents already keep. Then **Publish** in **Memory → Core**.
+7. Optional: **Memory → Assistant → Download** for migration and memory upkeep without a cloud agent.
+8. Scroll down on **Status** and hit **Run benchmark** — watch grep and meaning race on your own code.
 
 <p align="center"><img src="assets/benchmark-result.png" width="840" alt="Benchmark result: grep 4/11 in 7.74 s and 4318 lines to sift, Embarsy 8/11 in 102 ms and 5 snippets"></p>
 

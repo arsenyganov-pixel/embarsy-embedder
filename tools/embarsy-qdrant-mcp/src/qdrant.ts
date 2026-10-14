@@ -144,6 +144,15 @@ export async function setWorkspacePayload(
   );
 }
 
+/** Writes the same payload fields onto every point of the collection (no re-embedding). */
+export async function stampCollection(cfg: Config, payload: Record<string, unknown>): Promise<void> {
+  await requestJSON(
+    `${base(cfg)}/points/payload?wait=true`,
+    { method: "POST", headers: headers(cfg), body: JSON.stringify({ payload, filter: {} }) },
+    { label: "stamp collection" },
+  );
+}
+
 /** Map of file_path -> file_hash for every indexed file, used to skip unchanged files. */
 export async function scrollFileHashes(cfg: Config): Promise<Map<string, string>> {
   const out = new Map<string, string>();

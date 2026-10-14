@@ -73,7 +73,7 @@ struct ContentIndexCollection: Decodable, Identifiable {
 @MainActor
 final class ContentIndexService: ObservableObject {
     @Published var snapshot: ContentIndexSnapshot = .empty
-    @Published var message = "Content overview is waiting for Embarsy API."
+    @Published var message = L("Content overview is waiting for Embarsy API.")
     @Published var isRefreshing = false
     /// False until one refresh has succeeded — an empty snapshot before that means "not
     /// known yet", not "nothing indexed", and screens must not present it as the latter.
@@ -89,7 +89,7 @@ final class ContentIndexService: ObservableObject {
         guard !isRefreshing else { return }
 
         guard config.embarsyAPIKey.isEmpty == false else {
-            message = "Content overview needs local API secrets. Start or install Embarsy first."
+            message = L("Content overview needs local API secrets. Start or install Embarsy first.")
             return
         }
 
@@ -110,17 +110,17 @@ final class ContentIndexService: ObservableObject {
             request.setValue("Bearer \(config.embarsyAPIKey)", forHTTPHeaderField: "Authorization")
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
-                message = "Content endpoint is unavailable. Start Embarsy API and refresh."
+                message = L("Content endpoint is unavailable. Start Embarsy API and refresh.")
                 return
             }
 
             snapshot = try decoder.decode(ContentIndexSnapshot.self, from: data)
             hasLoaded = true
             message = snapshot.collections.isEmpty
-                ? "No Qdrant collections found yet. Start Watcher indexing first."
-                : "Content overview updated."
+                ? L("No Qdrant collections found yet. Start Watcher indexing first.")
+                : L("Content overview updated.")
         } catch {
-            message = "Content refresh failed: \(error.localizedDescription)"
+            message = L("Content refresh failed: \(error.localizedDescription)")
         }
     }
 }

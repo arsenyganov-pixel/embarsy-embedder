@@ -90,7 +90,8 @@ private struct ConnectionRow: View {
                 .help(shown ? "Hide" : "Reveal")
             }
             Button(copied ? "Copied" : "Copy") { copy() }
-                .frame(width: 62)
+                .fixedSize()
+                .frame(minWidth: 62)
         }
     }
 

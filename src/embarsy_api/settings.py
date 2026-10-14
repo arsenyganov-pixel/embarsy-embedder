@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     ollama_base_url: str = Field(default="http://127.0.0.1:11434", alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="qwen3-embedding", alias="OLLAMA_MODEL")
     ollama_keep_alive: str = Field(default="30m", alias="OLLAMA_KEEP_ALIVE")
+    # Ollama's default 32k window made a 0.6B model hold 5.8 GB, almost all of it KV cache.
+    # Real inputs top out around 700 tokens (code chunks are 1500 chars); 8k is 2.9 GB.
+    ollama_num_ctx: int = Field(default=8192, alias="OLLAMA_NUM_CTX")
 
     embedding_dimension: int = Field(default=1024, alias="EMBARSY_EMBEDDING_DIMENSION")
     embedding_instruction: str = Field(

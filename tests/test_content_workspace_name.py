@@ -1,6 +1,6 @@
 """Tests for the project name the Content table shows in "What seems indexed".
 
-The name is what users actually scan the column for — a collection id (`ws-9b30e…`)
+The name is what users actually scan the column for — a collection id (`ws-1a2b3…`)
 tells them nothing about which service they are looking at.
 """
 
@@ -23,21 +23,21 @@ def test_absolute_cache_paths_and_relative_payloads_still_resolve_a_name():
     and taking a common prefix always yields "", because the very first segment differs
     ("" from the leading slash vs "src").
     """
-    relative = ["src/Maxposter/Bundle/BriefBundle/Handler/GetToggleHandler.php"]
+    relative = ["src/Storefront/Bundle/BriefBundle/Handler/GetToggleHandler.php"]
     cache = [
-        "/Users/me/WORKSPACE/TECH/Autohub/service-autohub-monolith/src/Maxposter/Bundle/BriefBundle/Handler/GetToggleHandler.php",
-        "/Users/me/WORKSPACE/TECH/Autohub/service-autohub-monolith/src/Maxposter/AppBundle/DB2Entity/DromCatalogModel.php",
+        "/Users/me/work/clients/Acme/service-acme-monolith/src/Storefront/Bundle/BriefBundle/Handler/GetToggleHandler.php",
+        "/Users/me/work/clients/Acme/service-acme-monolith/src/Storefront/AppBundle/DB2Entity/CatalogModel.php",
     ]
 
-    assert workspace_display_name("ws-9b30e5956638fd4a", relative, [], cache_paths=cache) == "service-autohub-monolith"
+    assert workspace_display_name("ws-1a2b3c4d5e6f7a8b", relative, [], cache_paths=cache) == "service-acme-monolith"
     # ...and the old mixed-list call site is what used to break it.
-    assert workspace_display_name("ws-9b30e5956638fd4a", relative + cache, []) == ""
+    assert workspace_display_name("ws-1a2b3c4d5e6f7a8b", relative + cache, []) == ""
 
 
 def test_nested_layout_resolves_to_the_project_not_the_first_container():
-    """`/…/WORKSPACE/TECH/Autohub/service-x` must not answer "TECH"."""
-    cache = ["/Users/me/WORKSPACE/TECH/Automation/team-x-alerts-reader/src/index.ts"]
-    assert workspace_display_name("ws-1", ["src/index.ts"], [], cache_paths=cache) == "team-x-alerts-reader"
+    """`/…/work/clients/Acme/service-x` must not answer "clients"."""
+    cache = ["/Users/me/work/clients/tools/alerts-reader/src/index.ts"]
+    assert workspace_display_name("ws-1", ["src/index.ts"], [], cache_paths=cache) == "alerts-reader"
 
 
 def test_nested_match_never_outranks_the_real_root():
@@ -47,18 +47,18 @@ def test_nested_match_never_outranks_the_real_root():
     than showing nothing, because the true name is then demoted to a "key area". Only
     ancestors of the cache's own common prefix may win, which rules the nested one out.
     """
-    root = "/Users/me/WORKSPACE/Autohub/service-autohub-monolith"
+    root = "/Users/me/work/Acme/service-acme-monolith"
     cache = [
         f"{root}/README.md",
         f"{root}/app/DoctrineMigrationsHeavy/README.md",
         f"{root}/app/autoload.php",
-        f"{root}/src/Maxposter/AppBundle/Entity/Car.php",
+        f"{root}/src/Storefront/AppBundle/Entity/Car.php",
     ]
     # README.md first is the order that used to lose.
-    samples = ["README.md", "src/Maxposter/AppBundle/Entity/Car.php", "app/autoload.php"]
-    assert workspace_display_name("ws-9b30e5956638fd4a", samples, [], cache_paths=cache) == "service-autohub-monolith"
+    samples = ["README.md", "src/Storefront/AppBundle/Entity/Car.php", "app/autoload.php"]
+    assert workspace_display_name("ws-1a2b3c4d5e6f7a8b", samples, [], cache_paths=cache) == "service-acme-monolith"
     # Order must not decide the answer.
-    assert workspace_display_name("ws-9b30e5956638fd4a", samples[::-1], [], cache_paths=cache) == "service-autohub-monolith"
+    assert workspace_display_name("ws-1a2b3c4d5e6f7a8b", samples[::-1], [], cache_paths=cache) == "service-acme-monolith"
 
 
 def test_pathless_payloads_fall_back_to_the_deepest_shared_directory():
@@ -117,10 +117,10 @@ def test_relative_only_root_is_cut_at_the_first_source_container():
     """Without a cache the common root overshoots downward; the deepest shared directory
     names a layer ("schema"), never the project."""
     paths = [
-        "Autohub/autohub-api-system-tests/internal/generated/api/schema/a/dto.go",
-        "Autohub/autohub-api-system-tests/internal/generated/api/schema/b/dto.go",
+        "Acme/acme-api-system-tests/internal/generated/api/schema/a/dto.go",
+        "Acme/acme-api-system-tests/internal/generated/api/schema/b/dto.go",
     ]
-    assert workspace_display_name("tech", paths, []) == "autohub-api-system-tests"
+    assert workspace_display_name("tech", paths, []) == "acme-api-system-tests"
 
 
 def test_relative_root_entirely_inside_a_container_yields_no_name():
@@ -136,24 +136,24 @@ def test_explicit_payload_name_outranks_every_path_heuristic():
 
 
 def test_resolved_name_opens_the_summary_and_is_not_repeated_as_a_key_area():
-    paths = ["service-autohub-call/internal/rpc/handler.go", "service-autohub-call/internal/model/call.go"]
-    summary = indexed_content_summary("service-autohub-call", paths, [], points_count=19921)
+    paths = ["service-acme-call/internal/rpc/handler.go", "service-acme-call/internal/model/call.go"]
+    summary = indexed_content_summary("service-acme-call", paths, [], points_count=19921)
 
-    assert summary.startswith("service-autohub-call — looks like ")
+    assert summary.startswith("service-acme-call — looks like ")
     areas = summary.split("Key area", 1)[1] if "Key area" in summary else ""
-    assert "service-autohub-call" not in areas, summary
+    assert "service-acme-call" not in areas, summary
 
 
 def test_row_display_name_prefers_the_workspace_over_the_collection_id():
-    cache = ["/Users/me/projects/service-autohub-call/internal/rpc/handler.go"]
+    cache = ["/Users/me/projects/service-acme-call/internal/rpc/handler.go"]
     row = build_content_collection_row(
-        "ws-ffeca201eeccc3a4",
+        "ws-2b3c4d5e6f7a8b9c",
         {"points_count": 19921},
         _samples(["internal/rpc/handler.go"]),
         cache_paths=cache,
     )
-    assert row["display_name"] == "service-autohub-call"
-    assert "ws-ffeca201eeccc3a4" not in str(row["indexed_summary"])
+    assert row["display_name"] == "service-acme-call"
+    assert "ws-2b3c4d5e6f7a8b9c" not in str(row["indexed_summary"])
 
 
 def test_nameless_collection_keeps_the_id_fallback_and_omits_the_name_from_prose():
@@ -184,9 +184,9 @@ def test_folder_path_prefers_what_the_indexer_stored():
 def test_a_name_without_a_folder_yields_no_path():
     """`workspace_display_name` can name a project from relative paths alone; a LINK must
     not be invented from the same guess — there is no such folder to open."""
-    paths = ["Autohub/autohub-api-system-tests/internal/generated/api/schema/a/dto.go",
-             "Autohub/autohub-api-system-tests/internal/generated/api/schema/b/dto.go"]
-    assert workspace_display_name("tech", paths, []) == "autohub-api-system-tests"
+    paths = ["Acme/acme-api-system-tests/internal/generated/api/schema/a/dto.go",
+             "Acme/acme-api-system-tests/internal/generated/api/schema/b/dto.go"]
+    assert workspace_display_name("tech", paths, []) == "acme-api-system-tests"
     assert workspace_folder_path(paths, []) == ""
 
 
@@ -198,16 +198,16 @@ def test_a_relative_stated_path_is_refused():
 
 
 def test_row_carries_the_folder_for_the_app_to_reveal():
-    cache = ["/Users/me/projects/service-autohub-call/internal/rpc/handler.go"]
+    cache = ["/Users/me/projects/service-acme-call/internal/rpc/handler.go"]
     row = build_content_collection_row(
-        "ws-ffeca201eeccc3a4",
+        "ws-2b3c4d5e6f7a8b9c",
         {"points_count": 19921},
         [{"payload": {"filePath": "internal/rpc/handler.go"}}],
         cache_paths=cache,
     )
-    assert row["workspace_path"] == "/Users/me/projects/service-autohub-call"
+    assert row["workspace_path"] == "/Users/me/projects/service-acme-call"
     # The name the link is labelled with must be the folder it opens.
-    assert row["display_name"] == "service-autohub-call"
+    assert row["display_name"] == "service-acme-call"
     assert str(row["workspace_path"]).rsplit("/", 1)[-1] == row["display_name"]
 
 

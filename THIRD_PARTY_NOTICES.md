@@ -15,6 +15,7 @@ license texts ship with, or are published by, each respective project.
 | [Qdrant](https://github.com/qdrant/qdrant) | Local vector database | Apache License 2.0 |
 | [Ollama](https://github.com/ollama/ollama) | Local embedding model runtime | MIT License |
 | Qwen3 Embedding (`qwen3-embedding`) | Embedding model run by Ollama | Apache License 2.0 (as published by the Qwen team — verify at the model's distribution page) |
+| Qwen 3.6 / 3.5 (optional local model) | Not bundled — downloaded through Ollama only when you choose it in Settings → Local model | Apache License 2.0 (as published by the Qwen team — verify at the model's distribution page) |
 
 ## Python backend (`embarsy-api`, frozen with PyInstaller)
 

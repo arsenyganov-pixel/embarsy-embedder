@@ -44,7 +44,7 @@ struct BenchmarkView: View {
     private var workspacePath: String { collectionFolder?.path ?? store.preferences.defaultProjectPath }
 
     var body: some View {
-        EmbarsySection(title: "Benchmark", right: "grep vs meaning") {
+        EmbarsySection(title: "Benchmark", right: L("grep vs meaning")) {
             Text("Same question, two engines — on your own indexed code. Questions are sampled from real chunks; grep is real `/usr/bin/grep` playing its best game — the AND pipeline over the exact folder this collection indexes.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -85,7 +85,7 @@ struct BenchmarkView: View {
                         HStack(alignment: .top, spacing: 8) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: 11)).foregroundStyle(.orange)
-                            Text("The result below is for **\(shortCollectionTitle(result.collection))** (\(abbreviatedPath(result.workspacePath))). You now have \(shortCollectionTitle(selected)) selected — press Run \(service.result == nil ? "benchmark" : "again") to benchmark it.")
+                            Text("The result below is for **\(shortCollectionTitle(result.collection))** (\(abbreviatedPath(result.workspacePath))). You now have \(shortCollectionTitle(selected)) selected — press Run again to benchmark it.")
                                 .font(.caption).foregroundStyle(.orange)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -157,7 +157,7 @@ struct BenchmarkView: View {
             Button { collectionMenuOpen.toggle() } label: {
                 HStack(spacing: 7) {
                     Image(systemName: "tablecells").font(.caption).foregroundStyle(.secondary)
-                    Text(activeCollection.map(shortCollectionTitle) ?? "no collections")
+                    Text(activeCollection.map(shortCollectionTitle) ?? L("no collections"))
                         .font(.system(size: 12, weight: .semibold))
                         .lineLimit(1)
                     Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.tertiary)
@@ -228,7 +228,7 @@ struct BenchmarkView: View {
                                                workspacePath: workspacePath, paraphrase: paraphrase)
                 }
             } label: {
-                Label(service.result == nil ? "Run benchmark" : "Run again", systemImage: "flag.checkered")
+                Label(service.result == nil ? L("Run benchmark") : L("Run again"), systemImage: "flag.checkered")
                     .font(.system(size: 12.5, weight: .semibold))
             }
             .buttonStyle(.borderedProminent)
@@ -253,7 +253,10 @@ struct BenchmarkView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(result.samples) questions · top-\(result.topK)")
                         .font(.system(.caption2, design: .monospaced)).foregroundStyle(.tertiary)
-                    Text("\(shortCollectionTitle(result.collection)) · \(abbreviatedPath(result.workspacePath))\(result.paraphrased == true ? " · synonym questions" : "")")
+                    let runInfo = result.paraphrased == true
+                        ? L("\(shortCollectionTitle(result.collection)) · \(abbreviatedPath(result.workspacePath)) · synonym questions")
+                        : "\(shortCollectionTitle(result.collection)) · \(abbreviatedPath(result.workspacePath))"
+                    Text(verbatim: runInfo)
                         .font(.system(.caption2, design: .monospaced)).foregroundStyle(.tertiary)
                         .lineLimit(1).truncationMode(.head)
                     if let lastRun = service.lastRunDate {
@@ -264,7 +267,7 @@ struct BenchmarkView: View {
             }
 
             metricRow(
-                title: "Right file found (top-\(result.topK))",
+                title: L("Right file found (top-\(result.topK))"),
                 grepText: "\(grep.hitTopK)/\(result.samples)",
                 semanticText: "\(semantic.hitTopK)/\(result.samples)",
                 grepFraction: Double(grep.hitTopK) / Double(max(result.samples, 1)),
@@ -272,22 +275,22 @@ struct BenchmarkView: View {
             )
             let allGrepTimedOut = (grep.timeouts ?? 0) >= result.samples
             metricRow(
-                title: "Median time to a ranked answer",
-                grepText: allGrepTimedOut ? "n/a" : formatSeconds(grep.medianLatencyMS),
+                title: L("Median time to a ranked answer"),
+                grepText: allGrepTimedOut ? L("n/a") : formatSeconds(grep.medianLatencyMS),
                 semanticText: formatSeconds(semantic.medianLatencyMS),
                 grepFraction: allGrepTimedOut ? 0.02 : fractionSmallerIsBetter(mine: grep.medianLatencyMS, other: semantic.medianLatencyMS),
                 semanticFraction: fractionSmallerIsBetter(mine: semantic.medianLatencyMS, other: grep.medianLatencyMS)
             )
             metricRow(
-                title: "To sift through, per question",
-                grepText: (grep.medianMatchedLines ?? 0) <= 0 ? "n/a" : "\(Int(grep.medianMatchedLines ?? 0)) lines",
-                semanticText: "\(result.topK) snippets",
+                title: L("To sift through, per question"),
+                grepText: (grep.medianMatchedLines ?? 0) <= 0 ? L("n/a") : L("\(Int(grep.medianMatchedLines ?? 0)) lines"),
+                semanticText: L("\(result.topK) snippets"),
                 grepFraction: fractionSmallerIsBetter(mine: grep.medianMatchedLines ?? 0, other: Double(result.topK)),
                 semanticFraction: fractionSmallerIsBetter(mine: Double(result.topK), other: grep.medianMatchedLines ?? 0),
-                semanticInfo: "“Lines” and “snippets” are different units, on purpose — that’s the whole point of the comparison.\n\nLEFT (grep): every matching line across all the files grep found — raw text you scroll through by eye to locate the answer. Mostly noise.\n\nRIGHT (Embarsy): a fixed handful — the top \(result.topK) ranked snippets. Each is one short, already-relevant code chunk with its file, ordered by meaning. You read these, you don’t sift them.\n\nSo the left number is how much you’d have to wade through; the right number is how little you’d actually read."
+                semanticInfo: L("“Lines” and “snippets” are different units, on purpose — that’s the whole point of the comparison.\n\nLEFT (grep): every matching line across all the files grep found — raw text you scroll through by eye to locate the answer. Mostly noise.\n\nRIGHT (Embarsy): a fixed handful — the top \(result.topK) ranked snippets. Each is one short, already-relevant code chunk with its file, ordered by meaning. You read these, you don’t sift them.\n\nSo the left number is how much you’d have to wade through; the right number is how little you’d actually read.")
             )
             if let timeouts = grep.timeouts, timeouts > 0 {
-                Text("\(timeouts) grep run\(timeouts == 1 ? "" : "s") exceeded the 15 s budget and \(timeouts == 1 ? "was" : "were") stopped — excluded from the medians above.")
+                Text("\(timeouts) grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.")
                     .font(.caption2).foregroundStyle(.orange)
             }
             if let root = result.grepRoot, root != result.workspacePath {
@@ -364,7 +367,7 @@ struct BenchmarkView: View {
             try log.write(to: url, atomically: true, encoding: .utf8)
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Could not save the benchmark log"
+            alert.messageText = L("Could not save the benchmark log")
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }
@@ -407,7 +410,7 @@ struct BenchmarkView: View {
                         // tooltip is easy to trigger. Negative margins keep the layout unchanged.
                         .padding(6)
                         .contentShape(Rectangle())
-                        .chipHelp(info)
+                        .chipHelp(verbatim: info)
                         .padding(-6)
                 }
             }
@@ -446,7 +449,7 @@ struct BenchmarkView: View {
             }
             HStack(spacing: 14) {
                 rankLabel(engine: "grep", rank: row.grep.rank, topK: topK,
-                          detail: "\(row.grep.matchedLines ?? 0) lines · \(formatSeconds(row.grep.latencyMS))",
+                          detail: L("\(row.grep.matchedLines ?? 0) lines · \(formatSeconds(row.grep.latencyMS))"),
                           color: grepColor)
                 rankLabel(engine: "embarsy", rank: row.semantic.rank, topK: topK,
                           detail: formatSeconds(row.semantic.latencyMS),
@@ -463,25 +466,33 @@ struct BenchmarkView: View {
     }
 
     private func rankLabel(engine: String, rank: Int?, topK: Int, detail: String, color: Color) -> some View {
-        let engineName = engine == "grep" ? "grep" : "Embarsy's semantic search"
+        let isGrep = engine == "grep"
         let help: String = {
             if let rank {
-                let place = rank == 1 ? "the very first result" : "result #\(rank)"
-                return "#\(rank): the right file came out as \(place) in \(engineName)'s ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top \(topK)."
+                if rank == 1 {
+                    return isGrep
+                        ? L("#1: the right file came out as the very first result in grep's ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top \(topK).")
+                        : L("#1: the right file came out as the very first result in Embarsy's semantic search ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top \(topK).")
+                }
+                return isGrep
+                    ? L("#\(rank): the right file came out as result #\(rank) in grep's ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top \(topK).")
+                    : L("#\(rank): the right file came out as result #\(rank) in Embarsy's semantic search ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top \(topK).")
             }
-            return "miss: the right file never reached \(engineName)'s top \(topK) for this question."
+            return isGrep
+                ? L("miss: the right file never reached grep's top \(topK) for this question.")
+                : L("miss: the right file never reached Embarsy's semantic search's top \(topK) for this question.")
         }()
         return HStack(spacing: 5) {
             Image(systemName: rank != nil ? "checkmark.circle.fill" : "xmark.circle")
                 .font(.system(size: 11))
                 .foregroundStyle(rank != nil ? color : Color(nsColor: .systemRed).opacity(0.8))
-            Text(rank.map { "#\($0)" } ?? "miss")
+            Text(rank.map { "#\($0)" } ?? L("miss"))
                 .font(.system(size: 11, weight: .bold).monospacedDigit())
                 .foregroundStyle(rank != nil ? color : .secondary)
             Text(detail).font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
         }
         .contentShape(Rectangle())
-        .chipHelp(help)
+        .chipHelp(verbatim: help)
     }
 
     // MARK: Editor duels
@@ -545,7 +556,7 @@ struct BenchmarkView: View {
             Text(editorStatus(editor))
                 .font(.system(.caption2, design: .monospaced)).foregroundStyle(.tertiary)
                 .lineLimit(1).truncationMode(.middle)
-                .chipHelp(editorStatusHelp(editor))
+                .chipHelp(verbatim: editorStatusHelp(editor))
             Spacer()
             if let cliPath {
                 Button("Run 3 duels") {
@@ -563,37 +574,37 @@ struct BenchmarkView: View {
                     service.copyPrompts(editorTitle: editor.title, questions: questions)
                 }
                 .buttonStyle(.bordered).controlSize(.small)
-                .chipHelp(copyPromptsHelp(editor))
+                .chipHelp(verbatim: copyPromptsHelp(editor))
             }
         }
     }
 
     /// Short reason shown next to the editor name (full text on hover).
     private func editorStatus(_ editor: BenchmarkEditor) -> String {
-        if service.detectedCLIs[editor] != nil { return "CLI found — Embarsy runs the duels for you" }
+        if service.detectedCLIs[editor] != nil { return L("CLI found — Embarsy runs the duels for you") }
         switch editor {
-        case .zoo:    return "runs only inside the editor — copy prompts to its chat"
-        case .claude: return "no automatable CLI here — copy prompts to its chat"
-        case .codex:  return "CLI not found on PATH — copy prompts to its chat"
+        case .zoo:    return L("runs only inside the editor — copy prompts to its chat")
+        case .claude: return L("no automatable CLI here — copy prompts to its chat")
+        case .codex:  return L("CLI not found on PATH — copy prompts to its chat")
         }
     }
 
     private func editorStatusHelp(_ editor: BenchmarkEditor) -> String {
         if let path = service.detectedCLIs[editor] {
-            return "\(editor.title)'s command-line tool was found at \(path). Embarsy can run the duels headless — press Run 3 duels."
+            return L("\(editor.title)'s command-line tool was found at \(path). Embarsy can run the duels headless — press Run 3 duels.")
         }
         switch editor {
         case .zoo:
-            return "Zoo / Roo Code runs only inside your editor's chat — it ships no command line, so Embarsy can't automate it. Use Copy duel prompts and run them in the Zoo/Roo chat by hand."
+            return L("Zoo / Roo Code runs only inside your editor's chat — it ships no command line, so Embarsy can't automate it. Use Copy duel prompts and run them in the Zoo/Roo chat by hand.")
         case .claude:
-            return "No Claude command-line tool was found on your PATH that Embarsy can drive headless (the one bundled in the Claude desktop app needs its own interactive login). Use Copy duel prompts and run them in the Claude chat. To enable the automatic Run button, install the Claude Code CLI so `claude` is on your PATH."
+            return L("No Claude command-line tool was found on your PATH that Embarsy can drive headless (the one bundled in the Claude desktop app needs its own interactive login). Use Copy duel prompts and run them in the Claude chat. To enable the automatic Run button, install the Claude Code CLI so `claude` is on your PATH.")
         case .codex:
-            return "No Codex command-line tool was found. Use Copy duel prompts and run them in the Codex chat. If you have the Codex app or CLI installed, make sure `codex` is reachable so Embarsy can automate the duel."
+            return L("No Codex command-line tool was found. Use Copy duel prompts and run them in the Codex chat. If you have the Codex app or CLI installed, make sure `codex` is reachable so Embarsy can automate the duel.")
         }
     }
 
     private func copyPromptsHelp(_ editor: BenchmarkEditor) -> String {
-        "\(editor.title) can't be driven automatically on this Mac, so run the duel by hand. This copies a ready script: for each of the first 3 questions, a *grep-only* prompt and a *semantic* prompt. Paste them into \(editor.title)'s chat one at a time, run both, and compare how long each takes and which file it lands on. Same test, no CLI required."
+        L("\(editor.title) can't be driven automatically on this Mac, so run the duel by hand. This copies a ready script: for each of the first 3 questions, a *grep-only* prompt and a *semantic* prompt. Paste them into \(editor.title)'s chat one at a time, run both, and compare how long each takes and which file it lands on. Same test, no CLI required.")
     }
 
     @ViewBuilder

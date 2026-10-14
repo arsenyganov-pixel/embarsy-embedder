@@ -18,12 +18,12 @@ struct RooIndexCleanupResult {
 
     var summary: String {
         let collectionSummary = deletedCollections.isEmpty
-            ? "Qdrant collection was already absent"
-            : "deleted Qdrant collection \(deletedCollections.joined(separator: ", "))"
+            ? L("Qdrant collection was already absent")
+            : L("deleted Qdrant collection \(deletedCollections.joined(separator: ", "))")
         let cacheSummary = clearedCacheFiles.isEmpty
-            ? "Watcher cache file was already absent"
-            : "cleared Watcher cache file \(clearedCacheFiles.map(\.path).joined(separator: ", "))"
-        return "Clear Watcher Index finished: \(collectionSummary); \(cacheSummary)."
+            ? L("Watcher cache file was already absent")
+            : L("cleared Watcher cache file \(clearedCacheFiles.map(\.path).joined(separator: ", "))")
+        return L("Clear Watcher Index finished: \(collectionSummary); \(cacheSummary).")
     }
 }
 
@@ -35,11 +35,11 @@ enum RooIndexCleanupError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .emptyWorkspacePath:
-            return "Select a default project before clearing the Watcher index."
+            return L("Select a default project before clearing the Watcher index.")
         case let .qdrantRequestFailed(statusCode, body):
-            return "Qdrant request failed with HTTP \(statusCode): \(body)"
+            return L("Qdrant request failed with HTTP \(statusCode): \(body)")
         case .invalidQdrantResponse:
-            return "Qdrant returned an invalid collections response."
+            return L("Qdrant returned an invalid collections response.")
         }
     }
 }

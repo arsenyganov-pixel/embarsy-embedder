@@ -3,17 +3,23 @@ import ServiceManagement
 
 @MainActor
 final class LoginItemService: ObservableObject {
-    @Published private(set) var statusText = "Unknown"
+    @Published private(set) var statusText = L("Unknown")
     @Published private(set) var isEnabled = false
 
     func refresh() {
         if #available(macOS 13.0, *) {
             let status = SMAppService.mainApp.status
             isEnabled = status == .enabled
-            statusText = String(describing: status)
+            switch status {
+            case .enabled: statusText = L("On")
+            case .notRegistered: statusText = L("Off")
+            case .requiresApproval: statusText = L("Waiting for approval in System Settings → General → Login Items")
+            case .notFound: statusText = L("Not found — move Embarsy to Applications")
+            @unknown default: statusText = L("Unknown")
+            }
         } else {
             isEnabled = false
-            statusText = "Unsupported macOS"
+            statusText = L("Unsupported macOS")
         }
     }
 

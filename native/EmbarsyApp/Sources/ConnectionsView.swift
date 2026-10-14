@@ -13,7 +13,7 @@ struct ConnectionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.gapSection) {
-                BrandedHeader(title: "Connections", subtitle: "Give your coding agents search by meaning")
+                BrandedHeader(title: "Connections", subtitle: "Give your coding agents memory and search by meaning")
 
                 tabbedPanel
 
@@ -115,11 +115,11 @@ struct ConnectionsView: View {
     // MARK: Content
 
     static let trouble: [(String, String)] = [
-        ("Search finds nothing.", "Make sure the folder is listed under Indexed folders, and re-index it after large changes. For Zoo / Roo the dimension must be 1024 — Clear Index Data in Zoo / Roo and run indexing again."),
-        ("Claude Code or Codex doesn't see Embarsy.", "Restart the editor after connecting — editors read their MCP config only at launch."),
-        ("401 error / no access.", "Keys change after a reinstall. Press Reconnect here for Claude Code and Codex; paste the current keys into Zoo / Roo."),
-        ("Everything reads zero in Monitoring.", "The client must call http://localhost:8000/qdrant, not :6333 directly."),
-        ("Nothing starts up.", "Make sure every status row on Status is green (Install and Start)."),
+        (L("Search finds nothing."), L("Make sure the folder is listed under Indexed folders, and re-index it after large changes. For Zoo / Roo the dimension must be 1024 — Clear Index Data in Zoo / Roo and run indexing again.")),
+        (L("Claude Code or Codex doesn't see Embarsy."), L("Restart the editor after connecting — editors read their MCP config only at launch.")),
+        (L("401 error / no access."), L("Keys change after a reinstall. Press Reconnect here for each agent, and paste the current keys into Zoo / Roo's codebase indexing.")),
+        (L("Everything reads zero in Monitoring."), L("The client must call http://localhost:8000/qdrant, not :6333 directly.")),
+        (L("Nothing starts up."), L("Make sure every status row on Status is green (Install and Start).")),
     ]
 }
 
@@ -136,13 +136,13 @@ enum ConnectionTab: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Zoo / Roo has no agent: Embarsy cannot connect it, only supply values to paste — so it
-    /// gets no state glyph, which would otherwise claim something we cannot know.
+    /// Every tab's agent can have Embarsy's MCP tools connected; Zoo / Roo additionally takes
+    /// pasted values for its own codebase indexing.
     var agent: EditorAgent? {
         switch self {
         case .claude: return .claude
         case .codex: return .codex
-        case .roo: return nil
+        case .roo: return .roo
         }
     }
 }
@@ -183,10 +183,10 @@ private struct StateGlyph: View {
 
     private var meaning: String {
         switch state {
-        case .connected: return "connected"
-        case .notConnected: return "not connected"
-        case .connectedViaExternalBridge: return "connected through a separately installed bridge"
-        case .connectedToMissingBuild: return "set up for a copy of Embarsy that no longer exists"
+        case .connected: return L("connected")
+        case .notConnected: return L("not connected")
+        case .connectedViaExternalBridge: return L("connected through a separately installed bridge")
+        case .connectedToMissingBuild: return L("set up for a copy of Embarsy that no longer exists")
         }
     }
 }
@@ -234,10 +234,10 @@ private struct AgentPanel: View {
 
     private var title: String {
         switch state {
-        case .connected: return "Connected"
-        case .notConnected: return "Not connected"
-        case .connectedViaExternalBridge: return "Connected"
-        case .connectedToMissingBuild: return "Can't start"
+        case .connected: return L("Connected")
+        case .notConnected: return L("Not connected")
+        case .connectedViaExternalBridge: return L("Connected")
+        case .connectedToMissingBuild: return L("Can't start")
         }
     }
 
@@ -253,13 +253,18 @@ private struct AgentPanel: View {
     private var detail: String {
         switch state {
         case .connected:
-            return "Bridge \(bridgeVersion), bundled · works in every indexed folder · \(agent.activationHint)"
+            return L("Bridge \(bridgeVersion), bundled · works in every indexed folder · \(agent.activationHint)")
         case .notConnected:
-            return "Works in every indexed folder — no npm, no Node, nothing to approve."
+            if agent == .roo {
+                return agent.isInstalled()
+                    ? L("Adds Embarsy's tools to Zoo / Roo: your memory (recall, remember) and search across indexed folders.")
+                    : L("Zoo / Roo hasn't run in VS Code yet. Open its panel in VS Code once, then connect.")
+            }
+            return L("Works in every indexed folder — no npm, no Node, nothing to approve.")
         case .connectedViaExternalBridge:
-            return "Through a bridge installed separately from Embarsy. It works, but it updates on its own — switch to the one bundled with Embarsy so the two always match."
+            return L("Through a bridge installed separately from Embarsy. It works, but it updates on its own — switch to the one bundled with Embarsy so the two always match.")
         case .connectedToMissingBuild:
-            return "\(agent.label) is set up to start Embarsy from a copy that was moved or replaced, so it fails to start. Reconnect to point it at this one."
+            return L("\(agent.label) is set up to start Embarsy from a copy that was moved or replaced, so it fails to start. Reconnect to point it at this one.")
         }
     }
 
@@ -271,6 +276,7 @@ private struct AgentPanel: View {
         case .notConnected:
             Button("Connect") { store.connectEditor(agent) }
                 .buttonStyle(.borderedProminent).tint(Theme.accent)
+                .disabled(!agent.isInstalled())
         case .connectedViaExternalBridge:
             // A recommendation, not a repair: nothing is broken, so it stays a plain button.
             Button("Use bundled bridge") { store.connectEditor(agent) }
@@ -310,6 +316,10 @@ private struct AgentPanel: View {
 private struct RooPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
+            AgentPanel(agent: .roo)
+            Divider().overlay(Theme.separator)
+            Text("Codebase indexing")
+                .font(.system(size: 13, weight: .semibold))
             Text("Zoo / Roo Code indexes your code itself — it only needs Embarsy's values. In VS Code, open the Zoo / Roo chat, click the **Codebase Indexing** icon at the bottom right, paste the values below, press **Save**, then **Start Indexing**.")
                 .font(.system(size: 12.5))
                 .foregroundStyle(.secondary)
@@ -337,7 +347,8 @@ private struct IndexedFoldersSection: View {
     /// Runs for folders that have no index yet — a freshly added folder shows its progress
     /// here until the first run finishes and it joins the list above.
     private var pendingFolders: [String] {
-        let known = Set(folders.compactMap(\.workspacePath))
+        var known = Set(folders.compactMap(\.workspacePath))
+        if let vault = store.memory.vault { known.insert(vault.root.standardizedFileURL.path) }
         return indexing.runs.keys.filter { !known.contains($0) }.sorted()
     }
 
@@ -363,6 +374,8 @@ private struct IndexedFoldersSection: View {
                     .padding(.vertical, 4)
             }
 
+            if let vault = store.memory.vault { memoryRow(vault) }
+
             ForEach(folders) { collection in
                 if let folder = collection.revealableFolder {
                     row(folder: folder, collection: collection.collectionName,
@@ -381,6 +394,37 @@ private struct IndexedFoldersSection: View {
             .buttonStyle(.bordered)
             .disabled(indexing.isBusy)
         }
+    }
+
+    /// The memory base: indexed into its own collection, searched by recall — so it sits apart
+    /// from project folders, which search_code picks by the folder an agent works in.
+    private func memoryRow(_ vault: VaultLayout) -> some View {
+        let key = vault.root.standardizedFileURL.path
+        let collection = contentIndex.snapshot.collections.first { $0.collectionName == "embarsy-memory" }
+        return HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text("Memory").font(.system(size: 12.5, weight: .semibold))
+                    FinderLink(label: key.replacingOccurrences(of: NSHomeDirectory(), with: "~"), folder: vault.root,
+                               font: .system(size: 12, design: .monospaced))
+                }
+                Text("Searched by recall in every agent. Re-indexed by itself whenever the memory changes.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer(minLength: 8)
+            status(run: indexing.runs[key], stats: collection.map(stats(for:)) ?? L("not indexed yet"))
+            Button("Re-index") {
+                Task { await store.indexMemory() }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(indexing.isBusy)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(Theme.fillQuaternary, in: RoundedRectangle(cornerRadius: Theme.radiusSm))
+        .overlay(RoundedRectangle(cornerRadius: Theme.radiusSm).stroke(Theme.separator))
     }
 
     private func row(folder: URL, collection: String?, stats: String?) -> some View {
@@ -430,10 +474,10 @@ private struct IndexedFoldersSection: View {
     }
 
     private func stats(for collection: ContentIndexCollection) -> String {
-        let chunks = "\(collection.pointsCount.formatted()) chunks"
+        let chunks = L("\(collection.pointsCount.formatted()) chunks")
         guard let date = collection.lastIndexedDate else { return chunks }
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "en_US")
+        formatter.locale = Locale(identifier: AppLanguage.running.rawValue)
         return "\(chunks) · \(formatter.localizedString(for: date, relativeTo: Date()))"
     }
 
@@ -442,8 +486,8 @@ private struct IndexedFoldersSection: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.prompt = "Index"
-        panel.message = "Choose a project folder to index for Claude Code and Codex"
+        panel.prompt = L("Index")
+        panel.message = L("Choose a project folder to index for Claude Code and Codex")
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
         // Re-adding an indexed folder refreshes its existing index rather than starting a
@@ -452,52 +496,5 @@ private struct IndexedFoldersSection: View {
         let existing = folders.first { $0.workspacePath == path }
         let collection = existing?.collectionName ?? IndexingService.collectionName(for: url)
         Task { await store.indexFolder(url, collection: collection) }
-    }
-}
-
-// MARK: - Shapes
-
-/// The selected tab: rounded top corners, square bottom. Open (no bottom edge) when stroked,
-/// so its outline flows into the panel instead of drawing a line between them.
-private struct TabShape: Shape {
-    var radius: CGFloat
-    var closed: Bool
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.minY),
-                    tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
-        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.minY),
-                    tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        if closed { path.closeSubpath() }
-        return path
-    }
-}
-
-/// The tab panel. Its top-left corner is square while the first tab is selected, so that tab
-/// sits flush on the panel's edge instead of floating above a rounded corner.
-private struct PanelShape: Shape {
-    var radius: CGFloat
-    var squareTopLeft: Bool
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        if squareTopLeft {
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        } else {
-            path.move(to: CGPoint(x: rect.minX, y: rect.minY + radius))
-            path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.minY),
-                        tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: radius)
-        }
-        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.minY),
-                    tangent2End: CGPoint(x: rect.maxX, y: rect.maxY), radius: radius)
-        path.addArc(tangent1End: CGPoint(x: rect.maxX, y: rect.maxY),
-                    tangent2End: CGPoint(x: rect.minX, y: rect.maxY), radius: radius)
-        path.addArc(tangent1End: CGPoint(x: rect.minX, y: rect.maxY),
-                    tangent2End: CGPoint(x: rect.minX, y: rect.minY), radius: radius)
-        path.closeSubpath()
-        return path
     }
 }

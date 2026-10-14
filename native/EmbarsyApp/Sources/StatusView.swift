@@ -47,7 +47,7 @@ struct StatusView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("A newer Embarsy is installed")
                     .font(.system(size: 12.5, weight: .semibold))
-                Text("This window is still running build \(EmbarsyBuildInfo.bundleVersion); \(EmbarsyBuildInfo.shortVersionOnDisk.map { "version \($0)" } ?? "a different build") (build \(EmbarsyBuildInfo.bundleVersionOnDisk ?? "unknown")) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.")
+                Text(verbatim: relaunchDetail)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -61,6 +61,15 @@ struct StatusView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9))
         .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color.primary.opacity(0.12)))
+    }
+
+    private var relaunchDetail: String {
+        let runningBuild = EmbarsyBuildInfo.bundleVersion
+        let diskBuild = EmbarsyBuildInfo.bundleVersionOnDisk ?? L("unknown")
+        if let version = EmbarsyBuildInfo.shortVersionOnDisk {
+            return L("This window is still running build \(runningBuild); version \(version) (build \(diskBuild)) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.")
+        }
+        return L("This window is still running build \(runningBuild); a different build (build \(diskBuild)) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.")
     }
 
     // MARK: Brand hero
@@ -84,7 +93,7 @@ struct StatusView: View {
                         + Text(".").font(.system(size: 19, weight: .heavy)).foregroundColor(Theme.accent))
                         .foregroundStyle(.primary)
                 }
-                Text("Local semantic index")
+                Text("Memory and search by meaning for all your agents")
                     .font(.system(size: 11.5))
                     .foregroundStyle(.tertiary)
                     .padding(.leading, 1)
@@ -124,7 +133,7 @@ struct StatusView: View {
     private var anyRunning: Bool { runningCount > 0 }
 
     private var servicesSection: some View {
-        EmbarsySection(title: "Services", right: anyRunning ? "\(runningCount) running" : "all stopped") {
+        EmbarsySection(title: "Services", right: anyRunning ? L("\(runningCount) running") : L("all stopped")) {
             VStack(spacing: 0) {
                 ForEach(Array(ManagedService.allCases.enumerated()), id: \.element) { index, service in
                     if index > 0 { Divider().overlay(Theme.separator) }

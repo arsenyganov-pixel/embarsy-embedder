@@ -51,7 +51,7 @@ struct InstallView: View {
                                     .truncationMode(.middle)
                             }
                                 Text(store.installManager.modelDownloadActivity.isEmpty
-                                ? "Install polling is active. Waiting for the next setup event..."
+                                ? L("Install polling is active. Waiting for the next setup event...")
                                 : store.installManager.modelDownloadActivity)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)

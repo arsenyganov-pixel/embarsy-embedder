@@ -35,7 +35,7 @@ struct ContentIndexView: View {
         // No outer ScrollView: the header + footer stay put and the table fills the remaining
         // window height (scrolling happens inside the table), so the list grows with the window.
         VStack(alignment: .leading, spacing: Theme.gapSection) {
-            BrandedHeader(title: "Content", subtitle: contentIndex.message) {
+            BrandedHeader(title: "Content", subtitle: LocalizedStringKey(contentIndex.message)) {
                 Button { refreshOpen.toggle() } label: {
                     RefreshPillLabel(short: refreshInterval.short, busy: contentIndex.isRefreshing, open: refreshOpen)
                 }
@@ -123,10 +123,10 @@ struct ContentIndexView: View {
 
     private func headerBar(width: CGFloat) -> some View {
         HStack(spacing: 0) {
-            headerLabel("Collection", width: width * Column.name)
-            headerLabel("What seems indexed", width: width * Column.indexed)
+            headerLabel(L("Collection"), width: width * Column.name)
+            headerLabel(L("What seems indexed"), width: width * Column.indexed)
             pointsHeader(width: width * Column.points)
-            headerLabel("Preview", width: width * Column.preview)
+            headerLabel(L("Preview"), width: width * Column.preview)
         }
         .padding(.bottom, 6)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -330,7 +330,7 @@ struct ContentIndexView: View {
             chips.append(PreviewChipModel(kind: "term", label: String(head.prefix(60)), copy: head))
         }
         if let sample, !sample.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            chips.append(PreviewChipModel(kind: "sample", label: "Sample", copy: sample))
+            chips.append(PreviewChipModel(kind: "sample", label: L("Sample"), copy: sample))
         }
         return chips
     }
@@ -407,7 +407,7 @@ private struct PreviewChipView: View {
             }
             .padding(.horizontal, 10).padding(.vertical, 7)
         }
-        .chipHelp(chip.copy)
+        .chipHelp(verbatim: chip.copy)
         .accessibilityLabel("Copy \(chip.label)")
         .onHover { inside in
             hovering = inside

@@ -1,0 +1,3285 @@
+{
+ "": [
+  "LocalModelViews.swift",
+  "MemoryCoreViews.swift",
+  "MemoryInboxView.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift",
+  "SettingsView.swift"
+ ],
+ " · ": [
+  "MemoryView.swift"
+ ],
+ "#%lld: the right file came out as result #%lld in Embarsy's semantic search ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top %lld.": [
+  "BenchmarkView.swift"
+ ],
+ "#%lld: the right file came out as result #%lld in grep's ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top %lld.": [
+  "BenchmarkView.swift"
+ ],
+ "#1: the right file came out as the very first result in Embarsy's semantic search ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top %lld.": [
+  "BenchmarkView.swift"
+ ],
+ "#1: the right file came out as the very first result in grep's ranking of this question — lower is better, #1 is best. A hit counts when it lands anywhere in the top %lld.": [
+  "BenchmarkView.swift"
+ ],
+ "%@\n\nGreen check — %@ loads the skill. Orange mark — the skill is in a folder %@ reads, but %@ skips it. Dash — the skill isn't in any folder %@ reads.": [
+  "MemoryView.swift"
+ ],
+ "%@\n\nTeal arrow — Embarsy will change this. Green check — already set up, nothing to do. Grey dash — left as it is on purpose; the line below says why.": [
+  "MemoryCoreViews.swift"
+ ],
+ "%@ %@. Check %@.": [
+  "ProcessManager.swift"
+ ],
+ "%@ GB": [
+  "LocalModelViews.swift"
+ ],
+ "%@ already has files in it. Choose an empty or new folder.": [
+  "MemoryVault.swift"
+ ],
+ "%@ and %@ disagree": [
+  "MemoryContradictions.swift"
+ ],
+ "%@ and %@ say nearly the same": [
+  "MemoryHealthFixes.swift"
+ ],
+ "%@ can't be driven automatically on this Mac, so run the duel by hand. This copies a ready script: for each of the first 3 questions, a *grep-only* prompt and a *semantic* prompt. Paste them into %@'s chat one at a time, run both, and compare how long each takes and which file it lands on. Same test, no CLI required.": [
+  "BenchmarkView.swift"
+ ],
+ "%@ can't be read.": [
+  "MemoryContradictions.swift"
+ ],
+ "%@ chunks": [
+  "ConnectionsView.swift"
+ ],
+ "%@ couldn't be put back as installed: %@": [
+  "MemoryVendor.swift"
+ ],
+ "%@ doesn't exist, so %@ starts every session without your standing rules. Publish in Memory → Core to connect it.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ doesn't exist.": [
+  "MemoryMigration.swift"
+ ],
+ "%@ doesn't see any of your skills": [
+  "MemoryScanner.swift"
+ ],
+ "%@ failed to start during install. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com.": [
+  "InstallManager.swift"
+ ],
+ "%@ failed: %@\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com.": [
+  "InstallManager.swift"
+ ],
+ "%@ gets no global instructions": [
+  "MemoryScanner.swift"
+ ],
+ "%@ has a space in its path. Agents' instruction imports break on spaces — choose a path without them.": [
+  "MemoryVault.swift"
+ ],
+ "%@ has no SKILL.md.": [
+  "MemoryMigration.swift"
+ ],
+ "%@ has the same name as a skill bundled with Codex": [
+  "MemoryScanner.swift"
+ ],
+ "%@ in %@ was changed after Embarsy set it, so it was left as it is.": [
+  "MemoryPublisher.swift"
+ ],
+ "%@ in SKILL.md isn't valid YAML — an unquoted value with “: ” in it. %@ read the frontmatter strictly and skip the skill; Claude Code reads it anyway.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ in SKILL.md isn't valid YAML — an unquoted value with “: ” in it. %@ reads the frontmatter strictly and skips the skill; Claude Code reads it anyway.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ in SKILL.md isn't valid YAML — an unquoted value with “: ” in it. Codex reads the frontmatter strictly and skips the skill.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ in SKILL.md isn't valid YAML — an unquoted value with “: ” in it. Zoo / Roo reads the frontmatter strictly and skips the skill.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ is empty, so %@ starts every session without your standing rules. Publish in Memory → Core to connect it.": [
+  "MemoryScanner.swift"
+ ],
+ "%@ is not valid JSON. Fix or remove it, then connect again.": [
+  "EditorConnectionService.swift"
+ ],
+ "%@ is outside the folders you chose to bring in.": [
+  "MemoryMigration.swift"
+ ],
+ "%@ is right": [
+  "MemoryView.swift"
+ ],
+ "%@ is set up to start Embarsy from a copy that was moved or replaced, so it fails to start. Reconnect to point it at this one.": [
+  "ConnectionsView.swift"
+ ],
+ "%@ is still starting but did not pass its health check in time. It may finish on its own — press Refresh in a minute. Check %@.": [
+  "ProcessManager.swift"
+ ],
+ "%@ isn't a note path: use a .md path inside knowledge/, experience/ or people/.": [
+  "MemoryMigration.swift"
+ ],
+ "%@ isn't a place for a note. Use a .md path inside knowledge/, experience/ or people/.": [
+  "MemoryInbox.swift"
+ ],
+ "%@ isn't published to any agent": [
+  "MemoryScanner.swift"
+ ],
+ "%@ isn't set up in VS Code yet. Open its panel in VS Code once, then connect again.": [
+  "EditorConnectionService.swift"
+ ],
+ "%@ loads this into every session": [
+  "MemoryView.swift"
+ ],
+ "%@ loads this skill.": [
+  "MemoryView.swift"
+ ],
+ "%@ loads this skill. %@": [
+  "MemoryView.swift"
+ ],
+ "%@ looks like it contains a %@": [
+  "MemoryGit.swift"
+ ],
+ "%@ of %@": [
+  "LocalModelViews.swift"
+ ],
+ "%@ of 4 KB": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "%@ shows every skill's name and description in each turn, within a fixed share of the context. Past that it shortens or drops descriptions, and the model stops choosing those skills. Estimate assumes a 200k-token context. Remove skills you don't use, or publish rarely used ones only to the agents that need them (metadata.embarsy-agents in SKILL.md).": [
+  "MemoryScanner.swift"
+ ],
+ "%@ skip %@": [
+  "MemoryScanner.swift"
+ ],
+ "%@ skipped: install Embarsy local stack first.": [
+  "EmbarsyStore.swift"
+ ],
+ "%@ skips %@": [
+  "MemoryScanner.swift"
+ ],
+ "%@ skips this skill. %@": [
+  "MemoryView.swift"
+ ],
+ "%@ timed out after %lld seconds. Output: %@": [
+  "ProcessRunner.swift"
+ ],
+ "%@ timed out. Output tail: %@\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com.": [
+  "InstallManager.swift"
+ ],
+ "%@ was changed after Embarsy rewrote it, so it was left as it is. Its earlier version is in %@.": [
+  "MemoryPublisher.swift"
+ ],
+ "%@ was changed after Embarsy set it up, so it was left as it is.": [
+  "MemoryPublisher.swift"
+ ],
+ "%@ was changed, but it's someone else's skill": [
+  "MemoryVendor.swift"
+ ],
+ "%@ was killed by macOS right after launch (code-signature enforcement). Restart your Mac; if it happens again, delete /Applications/Embarsy.app completely and copy the new version fresh instead of overwriting it.": [
+  "ProcessManager.swift"
+ ],
+ "%@ · %@ · recommended": [
+  "LocalModelViews.swift"
+ ],
+ "%@ · %@ · synonym questions": [
+  "BenchmarkView.swift"
+ ],
+ "%@ · %lld": [
+  "MemoryView.swift"
+ ],
+ "%@ · elapsed %@": [
+  "InstallManager.swift"
+ ],
+ "%@ · question %lld/%lld · grep-only run…": [
+  "BenchmarkService.swift"
+ ],
+ "%@ · question %lld/%lld · semantic run…": [
+  "BenchmarkService.swift"
+ ],
+ "%@'s command-line tool was found at %@. Embarsy can run the duels headless — press Run 3 duels.": [
+  "BenchmarkView.swift"
+ ],
+ "%@'s skill list is over its budget (≈%@ of %@ tokens)": [
+  "MemoryScanner.swift"
+ ],
+ "%@: %@": [
+  "InstallView.swift"
+ ],
+ "%@: %@. Green check — connected and working. Empty circle — not connected. Orange mark — set up for a copy of Embarsy that was moved or replaced, so it can't start; reconnect it.": [
+  "ConnectionsView.swift"
+ ],
+ "%lld": [
+  "ActivityView.swift",
+  "MemoryView.swift",
+  "MonitoringView.swift"
+ ],
+ "%lld GB": [
+  "LocalModelViews.swift"
+ ],
+ "%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.": [
+  "ContentIndexView.swift"
+ ],
+ "%lld copies": [
+  "MemoryView.swift"
+ ],
+ "%lld copies of %@ differ": [
+  "MemoryScanner.swift"
+ ],
+ "%lld files": [
+  "MemoryMigrationViews.swift"
+ ],
+ "%lld files on this Mac match; Embarsy can't tell which one. The link is removed, its text stays.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.": [
+  "BenchmarkView.swift"
+ ],
+ "%lld knowledge notes were last verified over %lld months ago": [
+  "MemoryScanner.swift"
+ ],
+ "%lld leftover copies in a folder no agent reads": [
+  "MemoryScanner.swift"
+ ],
+ "%lld lines": [
+  "BenchmarkView.swift"
+ ],
+ "%lld lines · %@": [
+  "BenchmarkView.swift"
+ ],
+ "%lld links to old copies in %@": [
+  "MemoryScanner.swift"
+ ],
+ "%lld links with line numbers in %@": [
+  "MemoryScanner.swift"
+ ],
+ "%lld links with line numbers in %@ across %lld files": [
+  "MemoryScanner.swift"
+ ],
+ "%lld more, expand the row to see all": [
+  "ContentIndexView.swift"
+ ],
+ "%lld notes": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "%lld notes nothing links to": [
+  "MemoryScanner.swift"
+ ],
+ "%lld of %lld": [
+  "MemoryView.swift"
+ ],
+ "%lld of %lld · %@": [
+  "MemoryMigrationViews.swift"
+ ],
+ "%lld of your skills are available to other agents, but none is in %@, where %@ looks for them. Publish them for %@ in Memory → Core.": [
+  "MemoryScanner.swift"
+ ],
+ "%lld places where notes disagree — see below.": [
+  "MemoryService.swift"
+ ],
+ "%lld problems and %lld warnings. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.": [
+  "MemoryView.swift"
+ ],
+ "%lld proposals from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.": [
+  "MemoryView.swift"
+ ],
+ "%lld proposals have waited in the inbox for over two weeks": [
+  "MemoryScanner.swift"
+ ],
+ "%lld pts": [
+  "BenchmarkView.swift"
+ ],
+ "%lld questions · top-%lld": [
+  "BenchmarkView.swift"
+ ],
+ "%lld running": [
+  "StatusView.swift"
+ ],
+ "%lld skills": [
+  "MemoryView.swift"
+ ],
+ "%lld skills have a problem: %lld skipped by an agent that reads their folder, %lld with copies that differ, %lld that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.": [
+  "MemoryView.swift"
+ ],
+ "%lld skills have copies that differ — choose which to keep.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "%lld skills · %lld notes": [
+  "MemoryMigrationViews.swift"
+ ],
+ "%lld skills · %lld notes · core": [
+  "MemoryMigrationViews.swift"
+ ],
+ "%lld snippets": [
+  "BenchmarkView.swift"
+ ],
+ "%lld tok": [
+  "BenchmarkView.swift"
+ ],
+ "%lld warnings, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.": [
+  "MemoryView.swift"
+ ],
+ "%lldh %lldm": [
+  "EmbarsyStore.swift"
+ ],
+ "%lldm": [
+  "EmbarsyStore.swift"
+ ],
+ "%lldm %llds": [
+  "InstallManager.swift"
+ ],
+ "%llds": [
+  "InstallManager.swift"
+ ],
+ "**%@ skips it.** %@": [
+  "MemoryView.swift"
+ ],
+ "**%@** %@": [
+  "ConnectionsView.swift"
+ ],
+ "**%@**: grep-only — %lld/%lld correct in %@s · with Embarsy — %lld/%lld correct in %@s": [
+  "BenchmarkView.swift"
+ ],
+ "**Meaning won %lld of %lld.** In those questions grep found files matching the query words — and the right file still never reached its top-%lld. The semantic index ranked it by meaning instead.": [
+  "BenchmarkView.swift"
+ ],
+ "+%lld": [
+  "ContentIndexView.swift"
+ ],
+ ".": [
+  "DesignKit.swift",
+  "StatusView.swift"
+ ],
+ "0": [
+  "BinaryGrainView.swift"
+ ],
+ "0m": [
+  "EmbarsyStore.swift"
+ ],
+ "1": [
+  "BinaryGrainView.swift"
+ ],
+ "1 min": [
+  "LocalModelViews.swift"
+ ],
+ "1 minute": [
+  "DesignKit.swift"
+ ],
+ "10 min": [
+  "LocalModelViews.swift"
+ ],
+ "10 seconds": [
+  "DesignKit.swift"
+ ],
+ "10s": [
+  "DesignKit.swift"
+ ],
+ "15 minutes": [
+  "DesignKit.swift"
+ ],
+ "15m": [
+  "DesignKit.swift"
+ ],
+ "1m": [
+  "DesignKit.swift"
+ ],
+ "2 hours": [
+  "LocalModelViews.swift"
+ ],
+ "2 min": [
+  "LocalModelViews.swift"
+ ],
+ "2 seconds": [
+  "DesignKit.swift"
+ ],
+ "2s": [
+  "DesignKit.swift"
+ ],
+ "30 min": [
+  "LocalModelViews.swift"
+ ],
+ "30 seconds": [
+  "DesignKit.swift"
+ ],
+ "30s": [
+  "DesignKit.swift"
+ ],
+ "401 error / no access.": [
+  "ConnectionsView.swift"
+ ],
+ "5 min": [
+  "LocalModelViews.swift"
+ ],
+ "5 minutes": [
+  "DesignKit.swift"
+ ],
+ "5 seconds": [
+  "DesignKit.swift"
+ ],
+ "5m": [
+  "DesignKit.swift"
+ ],
+ "5s": [
+  "DesignKit.swift"
+ ],
+ "A *duel* asks your coding agent the same question twice: once restricted to grep/text tools, once leading with Embarsy's `search_code`. Embarsy compares which run finds the right file, how long it takes, and how many tokens it burns — the cost you actually pay.": [
+  "BenchmarkView.swift"
+ ],
+ "A different skill with this name is already in this folder. Embarsy leaves it alone.": [
+  "MemoryPublisher.swift"
+ ],
+ "A few minutes; nothing leaves your Mac. A first draft — check it closely in the review.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "A file with this name is already there.": [
+  "MemoryPublisher.swift"
+ ],
+ "A folder that Claude Code, Codex and Zoo / Roo all read: who you are, how they should work with you, and the skills they share. Plain markdown files — they keep working even without Embarsy.": [
+  "MemoryCoreViews.swift"
+ ],
+ "A folder where you keep skills or notes for your agents": [
+  "MemoryMigrationViews.swift"
+ ],
+ "A journal: its entries were split and move one by one into experience/.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "A new idle time applies from the next search: Embarsy's service restarts for it, after any indexing in progress.": [
+  "LocalModelViews.swift"
+ ],
+ "A new, empty folder for the memory base. What you bring in is copied here; the originals stay where they are until you've reviewed the result.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "A new, empty folder. Everything your agents remember lives here as plain markdown — you can open, read and back it up like any other folder.": [
+  "MemoryCoreViews.swift"
+ ],
+ "A newer %@ is available": [
+  "MemoryVendor.swift"
+ ],
+ "A newer Embarsy API (%@) ships with this app. Update restarts only the API — Qdrant, Ollama and your indexes are not touched.": [
+  "StatusView.swift"
+ ],
+ "A newer Embarsy is installed": [
+  "StatusView.swift"
+ ],
+ "A proposal has been waiting in the inbox a long time; agents can't use it until you decide.": [
+  "MemoryView.swift"
+ ],
+ "A shorter profile: %lld KB → %lld KB. Read it below; nothing changes until you use it.": [
+  "MemoryHealthAssist.swift"
+ ],
+ "A solid middle ground for Macs with less memory.": [
+  "LocalModelService.swift"
+ ],
+ "About you": [
+  "MemoryInboxView.swift"
+ ],
+ "Accept": [
+  "MemoryInboxView.swift"
+ ],
+ "Activity endpoint is unavailable. Start Embarsy API and refresh.": [
+  "ActivityService.swift"
+ ],
+ "Activity is waiting for Embarsy API.": [
+  "ActivityService.swift"
+ ],
+ "Activity needs local API secrets. Start or install Embarsy first.": [
+  "ActivityService.swift"
+ ],
+ "Activity refresh failed: %@": [
+  "ActivityService.swift"
+ ],
+ "Activity type": [
+  "ActivityView.swift"
+ ],
+ "Activity updated. Showing the last 24 hours.": [
+  "ActivityService.swift"
+ ],
+ "Add": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Add folder…": [
+  "ConnectionsView.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift"
+ ],
+ "Add to this note": [
+  "MemoryInboxView.swift"
+ ],
+ "Added by hand": [
+  "MemoryInbox.swift"
+ ],
+ "Added by you": [
+  "MemoryMigration.swift"
+ ],
+ "Added by you — no agent reads this folder": [
+  "MemoryScanner.swift"
+ ],
+ "Address me as": [
+  "MemoryCoreViews.swift"
+ ],
+ "Adds Embarsy's tools to Zoo / Roo: your memory (recall, remember) and search across indexed folders.": [
+  "ConnectionsView.swift"
+ ],
+ "Adds a dated section to this note; what's there stays.": [
+  "MemoryInboxView.swift"
+ ],
+ "Adds a link to the memory base.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Adds an import line at the end. Your text stays as it is; a copy is kept.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Adds the memory base to %@, so Claude Code can read it without asking each time. A copy is kept.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Adds the text of %@ to %@ as its own section, moves %@ to archive/ and points every link to it at %@. Nothing is lost: the archived note and the history keep both versions.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "After Remove Components and Clear Secrets or a fresh Install, copy the current API Key and Qdrant API Key from this screen into Zoo / Roo settings. Embarsy verifies the API key before marking the stack as installed.": [
+  "RooConnectionView.swift"
+ ],
+ "Agent's name": [
+  "MemoryCoreViews.swift"
+ ],
+ "Agents": [
+  "MemoryCoreViews.swift"
+ ],
+ "Agents are disconnected, but the base couldn't be moved to the Trash: %@": [
+  "MemoryService.swift"
+ ],
+ "Agents don't see inbox proposals until you accept them. Review them in Memory → Inbox.": [
+  "MemoryScanner.swift"
+ ],
+ "Agents propose; you decide. Nothing here is memory until you accept it — rejected proposals go to archive/, so nothing is lost.": [
+  "MemoryInboxView.swift"
+ ],
+ "Agents read different versions of the same skill, so they follow different instructions.": [
+  "MemoryView.swift"
+ ],
+ "Agents still find them with recall. Linking related notes to each other helps an agent that opens one find the rest.": [
+  "MemoryScanner.swift"
+ ],
+ "Agents stop loading this memory. The folder goes to the Trash, so you can still get it back from there.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Agents to connect": [
+  "MemoryMigrationViews.swift"
+ ],
+ "All %lld": [
+  "MemoryView.swift"
+ ],
+ "All activity types": [
+  "ActivityTypeFilter.swift"
+ ],
+ "All systems operational": [
+  "StatusView.swift"
+ ],
+ "All systems stopped": [
+  "StatusView.swift"
+ ],
+ "Already in memory": [
+  "MemoryInboxView.swift"
+ ],
+ "Already running.": [
+  "ProcessManager.swift"
+ ],
+ "Already set up.": [
+  "MemoryCoreViews.swift"
+ ],
+ "An agent following this link finds nothing.": [
+  "MemoryView.swift"
+ ],
+ "An agent skips this skill without saying so: its name, format or folder depth doesn't fit what the agent accepts.": [
+  "MemoryView.swift"
+ ],
+ "An entry of the journal %@.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Answer a few questions about you and your agent. Takes a couple of minutes.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Answer style": [
+  "MemoryCoreViews.swift"
+ ],
+ "Anything else about you": [
+  "MemoryCoreViews.swift"
+ ],
+ "App Support": [
+  "ConnectionsView.swift",
+  "SettingsView.swift"
+ ],
+ "Ask before changing anything — reading needs no permission": [
+  "MemoryCoreViews.swift"
+ ],
+ "Ask the assistant": [
+  "MemoryView.swift"
+ ],
+ "Assistant": [
+  "MemoryView.swift"
+ ],
+ "Auto-refresh": [
+  "DesignKit.swift"
+ ],
+ "Avg latency": [
+  "MonitoringView.swift"
+ ],
+ "Back": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Becomes one more line in your rules — every agent reads it in every session.": [
+  "MemoryInboxView.swift"
+ ],
+ "Benchmark": [
+  "BenchmarkView.swift"
+ ],
+ "Benchmark endpoint returned HTTP %lld. If Status offers an API Update, run it first.": [
+  "BenchmarkService.swift"
+ ],
+ "Benchmark failed: %@": [
+  "BenchmarkService.swift"
+ ],
+ "Both engines searched %@ — the folder this collection actually indexes, detected from the sampled files. grep is never made to scan siblings the index doesn't cover.": [
+  "BenchmarkView.swift"
+ ],
+ "Bridge %@, bundled · works in every indexed folder · %@": [
+  "ConnectionsView.swift"
+ ],
+ "Bring existing memory": [
+  "MemoryCoreViews.swift"
+ ],
+ "Bring into the base": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Bringing in your existing memory": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Broken links in %@": [
+  "MemoryScanner.swift"
+ ],
+ "Brought over %lld skills and %lld notes. A backup of every source is in %@. Restart your agents so they load the new memory.": [
+  "MemoryService.swift"
+ ],
+ "Brought over %lld skills and %lld notes. Not brought over:\n%@": [
+  "MemoryService.swift"
+ ],
+ "Build %@ · %@": [
+  "InstallView.swift"
+ ],
+ "Build: %@": [
+  "EmbarsyBuildInfo.swift"
+ ],
+ "Bundle path: %@": [
+  "EmbarsyBuildInfo.swift"
+ ],
+ "By meaning · %lld": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "CLI found — Embarsy runs the duels for you": [
+  "BenchmarkView.swift"
+ ],
+ "CLI not found on PATH — copy prompts to its chat": [
+  "BenchmarkView.swift"
+ ],
+ "CPU": [
+  "MonitoringView.swift"
+ ],
+ "CPU die temperature is read from the on-chip thermal sensors (average of the per-cluster PMU sensors), the same source as Stats / macmon — no sudo required.": [
+  "MonitoringView.swift"
+ ],
+ "CPU temperature": [
+  "MonitoringView.swift"
+ ],
+ "CPU temperature sensors aren’t available on this Mac.": [
+  "MonitoringView.swift"
+ ],
+ "Can't bring this in: %@": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Can't start": [
+  "ConnectionsView.swift"
+ ],
+ "Cancel": [
+  "LocalModelViews.swift",
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift",
+  "SettingsView.swift"
+ ],
+ "Cancel bringing in your memory?": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Cancel migration": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Cancel migration…": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Cannot open log file at %@": [
+  "ManagedProcess.swift"
+ ],
+ "Catches outdated facts": [
+  "LocalModelViews.swift"
+ ],
+ "Change that in the skill's folder or SKILL.md, then press Rescan.": [
+  "MemoryScanner.swift"
+ ],
+ "Character": [
+  "MemoryCoreViews.swift"
+ ],
+ "Check Qdrant Key": [
+  "RooConnectionView.swift"
+ ],
+ "Check for updates": [
+  "DesignKit.swift"
+ ],
+ "Check for updates on GitHub": [
+  "DesignKit.swift"
+ ],
+ "Check where notes go and the core's wording: a local model is a first draft.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Checking bundled binaries...": [
+  "InstallManager.swift"
+ ],
+ "Checking local Qwen model files before download...": [
+  "InstallManager.swift"
+ ],
+ "Checking...": [
+  "RooConnectionView.swift"
+ ],
+ "Choose a folder that holds skills, such as a project's .agents/skills, to compare with what your agents see": [
+  "MemoryView.swift"
+ ],
+ "Choose a folder.": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Choose a project folder to index for Claude Code and Codex": [
+  "ConnectionsView.swift"
+ ],
+ "Choose an empty folder for your agents' memory, or create a new one": [
+  "MemoryCoreViews.swift"
+ ],
+ "Choose project folder…": [
+  "BenchmarkView.swift"
+ ],
+ "Choose…": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift",
+  "SettingsView.swift"
+ ],
+ "Claude Code already keeps its memory in %@. Embarsy leaves that alone; clear it to have Claude's memory go to the inbox.": [
+  "MemoryPublisher.swift"
+ ],
+ "Claude Code may read the memory base": [
+  "MemoryPublisher.swift"
+ ],
+ "Claude Code or Codex doesn't see Embarsy.": [
+  "ConnectionsView.swift"
+ ],
+ "Claude Code's global instructions": [
+  "MemoryMigration.swift"
+ ],
+ "Claude Code's memory goes to the inbox": [
+  "MemoryPublisher.swift"
+ ],
+ "Claude Code's memory · %@": [
+  "MemoryMigration.swift"
+ ],
+ "Claude Code's own memory": [
+  "MemoryInboxView.swift"
+ ],
+ "Claude Code's own skills folder": [
+  "MemoryScanner.swift"
+ ],
+ "Claude Code's skills": [
+  "MemoryMigration.swift"
+ ],
+ "Clear Watcher Index": [
+  "EmbarsyStore.swift"
+ ],
+ "Clear Watcher Index failed: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Clear Watcher Index failed: Qdrant is not running. Start Embarsy stack and try again.": [
+  "EmbarsyStore.swift"
+ ],
+ "Clear Watcher Index finished: %@; %@.": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Clear Watcher Index skipped: select a default project first.": [
+  "EmbarsyStore.swift"
+ ],
+ "Clearing Watcher index...": [
+  "EmbarsyStore.swift"
+ ],
+ "Close": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Code index": [
+  "CodeSearchView.swift"
+ ],
+ "Code search": [
+  "CodeSearchView.swift",
+  "ContentView.swift"
+ ],
+ "Codebase indexing": [
+  "ConnectionsView.swift"
+ ],
+ "Codex cuts the description to 1024 characters in its skill list.": [
+  "MemoryScanner.swift"
+ ],
+ "Codex lists both, and the model may pick either. Rename one of them — its folder and the name in its SKILL.md — or remove the one you don't need.": [
+  "MemoryScanner.swift"
+ ],
+ "Codex lists this skill %lld times — once per copy.": [
+  "MemoryScanner.swift"
+ ],
+ "Codex reads AGENTS.override.md instead of AGENTS.md, so your core would be ignored. Empty or remove it, then publish again.": [
+  "MemoryPublisher.swift"
+ ],
+ "Codex's global instructions": [
+  "MemoryMigration.swift"
+ ],
+ "Codex's old skills folder": [
+  "MemoryMigration.swift"
+ ],
+ "Codex's old skills folder — still read, but deprecated": [
+  "MemoryScanner.swift"
+ ],
+ "Codex's override instructions": [
+  "MemoryMigration.swift"
+ ],
+ "Collect the skills, instructions and notes your agents already have. Your agent sorts them; you review before anything changes.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Collection": [
+  "ContentIndexView.swift"
+ ],
+ "Compare": [
+  "MemoryView.swift"
+ ],
+ "Completed": [
+  "ServiceStatus.swift"
+ ],
+ "Components are not installed. Run Install first.": [
+  "ContentView.swift",
+  "EmbarsyStore.swift"
+ ],
+ "Components are removed. Install to recreate the local stack.": [
+  "InstallView.swift"
+ ],
+ "Components removed. Install required.": [
+  "EmbarsyStore.swift",
+  "InstallManager.swift",
+  "ProcessManager.swift"
+ ],
+ "Components removed. Run Install to recreate the local stack.": [
+  "InstallManager.swift"
+ ],
+ "Confirm removal?": [
+  "SettingsView.swift"
+ ],
+ "Connect": [
+  "ConnectionsView.swift"
+ ],
+ "Connect tools": [
+  "MemoryCoreViews.swift"
+ ],
+ "Connect your agents": [
+  "MemoryCoreViews.swift"
+ ],
+ "Connected": [
+  "ConnectionsView.swift"
+ ],
+ "Connected. Restart %@ so they load the new memory.": [
+  "MemoryService.swift"
+ ],
+ "Connections": [
+  "ConnectionsView.swift",
+  "ContentView.swift"
+ ],
+ "Content": [
+  "ContentIndexView.swift"
+ ],
+ "Content endpoint is unavailable. Start Embarsy API and refresh.": [
+  "ContentIndexService.swift"
+ ],
+ "Content overview is waiting for Embarsy API.": [
+  "ContentIndexService.swift"
+ ],
+ "Content overview needs local API secrets. Start or install Embarsy first.": [
+  "ContentIndexService.swift"
+ ],
+ "Content overview updated.": [
+  "ContentIndexService.swift"
+ ],
+ "Content refresh failed: %@": [
+  "ContentIndexService.swift"
+ ],
+ "Context your agents should always have.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Continue": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Copied": [
+  "MemoryMigrationViews.swift",
+  "RooConnectionView.swift"
+ ],
+ "Copied to clipboard": [
+  "ContentIndexView.swift"
+ ],
+ "Copies %@ from %@ into the base and publishes it to every agent. The folder it was in goes to Embarsy's backups and becomes a link to the base; Undo setup in Memory → Core puts it back.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Copies %@ from %@ into the base and publishes it to every agent. The original stays where it is.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Copies %@ from %@ into the base and records the new version. The version you have now stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Copies in Zoo's settings": [
+  "MemoryMigration.swift"
+ ],
+ "Copies left in Zoo's settings — Zoo doesn't read this folder": [
+  "MemoryScanner.swift"
+ ],
+ "Copy": [
+  "MemoryMigrationViews.swift",
+  "RooConnectionView.swift"
+ ],
+ "Copy %@": [
+  "ContentIndexView.swift"
+ ],
+ "Copy API Key": [
+  "RooConnectionView.swift"
+ ],
+ "Copy Qdrant API Key": [
+  "RooConnectionView.swift"
+ ],
+ "Copy duel prompts": [
+  "BenchmarkView.swift"
+ ],
+ "Copy of a project's own skill — project skills stay in their repository.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Copy the current API Key and Qdrant API Key into Watcher. Old keys from before reinstall will be rejected by Qdrant.": [
+  "EmbarsyStore.swift"
+ ],
+ "Core": [
+  "LocalMigrationPlanner.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift"
+ ],
+ "Core instructions for Claude Code": [
+  "MemoryPublisher.swift"
+ ],
+ "Core instructions for Codex": [
+  "MemoryPublisher.swift"
+ ],
+ "Core instructions for Zoo / Roo": [
+  "MemoryPublisher.swift"
+ ],
+ "Core rule": [
+  "MemoryInboxView.swift"
+ ],
+ "Core — %@ loads your AGENTS.md in every session. Green check — it does. Empty circle — not yet; publish to connect it.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Correct: this run found the right file. (Filled check = correct; hollow red cross = wrong.)": [
+  "BenchmarkView.swift"
+ ],
+ "Could not save the benchmark log": [
+  "BenchmarkView.swift"
+ ],
+ "Couldn't back up the sources, so nothing was changed.": [
+  "MemoryMigration.swift"
+ ],
+ "Couldn't connect %@. %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Couldn't disconnect %@. %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Couldn't read the memory index. Is the stack running?": [
+  "MemoryService.swift"
+ ],
+ "Couldn't scan: %@": [
+  "MemoryService.swift"
+ ],
+ "Counted at the Embarsy Qdrant proxy boundary.": [
+  "MonitoringView.swift"
+ ],
+ "Create memory": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Creates it with one import line.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Creates this note.": [
+  "MemoryInboxView.swift"
+ ],
+ "Creating App Support layout...": [
+  "InstallManager.swift"
+ ],
+ "Creating local model alias %@...": [
+  "InstallManager.swift"
+ ],
+ "Dashed circle — the model isn't downloaded. Empty circle — downloaded, takes only disk space, no memory. Filled circle — loaded into memory now; it leaves by itself after the idle time, or at once with Unload now.": [
+  "LocalModelViews.swift"
+ ],
+ "Debug log": [
+  "SettingsView.swift"
+ ],
+ "Debug log is ready.": [
+  "EmbarsyStore.swift"
+ ],
+ "Debug log saved to %@.": [
+  "EmbarsyStore.swift"
+ ],
+ "Default project": [
+  "SettingsView.swift"
+ ],
+ "Delete": [
+  "LocalModelViews.swift"
+ ],
+ "Delete the model from disk?": [
+  "LocalModelViews.swift"
+ ],
+ "Deleted collection %@.": [
+  "EmbarsyStore.swift"
+ ],
+ "Delete…": [
+  "LocalModelViews.swift"
+ ],
+ "Direct and concise": [
+  "MemoryVault.swift"
+ ],
+ "Discard": [
+  "MemoryView.swift"
+ ],
+ "Disconnect": [
+  "ConnectionsView.swift"
+ ],
+ "Done": [
+  "LocalMigrationPlanner.swift",
+  "MemoryView.swift"
+ ],
+ "Double-checking %@ · %@": [
+  "MemoryService.swift"
+ ],
+ "Download": [
+  "LocalModelViews.swift"
+ ],
+ "Download and prepare embedding model": [
+  "ServiceStatus.swift"
+ ],
+ "Download stopped: %@. Press Download to continue — Ollama resumes where it left off.": [
+  "LocalModelService.swift"
+ ],
+ "Downloaded · not in memory": [
+  "LocalModelViews.swift"
+ ],
+ "Downloading/preparing %@. This can take a while...": [
+  "InstallManager.swift"
+ ],
+ "Drafts the fixes that need judgment": [
+  "LocalModelViews.swift"
+ ],
+ "Each agent sees whichever copy sits in its own folder, so a rule added to one copy doesn't reach the others. The most recently changed copy isn't necessarily the right one — compare them before keeping one.": [
+  "MemoryScanner.swift"
+ ],
+ "Each is copied into the base; the old copies in agents' folders go to the backups and are replaced with links.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Each skill and whether each agent loads it. A skill counts once however many copies of it exist; open it to see them.": [
+  "MemoryView.swift"
+ ],
+ "Emb": [
+  "StatusView.swift"
+ ],
+ "Embarsy": [
+  "EmbarsyApp.swift"
+ ],
+ "Embarsy API failed to start during install (after a retry): %@\n\nQdrant, Ollama and the model are installed correctly — only the API step failed. Recommendation: retry Install (it will skip the finished steps), and if it fails again, export the debug log (Settings) and send it to arsenyganov@gmail.com. Do NOT run Remove Components — that would erase the evidence and the downloaded model.": [
+  "InstallManager.swift"
+ ],
+ "Embarsy API needs a second start attempt. Retrying...": [
+  "InstallManager.swift"
+ ],
+ "Embarsy API returned HTTP %lld.": [
+  "InstallManager.swift"
+ ],
+ "Embarsy API update failed: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Embarsy API updated to %@. Qdrant and Ollama were not touched.": [
+  "EmbarsyStore.swift"
+ ],
+ "Embarsy can fix %lld of these by itself — inside your memory base only, with every change shown first.": [
+  "MemoryView.swift"
+ ],
+ "Embarsy can fix this itself. Open the row to see exactly what would change before you apply it.": [
+  "MemoryView.swift"
+ ],
+ "Embarsy components and protected local secrets were removed.": [
+  "EmbarsyStore.swift"
+ ],
+ "Embarsy doesn't know which folder this collection indexes, so grep uses the default project folder from Settings. If the two don't match, the benchmark stops with a mismatch error rather than racing over the wrong code.": [
+  "BenchmarkView.swift"
+ ],
+ "Embarsy found %lld skills (%lld with copies that differ), %lld instruction files, %lld Claude Code memories and %lld journal entries. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Embarsy install workflow": [
+  "InstallManager.swift"
+ ],
+ "Embarsy is installed. Use Start All to run services.": [
+  "InstallManager.swift"
+ ],
+ "Embarsy local stack is already installed.": [
+  "InstallManager.swift"
+ ],
+ "Embarsy local stack is installed.": [
+  "InstallManager.swift"
+ ],
+ "Embarsy points each agent at the memory and connects its recall / remember tools. Their own files stay as they are: it adds links and one import line, and Undo in Memory → Core takes them back out. The tools are disconnected in Connections.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Embarsy status, shown by the mark's colour: teal = all running, amber = starting up, red = a service failed, grey = stopped. Currently: %@": [
+  "MenuBarIconView.swift"
+ ],
+ "Embarsy — %@": [
+  "MenuBarIconView.swift"
+ ],
+ "Embedding errors": [
+  "MonitoringView.swift"
+ ],
+ "Embedding latency": [
+  "MonitoringView.swift"
+ ],
+ "Embedding model": [
+  "LocalModelViews.swift"
+ ],
+ "Embedding model idle time is now %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Embedding request": [
+  "ActivityTypeFilter.swift"
+ ],
+ "Embedding request — text turned into a vector (green magnifying glass).": [
+  "ActivityView.swift"
+ ],
+ "Embedding requests": [
+  "MonitoringView.swift"
+ ],
+ "Embedding vectors": [
+  "MonitoringView.swift"
+ ],
+ "Empty circle — the embedding model isn't in memory; the next search loads it. Filled circle — it's in memory now; it leaves by itself after the idle time, or at once with Unload now.": [
+  "LocalModelViews.swift"
+ ],
+ "Empty.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Enough to sort files; for condensing the core, your own agent does better.": [
+  "LocalModelService.swift"
+ ],
+ "Every agent loads AGENTS.md into every session, so it is kept under 4 KB. It's built from the fields below — edit them, not the file.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Every agent reads AGENTS.md at the start of every session, so each extra line costs every conversation. Shorten Memory → Core: keep only what must hold always, and move the rest into knowledge notes, which agents find with recall.": [
+  "MemoryVendor.swift"
+ ],
+ "Everything reads zero in Monitoring.": [
+  "ConnectionsView.swift"
+ ],
+ "Experience": [
+  "MemoryInboxView.swift",
+  "MemoryKnowledgeView.swift"
+ ],
+ "Failed": [
+  "ServiceStatus.swift"
+ ],
+ "Failed to delete %@: %@. Start Embarsy stack and retry.": [
+  "EmbarsyStore.swift"
+ ],
+ "Failed to delete %@: HTTP %lld. %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Failed to open project in VSCode with the `code` command.": [
+  "WorkspaceService.swift"
+ ],
+ "Failed to recreate local secrets: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Failed to save debug log: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Failed to start %@: %@. Check %@.": [
+  "ProcessManager.swift"
+ ],
+ "Failed to update Login Item: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Filled dot: Embarsy found this agent's command-line tool and can run the duels for you automatically.": [
+  "BenchmarkView.swift"
+ ],
+ "Filter, or ⏎ to search by meaning": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Find": [
+  "MemoryView.swift"
+ ],
+ "Finds notes that say different things about the same subject, so your agents stop following the outdated one.": [
+  "LocalModelViews.swift"
+ ],
+ "Fix %lld issues": [
+  "MemoryView.swift"
+ ],
+ "Fix %lld issues…": [
+  "MemoryView.swift"
+ ],
+ "Fix %lld links": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Fix all": [
+  "MemoryView.swift"
+ ],
+ "Fix links": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Fixed. Earlier versions of the edited notes stay in the base's history; moved copies are in Embarsy's backups.": [
+  "MemoryService.swift"
+ ],
+ "Formal": [
+  "MemoryVault.swift"
+ ],
+ "Found %@ — the only file on this Mac with this path.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Found %@. The value itself isn't shown here. Agents load this file, so the secret ends up in their context. Remove it from the file and keep it in a password manager or the keychain; if it's a real key, replace it with a new one.": [
+  "MemoryScanner.swift"
+ ],
+ "Found next to the other links in this file, in %@": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Friendly and detailed": [
+  "MemoryVault.swift"
+ ],
+ "Give this to Claude Code or Codex": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Give your agents one memory": [
+  "MemoryCoreViews.swift"
+ ],
+ "Give your coding agents memory and search by meaning": [
+  "ConnectionsView.swift"
+ ],
+ "Goes into \"Anything else about you\" in the core — every agent reads it in every session.": [
+  "MemoryInboxView.swift"
+ ],
+ "Green check: this binary is present and executable.": [
+  "InstallView.swift"
+ ],
+ "Hard Reset completed. App Support and local secrets are clean.": [
+  "InstallManager.swift"
+ ],
+ "Hard Reset failed: %@": [
+  "InstallManager.swift"
+ ],
+ "Health": [
+  "MemoryView.swift"
+ ],
+ "Health check OK.": [
+  "ProcessManager.swift"
+ ],
+ "Health check failed: not all services are running. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com.": [
+  "InstallManager.swift"
+ ],
+ "Health check is not ready at %@ with current configuration.": [
+  "ProcessManager.swift"
+ ],
+ "Hide": [
+  "RooConnectionView.swift"
+ ],
+ "Hollow dot: no automatable command-line tool here — run the duel by hand with the copied prompts. (Filled dot = Embarsy runs it for you.)": [
+  "BenchmarkView.swift"
+ ],
+ "How the agent knows this. Speech bubble — you said it. Seal — the agent checked it. Question mark — the agent's own conclusion; worth a second look before accepting.": [
+  "MemoryInboxView.swift"
+ ],
+ "How the live duel works": [
+  "BenchmarkView.swift"
+ ],
+ "How this is measured": [
+  "BenchmarkView.swift"
+ ],
+ "How your agent should behave beyond tone.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Human-readable Markdown: every query, the exact grep commands, timings, ranked files and context sizes.": [
+  "BenchmarkView.swift"
+ ],
+ "I've checked it — mark verified today": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "If something goes wrong": [
+  "ConnectionsView.swift"
+ ],
+ "In memory · %@": [
+  "LocalModelViews.swift"
+ ],
+ "In memory · %@ · leaves in %@": [
+  "LocalModelViews.swift"
+ ],
+ "Inbox": [
+  "MemoryView.swift"
+ ],
+ "Index": [
+  "ConnectionsView.swift"
+ ],
+ "Indexed": [
+  "IndexingService.swift"
+ ],
+ "Indexed folders": [
+  "ConnectionsView.swift"
+ ],
+ "Indexing stopped without a message.": [
+  "IndexingService.swift"
+ ],
+ "Install": [
+  "ContentView.swift",
+  "InstallView.swift",
+  "MenuBarView.swift"
+ ],
+ "Install Embarsy local stack before starting services.": [
+  "EmbarsyStore.swift"
+ ],
+ "Install activity": [
+  "InstallView.swift"
+ ],
+ "Install and Start": [
+  "InstallView.swift"
+ ],
+ "Install completed. Watcher-compatible auth probe passed with the current API key.": [
+  "InstallManager.swift"
+ ],
+ "Install components before starting services.": [
+  "MenuBarView.swift"
+ ],
+ "Install failed. See the recommendation above and open logs for details.": [
+  "InstallManager.swift"
+ ],
+ "Install finished: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Install polling is active. Waiting for the next setup event...": [
+  "InstallView.swift"
+ ],
+ "Install polling started. Waiting for setup steps...": [
+  "InstallManager.swift"
+ ],
+ "Install progress details will appear here.": [
+  "InstallManager.swift"
+ ],
+ "Install requested...": [
+  "EmbarsyStore.swift"
+ ],
+ "Install retry after first API start failed": [
+  "InstallManager.swift"
+ ],
+ "Install state": [
+  "SettingsView.swift"
+ ],
+ "Invoked as /%@ — Claude Code uses the folder name, not name: %@.": [
+  "MemoryScanner.swift"
+ ],
+ "It already has your own instructions. Embarsy leaves them as they are; you'll be able to bring them into the base with \"Bring existing memory\".": [
+  "MemoryPublisher.swift"
+ ],
+ "It already imports a memory base from somewhere else. Remove the lines between the embarsy:memory markers, then publish again.": [
+  "MemoryPublisher.swift"
+ ],
+ "It exists only in folders that no agent reads. Move it to ~/.agents/skills or bring it into the memory base — or remove it if you no longer need it.": [
+  "MemoryScanner.swift"
+ ],
+ "It has neither a folder to copy nor SKILL.md text.": [
+  "MemoryMigration.swift"
+ ],
+ "It has no content.": [
+  "MemoryMigration.swift"
+ ],
+ "It isn't valid JSON, so Embarsy can't change it safely.": [
+  "MemoryPublisher.swift"
+ ],
+ "It looks like it contains a %@.": [
+  "MemoryMigration.swift"
+ ],
+ "It pointed at %@, which the migration didn't bring into the base. The link is removed, its text stays.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "It sits in %@'s own skills folder, where its UI creates new skills. The other agents don't know it exists. To share it, bring it into the memory base with Bring existing memory, or move it to ~/.agents/skills.": [
+  "MemoryScanner.swift"
+ ],
+ "It's already a link to %@. Embarsy leaves it alone.": [
+  "MemoryPublisher.swift"
+ ],
+ "It's in the memory base but not published yet, so no agent has a link to it.": [
+  "MemoryScanner.swift"
+ ],
+ "It's in the memory base, but publishing holds it back because an agent would reject it: %@": [
+  "MemoryScanner.swift"
+ ],
+ "Its SKILL.md looks like it contains a %@.": [
+  "MemoryMigration.swift"
+ ],
+ "Its content went into %@ with the migration.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Its old content is now in the core: it goes to Embarsy's backups and the file keeps only the import line. Undo puts it back.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Its target is still where it was before the migration.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Its target moved into the base with the migration.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Keep copy %lld": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Keep going": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Keep this copy": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Keep what you said, what was verified and what is inferred apart": [
+  "MemoryCoreViews.swift"
+ ],
+ "Keeps your memory correct without the busywork: a model on your Mac reads your notes and skills and drafts what needs changing. Free, private, works offline — and nothing changes until you apply a draft.": [
+  "LocalModelViews.swift"
+ ],
+ "Keys change after a reinstall. Press Reconnect here for each agent, and paste the current keys into Zoo / Roo's codebase indexing.": [
+  "ConnectionsView.swift"
+ ],
+ "Knowledge": [
+  "MemoryInboxView.swift",
+  "MemoryKnowledgeView.swift",
+  "MemoryView.swift"
+ ],
+ "Knowledge, experience and people. Each becomes a markdown note that agents find with recall.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "LIVE DUEL — YOUR EDITOR": [
+  "BenchmarkView.swift"
+ ],
+ "Language": [
+  "SettingsView.swift"
+ ],
+ "Languages": [
+  "MemoryCoreViews.swift"
+ ],
+ "Large model layers may stay on the same percentage for a while. The spinner, elapsed-time text and last-output age confirm that installation polling is still active while Ollama downloads or verifies the layer.": [
+  "InstallView.swift"
+ ],
+ "Last 15m": [
+  "MonitoringService.swift"
+ ],
+ "Last 1h": [
+  "MonitoringService.swift"
+ ],
+ "Last 24h": [
+  "MonitoringService.swift"
+ ],
+ "Last 6h": [
+  "MonitoringService.swift"
+ ],
+ "Last 7d": [
+  "MonitoringService.swift"
+ ],
+ "Last checked %@ · next time only what changed": [
+  "MemoryView.swift"
+ ],
+ "Latency": [
+  "MonitoringView.swift"
+ ],
+ "Launch Embarsy at login": [
+  "SettingsView.swift"
+ ],
+ "Leave memory after": [
+  "LocalModelViews.swift"
+ ],
+ "Left as it is.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Left as it is. %@": [
+  "MemoryCoreViews.swift"
+ ],
+ "Leftover copies in a folder no agent reads; they only confuse a later migration.": [
+  "MemoryView.swift"
+ ],
+ "Linked from": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Links like file.md:36 point at a line number, which moves with every edit above it. Link to a heading instead.": [
+  "MemoryScanner.swift"
+ ],
+ "Load": [
+  "CodeSearchView.swift"
+ ],
+ "Loaded by every agent in every session. You can edit it in Memory → Core afterwards.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Loaded from ~/.codex/skills, which Codex keeps only for backward compatibility.": [
+  "MemoryScanner.swift"
+ ],
+ "Local model": [
+  "LocalModelViews.swift"
+ ],
+ "Local secret generation failed with status %d.": [
+  "LocalSecretStore.swift"
+ ],
+ "Local secrets": [
+  "SettingsView.swift"
+ ],
+ "Local secrets are ready.": [
+  "InstallManager.swift"
+ ],
+ "Local secrets were removed. They will be recreated during install.": [
+  "EmbarsyStore.swift"
+ ],
+ "Local secrets will be prepared before Install or Start.": [
+  "EmbarsyStore.swift"
+ ],
+ "Login Item status: %@": [
+  "SettingsView.swift"
+ ],
+ "Looks like it holds a secret — secrets never move into memory.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Make sure every status row on Status is green (Install and Start).": [
+  "ConnectionsView.swift"
+ ],
+ "Make sure the folder is listed under Indexed folders, and re-index it after large changes. For Zoo / Roo the dimension must be 1024 — Clear Index Data in Zoo / Roo and run indexing again.": [
+  "ConnectionsView.swift"
+ ],
+ "Makes the copy in %@ the base's version of %@, and turns every other copy into a link to it. Other copies go to Embarsy's backups first; earlier versions in the base stay in its history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Median time to a ranked answer": [
+  "BenchmarkView.swift"
+ ],
+ "Memory": [
+  "ConnectionsView.swift",
+  "ContentView.swift",
+  "MemoryView.swift",
+  "MonitoringView.swift"
+ ],
+ "Memory / CPU utilisation": [
+  "MonitoringView.swift"
+ ],
+ "Memory and search by meaning for all your agents": [
+  "StatusView.swift"
+ ],
+ "Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.": [
+  "ContentView.swift"
+ ],
+ "Memory: no problems.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.": [
+  "ContentView.swift"
+ ],
+ "Merge %@ into %@": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Metric": [
+  "MonitoringView.swift"
+ ],
+ "Missing executable binaries:\n%@": [
+  "InstallManager.swift"
+ ],
+ "Missing executable binary at %@.": [
+  "ProcessManager.swift"
+ ],
+ "Mixture of experts: about 3B parameters work per token, so it answers fast — what a migration's hundreds of small questions need.": [
+  "LocalModelService.swift"
+ ],
+ "Model": [
+  "LocalModelViews.swift"
+ ],
+ "Model %@ is ready.": [
+  "InstallManager.swift"
+ ],
+ "Model download is performed by bundled Ollama and can take several minutes on the first install.": [
+  "InstallView.swift"
+ ],
+ "Monitoring": [
+  "MonitoringView.swift"
+ ],
+ "Monitoring endpoint is unavailable. Start Embarsy API and refresh.": [
+  "MonitoringService.swift"
+ ],
+ "Monitoring is waiting for Embarsy API.": [
+  "MonitoringService.swift"
+ ],
+ "Monitoring needs local API secrets. Start or install Embarsy first.": [
+  "MonitoringService.swift"
+ ],
+ "Monitoring refresh failed: %@": [
+  "MonitoringService.swift"
+ ],
+ "Monitoring updated.": [
+  "MonitoringService.swift"
+ ],
+ "Move %lld to backups": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Move the ones in agents' skill folders to the backups, so agents stop loading them": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Moved to Embarsy's backups — agents stop loading it. Undo puts it back.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Moves %lld folders to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Moves your memory in": [
+  "LocalModelViews.swift"
+ ],
+ "Name": [
+  "MemoryCoreViews.swift"
+ ],
+ "Names that don't clash: %@. %@ To rename, change the skill's folder and the name in its SKILL.md, then publish again.": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Needs the local model": [
+  "MemoryView.swift"
+ ],
+ "Nested %lld folders deep. Claude Code only looks one level into its skills folder.": [
+  "MemoryScanner.swift"
+ ],
+ "Nested %lld folders deep. Codex stops at 6.": [
+  "MemoryScanner.swift"
+ ],
+ "Nested %lld folders deep. Zoo / Roo only looks one level into its skills folder.": [
+  "MemoryScanner.swift"
+ ],
+ "Never store or repeat passwords, tokens or keys": [
+  "MemoryCoreViews.swift"
+ ],
+ "No Claude command-line tool was found on your PATH that Embarsy can drive headless (the one bundled in the Claude desktop app needs its own interactive login). Use Copy duel prompts and run them in the Claude chat. To enable the automatic Run button, install the Claude Code CLI so `claude` is on your PATH.": [
+  "BenchmarkView.swift"
+ ],
+ "No Codex command-line tool was found. Use Copy duel prompts and run them in the Codex chat. If you have the Codex app or CLI installed, make sure `codex` is reachable so Embarsy can automate the duel.": [
+  "BenchmarkView.swift"
+ ],
+ "No Embarsy processes detected. Start the stack (Status → Start All) to see live memory and CPU for qdrant, ollama and the API.": [
+  "MonitoringView.swift"
+ ],
+ "No HTTP response from Embarsy API.": [
+  "InstallManager.swift"
+ ],
+ "No HTTP response from Qdrant.": [
+  "InstallManager.swift"
+ ],
+ "No HTTP response from the Embarsy API.": [
+  "BenchmarkService.swift"
+ ],
+ "No Qdrant collections found yet. Start Watcher indexing first.": [
+  "ContentIndexService.swift"
+ ],
+ "No agent sees %@": [
+  "MemoryScanner.swift"
+ ],
+ "No details available.": [
+  "InstallManager.swift"
+ ],
+ "No embedding activity yet.": [
+  "MonitoringService.swift"
+ ],
+ "No folders indexed yet. Add a project folder so Claude Code and Codex have something to search.": [
+  "ConnectionsView.swift"
+ ],
+ "No indexed content yet": [
+  "ContentIndexView.swift"
+ ],
+ "No notes disagree.": [
+  "MemoryService.swift"
+ ],
+ "No request activity in the last 24 hours.": [
+  "ActivityService.swift"
+ ],
+ "No request activity matches the selected activity types.": [
+  "ActivityView.swift"
+ ],
+ "No requests in the last 24 hours": [
+  "ActivityView.swift"
+ ],
+ "No skills found in any folder Claude Code, Codex or Zoo / Roo reads.": [
+  "MemoryView.swift"
+ ],
+ "No-key probe HTTP %lld": [
+  "EmbarsyStore.swift"
+ ],
+ "No-key probe unavailable": [
+  "EmbarsyStore.swift"
+ ],
+ "Nobody has re-checked this knowledge in half a year; an agent will trust it as current.": [
+  "MemoryView.swift"
+ ],
+ "None of these": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Not brought in (%lld)": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Not checked yet · takes about 20 min, on your Mac": [
+  "MemoryView.swift"
+ ],
+ "Not checked yet.": [
+  "EmbarsyStore.swift",
+  "ProcessManager.swift"
+ ],
+ "Not connected": [
+  "ConnectionsView.swift"
+ ],
+ "Not downloaded": [
+  "LocalModelViews.swift"
+ ],
+ "Not enough free disk space: the model needs %@ plus 5 GB to spare, %@ is free.": [
+  "LocalModelViews.swift"
+ ],
+ "Not found — move Embarsy to Applications": [
+  "LoginItemService.swift"
+ ],
+ "Not in any folder %@ reads.": [
+  "MemoryView.swift"
+ ],
+ "Not in memory · loads on the next search": [
+  "LocalModelViews.swift"
+ ],
+ "Not now": [
+  "ContentView.swift"
+ ],
+ "Not selected": [
+  "SettingsView.swift"
+ ],
+ "Not set up yet. Download the model below once — then the assistant is ready whenever you need it.": [
+  "LocalModelViews.swift"
+ ],
+ "Note %@: %@": [
+  "MemoryMigration.swift"
+ ],
+ "Note — nothing is broken.": [
+  "MemoryView.swift"
+ ],
+ "Notes": [
+  "MemoryScanner.swift"
+ ],
+ "Notes (%lld)": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Notes and the core stay in the language you wrote them in.": [
+  "SettingsView.swift"
+ ],
+ "Notes that disagree": [
+  "MemoryView.swift"
+ ],
+ "Nothing in memory reads like this.": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Nothing leaves your Mac. The model leaves memory a few minutes after it's done.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Nothing links to this note, so an agent only finds it by search.": [
+  "MemoryView.swift"
+ ],
+ "Nothing starts up.": [
+  "ConnectionsView.swift"
+ ],
+ "Nothing to fix. Every agent sees the same, intact skills.": [
+  "MemoryView.swift"
+ ],
+ "Nothing to review.": [
+  "MemoryInboxView.swift"
+ ],
+ "OVERVIEW": [
+  "MonitoringView.swift"
+ ],
+ "Off": [
+  "LoginItemService.swift"
+ ],
+ "Old Zoo / Roo rule, now in the core": [
+  "MemoryPublisher.swift"
+ ],
+ "Old copies in %@. No agent loads them, so they don't affect anything — they only make it harder to see what agents really use: %@.": [
+  "MemoryScanner.swift"
+ ],
+ "Old copy %@": [
+  "MemoryPublisher.swift"
+ ],
+ "On": [
+  "LoginItemService.swift"
+ ],
+ "On disk it only takes space; it loads into memory when the assistant is asked something and leaves after the idle time below.": [
+  "LocalModelViews.swift"
+ ],
+ "Only %@ sees %@": [
+  "MemoryScanner.swift"
+ ],
+ "Only errors": [
+  "ActivityView.swift"
+ ],
+ "Only files inside your memory base are edited, and their earlier versions stay in its history. Copies outside it are moved to Embarsy's backups, never deleted.": [
+  "MemoryView.swift"
+ ],
+ "Open Embarsy": [
+  "MenuBarView.swift"
+ ],
+ "Open Inbox": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Open Install": [
+  "MenuBarView.swift"
+ ],
+ "Open Knowledge": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Open Logs Folder": [
+  "SettingsView.swift"
+ ],
+ "Open Settings": [
+  "BenchmarkView.swift"
+ ],
+ "Open in editor": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Opened project in VSCode.": [
+  "EmbarsyStore.swift"
+ ],
+ "Or let the local model draft it": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Origin. own — yours. adopted — yours to edit, origin unknown. vendor — someone else's, kept as it is.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Other agents see skills this one doesn't.": [
+  "MemoryView.swift"
+ ],
+ "Overall status, shown by the mark's colour: teal = all running, amber = starting up, red = a service failed, grey = stopped.": [
+  "StatusView.swift"
+ ],
+ "POINTS": [
+  "ContentIndexView.swift"
+ ],
+ "Paraphrase test: one word of each question is swapped for a fixed-table synonym before the duel. The right file no longer contains that literal word — grep must fall back, while the semantic index should still land it by meaning. One swap keeps the question anchored to its file; more would drift it away. Swaps are listed per question and in the saved log.": [
+  "BenchmarkView.swift"
+ ],
+ "People": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Per-question details": [
+  "BenchmarkView.swift"
+ ],
+ "Person": [
+  "MemoryInboxView.swift"
+ ],
+ "Pick a note on the left, or type what you're looking for and press Return to search by meaning — the same way your agents' recall does.": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Plan with the local model": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Planned by the local model: %lld skills, %lld notes, %lld rules in the core, %lld items left behind.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Points indexed": [
+  "MonitoringView.swift"
+ ],
+ "Possible secret in %@": [
+  "MemoryScanner.swift"
+ ],
+ "Prepare App Support layout": [
+  "ServiceStatus.swift"
+ ],
+ "Prepare local secrets": [
+  "ServiceStatus.swift"
+ ],
+ "Preparing clean install...": [
+  "InstallManager.swift"
+ ],
+ "Preparing clean start...": [
+  "EmbarsyStore.swift"
+ ],
+ "Preview": [
+  "ContentIndexView.swift"
+ ],
+ "Previous result — a new run is in flight.": [
+  "BenchmarkView.swift"
+ ],
+ "Problem — wrong right now.": [
+  "MemoryView.swift"
+ ],
+ "Problems": [
+  "MemoryScanner.swift"
+ ],
+ "Process started. Waiting for health at %@...": [
+  "ProcessManager.swift"
+ ],
+ "Project path is empty. Choose a project folder first.": [
+  "WorkspaceService.swift"
+ ],
+ "Protected local secrets are missing. Recreate local secrets or run Install.": [
+  "EmbarsyStore.swift"
+ ],
+ "Protected local secrets are ready.": [
+  "EmbarsyStore.swift"
+ ],
+ "Protected local secrets are unavailable: %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Protected local secrets were recreated.": [
+  "EmbarsyStore.swift"
+ ],
+ "Publish": [
+  "MemoryCoreViews.swift",
+  "MemoryHealthFixes.swift"
+ ],
+ "Publish %lld changes…": [
+  "MemoryCoreViews.swift"
+ ],
+ "Publish to your agents": [
+  "MemoryCoreViews.swift"
+ ],
+ "Publishes the base: links your skills and the core into each agent's folders, the same as Publish in Memory → Core. Agents' own files stay as they are.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Put %@ back as installed": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Puts %@ in %@/SKILL.md in double quotes. The text stays the same; every agent can then read it. The previous version stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Qdrant API Key is missing. Run Install to recreate local secrets.": [
+  "EmbarsyStore.swift"
+ ],
+ "Qdrant accepts the current Qdrant API Key (HTTP 200). %@. If Watcher still shows Unauthorized, Watcher settings contain a stale key: copy the current Qdrant API Key from Embarsy into Watcher, then clear/restart Watcher indexing.": [
+  "EmbarsyStore.swift"
+ ],
+ "Qdrant auth probe rejected current API key": [
+  "InstallManager.swift"
+ ],
+ "Qdrant authentication check failed: %@ Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh Qdrant API Key from Embarsy into Watcher settings.": [
+  "InstallManager.swift"
+ ],
+ "Qdrant collection was already absent": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Qdrant diagnostics failed: %@. Start Embarsy stack and retry.": [
+  "EmbarsyStore.swift"
+ ],
+ "Qdrant diagnostics failed: no HTTP response.": [
+  "EmbarsyStore.swift"
+ ],
+ "Qdrant read — a vector search or fetch (cyan up-arrow).": [
+  "ActivityView.swift"
+ ],
+ "Qdrant read/write counters are counted at the Embarsy Qdrant proxy boundary. Memory / CPU reflect the live qdrant, ollama and Embarsy API processes. If reads/writes stay at zero while Watcher searches, point the Qdrant URL at the Embarsy proxy, not :6333 directly.": [
+  "MonitoringView.swift"
+ ],
+ "Qdrant reads": [
+  "MonitoringView.swift"
+ ],
+ "Qdrant rejects the current key with HTTP %lld: %@. Restart or reinstall the stack, then copy the fresh Qdrant API Key into Watcher.": [
+  "EmbarsyStore.swift"
+ ],
+ "Qdrant request failed with HTTP %lld: %@": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Qdrant returned HTTP %lld: %@": [
+  "InstallManager.swift"
+ ],
+ "Qdrant returned an invalid collections response.": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Qdrant write — vectors stored or updated (orange down-arrow).": [
+  "ActivityView.swift"
+ ],
+ "Qdrant writes": [
+  "MonitoringView.swift"
+ ],
+ "Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample.": [
+  "BenchmarkView.swift"
+ ],
+ "Quit Embarsy": [
+  "MenuBarView.swift"
+ ],
+ "Quits this window and opens the installed version. Qdrant, Ollama and the API keep running; if the API is left over from the previous version, the Update button above it will offer to restart just that.": [
+  "StatusView.swift"
+ ],
+ "Quote %@": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Qwen model download completed. Creating local alias %@...": [
+  "InstallManager.swift"
+ ],
+ "Raw sample text from the index — click to copy it": [
+  "ContentIndexView.swift"
+ ],
+ "Re-index": [
+  "ConnectionsView.swift"
+ ],
+ "Read": [
+  "ActivityTypeFilter.swift"
+ ],
+ "Read / write activity": [
+  "MonitoringView.swift"
+ ],
+ "Reading indexed folders…": [
+  "ConnectionsView.swift"
+ ],
+ "Reading the index…": [
+  "MemoryService.swift"
+ ],
+ "Reading your agents' folders…": [
+  "MemoryView.swift"
+ ],
+ "Ready": [
+  "ServiceStatus.swift"
+ ],
+ "Ready to install Embarsy local stack.": [
+  "InstallManager.swift"
+ ],
+ "Recent requests": [
+  "ActivityView.swift"
+ ],
+ "Recommended: copy %lld — %@": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Reconnect": [
+  "ConnectionsView.swift"
+ ],
+ "Recreate Local Secrets": [
+  "SettingsView.swift"
+ ],
+ "Recreate secrets": [
+  "ContentView.swift"
+ ],
+ "Red cross: this binary is missing or not executable.": [
+  "InstallView.swift"
+ ],
+ "Refresh": [
+  "InstallView.swift",
+  "MenuBarView.swift",
+  "StatusView.swift"
+ ],
+ "Refresh Install State": [
+  "SettingsView.swift"
+ ],
+ "Refresh Local Secrets Status": [
+  "SettingsView.swift"
+ ],
+ "Refresh Now": [
+  "DesignKit.swift"
+ ],
+ "Refreshing…": [
+  "DesignKit.swift"
+ ],
+ "Reinstalling regenerates BOTH keys, so the editor keeps failing with “authentication failed”. Claude Code and Codex: press Reconnect in Connections. Zoo / Roo: paste the current keys into its indexing settings and press Save there.": [
+  "RooConnectionView.swift"
+ ],
+ "Reject": [
+  "MemoryInboxView.swift"
+ ],
+ "Relative size: the bar shows this collection's point count as a share of the largest collection (full width = the biggest one).": [
+  "ContentIndexView.swift"
+ ],
+ "Relaunch": [
+  "StatusView.swift"
+ ],
+ "Remove %lld line numbers": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Remove Components and Clear Secrets": [
+  "SettingsView.swift"
+ ],
+ "Remove Everything": [
+  "SettingsView.swift"
+ ],
+ "Removes Embarsy App Support data, local service files and protected local secrets. Services will be stopped first.": [
+  "SettingsView.swift"
+ ],
+ "Removes the link Embarsy made — the skill is no longer in the base.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Removes the links and import lines Embarsy added, puts back the files it replaced, and moves %@ to the Trash.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Repair Embarsy local secrets?": [
+  "ContentView.swift"
+ ],
+ "Replaces the description in %@/SKILL.md with the shorter one above. The previous version stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Report a bug / request a feature": [
+  "DesignKit.swift"
+ ],
+ "Report a bug or request a feature": [
+  "DesignKit.swift"
+ ],
+ "Request Activity": [
+  "ActivityView.swift"
+ ],
+ "Required — e.g. Atlas": [
+  "MemoryCoreViews.swift"
+ ],
+ "Required — e.g. Jordan": [
+  "MemoryCoreViews.swift"
+ ],
+ "Rescan": [
+  "MemoryView.swift"
+ ],
+ "Rescanning only reads — it changes nothing": [
+  "MemoryView.swift"
+ ],
+ "Restart Embarsy": [
+  "SettingsView.swift"
+ ],
+ "Restart requested: %@": [
+  "ProcessManager.swift"
+ ],
+ "Restart the editor after connecting — editors read their MCP config only at launch.": [
+  "ConnectionsView.swift"
+ ],
+ "Restores every file of %@ from the base's history, as it was when it was installed. The changed version is kept in the history first.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Reveal": [
+  "RooConnectionView.swift"
+ ],
+ "Reveal %@ in Finder": [
+  "FinderLink.swift"
+ ],
+ "Revert": [
+  "MemoryCoreViews.swift"
+ ],
+ "Review plan…": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Review the plan": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Rewrites links in %@. The previous version stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Right file found (top-%lld)": [
+  "BenchmarkView.swift"
+ ],
+ "Role": [
+  "MemoryCoreViews.swift"
+ ],
+ "Rules": [
+  "MemoryCoreViews.swift"
+ ],
+ "Run 3 duels": [
+  "BenchmarkView.swift"
+ ],
+ "Run again": [
+  "BenchmarkView.swift"
+ ],
+ "Run benchmark": [
+  "BenchmarkView.swift"
+ ],
+ "Running": [
+  "ServiceStatus.swift"
+ ],
+ "Running from a mounted DMG at %@. Copy Embarsy.app to /Applications or rebuild/remount the DMG before testing fixes.": [
+  "EmbarsyBuildInfo.swift"
+ ],
+ "Running.": [
+  "ProcessManager.swift"
+ ],
+ "Runs %@ automatically on the first 3 questions, each answered twice: once allowed only grep/find/read tools, once leading with Embarsy's search_code (via the embarsy-qdrant MCP). Embarsy times both runs and reports which found the right file, the seconds, and the tokens. Nothing is sent to the cloud beyond your agent's own model calls.\n\nUsing the CLI at: %@": [
+  "BenchmarkView.swift"
+ ],
+ "Runtime build": [
+  "SettingsView.swift"
+ ],
+ "SKILL.md has no frontmatter, so agents can't tell what the skill is for.": [
+  "MemoryPublisher.swift"
+ ],
+ "SKILL.md has no frontmatter, so there is no description to choose the skill by.": [
+  "MemoryScanner.swift"
+ ],
+ "SKILL.md has no frontmatter. Codex skips it.": [
+  "MemoryScanner.swift"
+ ],
+ "SKILL.md has no frontmatter. Zoo / Roo skips it.": [
+  "MemoryScanner.swift"
+ ],
+ "Same question, two engines — on your own indexed code. Questions are sampled from real chunks; grep is real `/usr/bin/grep` playing its best game — the AND pipeline over the exact folder this collection indexes.": [
+  "BenchmarkView.swift"
+ ],
+ "Same text as %@.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Sample": [
+  "ContentIndexView.swift"
+ ],
+ "Sampling %@ and running %lld duels — real grep vs the semantic index…": [
+  "BenchmarkService.swift"
+ ],
+ "Sampling process metrics…": [
+  "MonitoringView.swift"
+ ],
+ "Sampling temperature…": [
+  "MonitoringView.swift"
+ ],
+ "Save": [
+  "MemoryCoreViews.swift"
+ ],
+ "Save Debug Log…": [
+  "SettingsView.swift"
+ ],
+ "Save full log…": [
+  "BenchmarkView.swift"
+ ],
+ "Saved, but not kept in history: %@. Remove it from the core.": [
+  "MemoryService.swift"
+ ],
+ "Saved. Agents pick up the new core in their next session.": [
+  "MemoryService.swift"
+ ],
+ "Scan": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Scanned folders": [
+  "MemoryView.swift"
+ ],
+ "Search finds nothing.": [
+  "ConnectionsView.swift"
+ ],
+ "Search requests": [
+  "CodeSearchView.swift"
+ ],
+ "Searched by recall in every agent. Re-indexed by itself whenever the memory changes.": [
+  "ConnectionsView.swift"
+ ],
+ "Select a default project before clearing the Watcher index.": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Services": [
+  "StatusView.swift"
+ ],
+ "Set name to %@": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Set up the assistant": [
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift"
+ ],
+ "Sets %@ to the inbox, so what Claude Code remembers waits for your review. A copy is kept.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Sets name: in %@/SKILL.md to %@, the folder's name, so every agent accepts it. The previous version stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Settings": [
+  "ContentView.swift",
+  "SettingsView.swift"
+ ],
+ "Settings…": [
+  "MenuBarView.swift"
+ ],
+ "Shared folder — read by Codex and Zoo / Roo": [
+  "MemoryScanner.swift"
+ ],
+ "Shared skills (Codex, Zoo / Roo)": [
+  "MemoryMigration.swift"
+ ],
+ "Shortened from %lld to %lld characters:": [
+  "MemoryHealthAssist.swift"
+ ],
+ "Shortens a profile or skill description that's too long, says which of two drifted copies to keep, suggests a name that doesn't clash.": [
+  "LocalModelViews.swift"
+ ],
+ "Show Logs": [
+  "InstallView.swift",
+  "StatusView.swift"
+ ],
+ "Show all": [
+  "MemoryInboxView.swift"
+ ],
+ "Show less": [
+  "MemoryInboxView.swift"
+ ],
+ "Shown when the Embarsy in %@ is no longer the build this window is running. macOS leaves a running app on its old executable when the bundle is replaced, so this can only clear on relaunch.": [
+  "StatusView.swift"
+ ],
+ "Shown while the running API is rejecting keys that have Embarsy's own shape but belong to a previous installation. It disappears on its own once those retries stop.": [
+  "RooConnectionView.swift"
+ ],
+ "Skill": [
+  "MemoryView.swift"
+ ],
+ "Skill %@": [
+  "LocalMigrationPlanner.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryPublisher.swift",
+  "MemoryService.swift"
+ ],
+ "Skill %@ is no longer in the base": [
+  "MemoryPublisher.swift"
+ ],
+ "Skill %@: %@": [
+  "MemoryMigration.swift"
+ ],
+ "Skills": [
+  "MemoryView.swift"
+ ],
+ "Skills (%lld)": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Skills bundled with Codex": [
+  "MemoryScanner.swift"
+ ],
+ "Someone else's folder sits among an agent's skills and may override yours.": [
+  "MemoryView.swift"
+ ],
+ "Someone else's skill was changed in the base; an update would overwrite or conflict with the change.": [
+  "MemoryView.swift"
+ ],
+ "Something new is at %@, so the old copy stays in %@.": [
+  "MemoryPublisher.swift"
+ ],
+ "Something that looks like a password, token or key — every agent that reads the file sees it.": [
+  "MemoryView.swift"
+ ],
+ "Sorted by points, ascending (smallest first). Click to reverse.": [
+  "ContentIndexView.swift"
+ ],
+ "Sorted by points, descending (largest first). Click to reverse.": [
+  "ContentIndexView.swift"
+ ],
+ "Sorts the skills, instructions and agent memories you already have into a plan for the base — about ten minutes instead of hours by hand.": [
+  "LocalModelViews.swift"
+ ],
+ "Source model is already downloaded. Preparing local alias %@...": [
+  "InstallManager.swift"
+ ],
+ "Spins each time the data refreshes. The label sets how often it auto-refreshes.": [
+  "DesignKit.swift"
+ ],
+ "Start All": [
+  "EmbarsyStore.swift",
+  "MenuBarView.swift",
+  "StatusView.swift"
+ ],
+ "Start All finished with status: %@.": [
+  "EmbarsyStore.swift"
+ ],
+ "Start Embarsy API": [
+  "ServiceStatus.swift"
+ ],
+ "Start Ollama": [
+  "ServiceStatus.swift"
+ ],
+ "Start Qdrant": [
+  "ServiceStatus.swift"
+ ],
+ "Start Watcher indexing for a workspace, then Refresh. Embarsy will summarize Qdrant collections here.": [
+  "ContentIndexView.swift"
+ ],
+ "Start Watcher indexing or run a codebase search. Embarsy will show embedding, Qdrant write and Qdrant read events here automatically.": [
+  "ActivityView.swift"
+ ],
+ "Start fresh": [
+  "MemoryCoreViews.swift"
+ ],
+ "Start stack on launch": [
+  "EmbarsyStore.swift"
+ ],
+ "Start stack when Embarsy launches": [
+  "SettingsView.swift"
+ ],
+ "Starting": [
+  "ServiceStatus.swift"
+ ],
+ "Starting %@...": [
+  "ProcessManager.swift"
+ ],
+ "Starting %@…": [
+  "BenchmarkService.swift"
+ ],
+ "Starting Embarsy API with current local secrets...": [
+  "InstallManager.swift"
+ ],
+ "Starting Embarsy stack...": [
+  "EmbarsyStore.swift"
+ ],
+ "Starting Qwen model download. Large layer can take several minutes...": [
+  "InstallManager.swift"
+ ],
+ "Starting the local model…": [
+  "MemoryService.swift"
+ ],
+ "Starting…": [
+  "IndexingService.swift",
+  "LocalModelService.swift"
+ ],
+ "Startup": [
+  "SettingsView.swift"
+ ],
+ "Startup, local secrets, and installed components.": [
+  "SettingsView.swift"
+ ],
+ "Status": [
+  "ContentView.swift"
+ ],
+ "Step %lld of %lld": [
+  "MemoryCoreViews.swift"
+ ],
+ "Step %lld of 2": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Stop": [
+  "LocalModelViews.swift",
+  "MemoryMigrationViews.swift",
+  "MemoryView.swift"
+ ],
+ "Stop All": [
+  "MenuBarView.swift",
+  "StatusView.swift"
+ ],
+ "Stop comparing with this folder. Nothing in it is deleted.": [
+  "MemoryView.swift"
+ ],
+ "Stopped": [
+  "ServiceStatus.swift"
+ ],
+ "Stopped for clean start.": [
+  "ProcessManager.swift"
+ ],
+ "Stopped unexpectedly (crashed). Check %@.": [
+  "ProcessManager.swift"
+ ],
+ "Stopped.": [
+  "ProcessManager.swift"
+ ],
+ "Taken from: %@": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Task and inventory": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Temperature": [
+  "MonitoringView.swift"
+ ],
+ "Temporarily starting Ollama for model setup...": [
+  "InstallManager.swift"
+ ],
+ "Temporarily starting Qdrant for setup...": [
+  "InstallManager.swift"
+ ],
+ "The Workspace folder is set on the Settings page (“Default project”).": [
+  "BenchmarkView.swift"
+ ],
+ "The assistant can draft this fix for you — a local model, free and offline.": [
+  "MemoryView.swift"
+ ],
+ "The assistant can sort it all into a plan in about ten minutes — no agent, nothing leaves your Mac.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "The assistant couldn't fit the description into 1024 characters.": [
+  "MemoryHealthAssist.swift"
+ ],
+ "The assistant couldn't get the profile under 4 KB (%lld KB). You can still use the draft and shorten the rest yourself in Memory → Core.": [
+  "MemoryHealthAssist.swift"
+ ],
+ "The assistant is working on it — usually under a minute.": [
+  "MemoryView.swift"
+ ],
+ "The base already has a skill named %@.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "The base's history has no record of %@ as installed, so it can't be put back.": [
+  "MemoryVendor.swift"
+ ],
+ "The client must call http://localhost:8000/qdrant, not :6333 directly.": [
+  "ConnectionsView.swift"
+ ],
+ "The client that made this request, as it identified itself: %@. Editors that go through Embarsy's bridge report which editor they are; the label is self-reported, not verified.": [
+  "ActivityView.swift"
+ ],
+ "The copies of %@ differ. Which one should stay?": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "The core is %lld KB — over its 4 KB budget": [
+  "MemoryVendor.swift"
+ ],
+ "The core is over its budget; every agent pays for each extra line in every session.": [
+  "MemoryView.swift"
+ ],
+ "The file is empty; it becomes a link to the memory base. A copy is kept.": [
+  "MemoryCoreViews.swift"
+ ],
+ "The folder %@ was installed from has changed since. Updating copies it into the base; the version you have stays in the base's history.": [
+  "MemoryVendor.swift"
+ ],
+ "The folder this skill came from has a newer version; nothing is wrong with the one you have.": [
+  "MemoryView.swift"
+ ],
+ "The lines Embarsy added to %@ were edited, so they were left as they are.": [
+  "MemoryPublisher.swift"
+ ],
+ "The link leads to an old copy the migration left behind, not to the note it became; an agent reads stale text.": [
+  "MemoryView.swift"
+ ],
+ "The link points at a line number; after any edit it lands on the wrong line.": [
+  "MemoryView.swift"
+ ],
+ "The local model %@ isn't downloaded. Download it in Memory → Assistant.": [
+  "LocalModelService.swift"
+ ],
+ "The local model couldn't decide what this skill is — check it.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "The local model couldn't decide where this goes — check it.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "The local model couldn't finish the plan: %@": [
+  "MemoryService.swift"
+ ],
+ "The local model didn't answer in the expected format: %@": [
+  "LocalModelService.swift"
+ ],
+ "The local model drafts it; nothing changes until you apply it.": [
+  "MemoryView.swift"
+ ],
+ "The local model failed: %@": [
+  "LocalModelService.swift"
+ ],
+ "The local model returned no answer.": [
+  "LocalModelService.swift"
+ ],
+ "The local model returned something unreadable.": [
+  "LocalModelService.swift"
+ ],
+ "The local model's answer was missing a field: %@": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "The migration didn't bring this file into the base. The link is removed, its text stays.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "The new language shows after a restart. Your services keep running.": [
+  "SettingsView.swift"
+ ],
+ "The old copy here goes to Embarsy's backups and a link to the base takes its place. Undo puts it back.": [
+  "MemoryCoreViews.swift"
+ ],
+ "The plan file isn't in the expected format: %@. Ask the agent to check it against the format in the task.": [
+  "MemoryService.swift"
+ ],
+ "The plan has no core. You'll fill it in Memory → Core.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "The plan is ready": [
+  "MemoryMigrationViews.swift"
+ ],
+ "The result below is for **%@** (%@). You now have %@ selected — press Run again to benchmark it.": [
+  "BenchmarkView.swift"
+ ],
+ "The running Embarsy API predates the benchmark. Use the Update button in Services — only the API restarts, indexes are untouched.": [
+  "BenchmarkService.swift"
+ ],
+ "The scan, the task and any plan are deleted. Nothing in your agents' folders was changed.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "The target isn't anywhere Embarsy can find. The link is removed, its text stays.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "The two notes state different things about the same fact. An agent may trust either one.": [
+  "MemoryContradictions.swift"
+ ],
+ "Their meaning matches at %@. Two notes on one subject drift apart: an agent may recall the older one. Merge them, or make each about something distinct.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "There are more skills than the agent's listing has room for; some won't be offered.": [
+  "MemoryView.swift"
+ ],
+ "These stay where they are.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "These targets don't exist: %@": [
+  "MemoryScanner.swift"
+ ],
+ "These targets don't exist: %@ and %lld more": [
+  "MemoryScanner.swift"
+ ],
+ "They don't disagree": [
+  "MemoryView.swift"
+ ],
+ "They point at files in the folders the migration read, not at the base. They break once those old copies are cleaned up, and until then they lead to outdated text.": [
+  "MemoryScanner.swift"
+ ],
+ "This Mac has %lld GB of memory; a local model needs at least 16 GB next to everything else. Your own agent does this work instead.": [
+  "LocalModelViews.swift"
+ ],
+ "This agent doesn't load the core, so it doesn't know who you are or your rules.": [
+  "MemoryView.swift"
+ ],
+ "This build of Embarsy does not include the editor bridge. Reinstall the latest version.": [
+  "IndexingService.swift"
+ ],
+ "This request arrived without identifying its client. Clients that talk to the proxy directly (Zoo / Roo Code) cannot be named, and a bridge set up before this release reports nothing until you re-run its setup command.": [
+  "ActivityView.swift"
+ ],
+ "This skill is only in folders no agent reads, so no agent uses it.": [
+  "MemoryView.swift"
+ ],
+ "This window is still running build %@; a different build (build %@) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.": [
+  "StatusView.swift"
+ ],
+ "This window is still running build %@; version %@ (build %@) is installed. Relaunch to use it — your services keep running and nothing is re-indexed.": [
+  "StatusView.swift"
+ ],
+ "Through a bridge installed separately from Embarsy. It works, but it updates on its own — switch to the one bundled with Embarsy so the two always match.": [
+  "ConnectionsView.swift"
+ ],
+ "Time": [
+  "MonitoringView.swift"
+ ],
+ "Time range": [
+  "MonitoringView.swift"
+ ],
+ "To fix it, put the value of %@ in double quotes in that SKILL.md.": [
+  "MemoryScanner.swift"
+ ],
+ "To sift through, per question": [
+  "BenchmarkView.swift"
+ ],
+ "Tone": [
+  "MemoryCoreViews.swift"
+ ],
+ "Tools — %@ can search your memory (recall) and propose to it (remember). Green check — connected. Empty circle — not connected; it can still read the folder, but slower and less reliably.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Try again": [
+  "MemoryView.swift"
+ ],
+ "Turns code and notes into vectors for search and indexing. It loads on the first search and leaves memory after the idle time below; the next search loads it again in a couple of seconds.": [
+  "LocalModelViews.swift"
+ ],
+ "Turns links like file.md:36 into file.md in %lld files: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Two notes say nearly the same. They'll drift apart, and an agent may recall the older one.": [
+  "MemoryView.swift"
+ ],
+ "Two notes state different facts about the same thing. An agent may trust the outdated one.": [
+  "MemoryView.swift"
+ ],
+ "Two notes that state different facts mislead your agents; the assistant finds them so you can keep the right one.": [
+  "MemoryView.swift"
+ ],
+ "Two skills share a name where an agent loads them; it picks one, and you can't tell which.": [
+  "MemoryView.swift"
+ ],
+ "Undo setup": [
+  "MemoryCoreViews.swift"
+ ],
+ "Undo setup…": [
+  "MemoryCoreViews.swift"
+ ],
+ "Undo the memory setup?": [
+  "MemoryCoreViews.swift"
+ ],
+ "Undone, except: %@": [
+  "MemoryService.swift"
+ ],
+ "Undone. The base is in the Trash; restart your agents so they drop it.": [
+  "MemoryService.swift"
+ ],
+ "Unknown": [
+  "LoginItemService.swift",
+  "ServiceStatus.swift"
+ ],
+ "Unknown client": [
+  "ActivityService.swift"
+ ],
+ "Unload now": [
+  "LocalModelViews.swift"
+ ],
+ "Unsupported macOS": [
+  "LoginItemService.swift"
+ ],
+ "Up to date": [
+  "MemoryCoreViews.swift"
+ ],
+ "Update": [
+  "StatusView.swift"
+ ],
+ "Update %@": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Update to bundled API %@": [
+  "EmbarsyStore.swift"
+ ],
+ "Updating Embarsy API to %@...": [
+  "EmbarsyStore.swift"
+ ],
+ "Updating...": [
+  "StatusView.swift"
+ ],
+ "Use Embedding Dimension 1024 exactly, and set the Qdrant URL to the Embarsy proxy value above so Monitoring can count Watcher vector reads and writes.": [
+  "RooConnectionView.swift"
+ ],
+ "Use This Folder": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Use a .md path inside knowledge/, experience/ or people/.": [
+  "MemoryInboxView.swift"
+ ],
+ "Use after you have compared the note with how things are now. Agents treat recently verified notes as more reliable; Health flags notes verified over six months ago.": [
+  "MemoryKnowledgeView.swift"
+ ],
+ "Use bundled bridge": [
+  "ConnectionsView.swift"
+ ],
+ "Use the browser or the Mac's interface only when asked in the current task": [
+  "MemoryCoreViews.swift"
+ ],
+ "Use this core": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Use this description": [
+  "MemoryHealthFixes.swift"
+ ],
+ "Use this profile": [
+  "MemoryView.swift"
+ ],
+ "Use this screen when the index looks suspicious: embedding rows show the current text chunks Watcher sends to Embarsy, while Qdrant write rows show index mutations and read rows show searches.": [
+  "ActivityView.swift"
+ ],
+ "Used by Claude Code and Codex. The index covering your editor's folder is picked automatically. A folder's index includes its subfolders, skipping whatever their .gitignore files exclude; an agent working in a subfolder searches that subfolder first.": [
+  "ConnectionsView.swift"
+ ],
+ "Validate bundled binaries": [
+  "ServiceStatus.swift"
+ ],
+ "Vectors generated": [
+  "MonitoringView.swift"
+ ],
+ "Vendor skills are kept exactly as their author made them, so an update can replace them cleanly. Put your own additions in a skill of your own that builds on this one. Embarsy can put %@ back the way it was installed; your changes stay in the base's history.": [
+  "MemoryVendor.swift"
+ ],
+ "Verify health": [
+  "ServiceStatus.swift"
+ ],
+ "Verifying Watcher-compatible authentication...": [
+  "InstallManager.swift"
+ ],
+ "Version %@, changed %@, at %@.": [
+  "LocalMigrationPlanner.swift"
+ ],
+ "Version %@. Copies marked with the same letter have identical contents; different letters mean the copies differ.": [
+  "MemoryView.swift"
+ ],
+ "Version: %@": [
+  "EmbarsyBuildInfo.swift"
+ ],
+ "Waiting for approval in System Settings → General → Login Items": [
+  "LoginItemService.swift"
+ ],
+ "Waiting for install progress output": [
+  "InstallManager.swift"
+ ],
+ "Waiting for the agent's plan. It only reads your files; nothing changes until you approve the plan here.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Warning — works today, but misleads or breaks later.": [
+  "MemoryView.swift"
+ ],
+ "Warning: %@": [
+  "EmbarsyBuildInfo.swift"
+ ],
+ "Warnings": [
+  "MemoryScanner.swift"
+ ],
+ "Watcher cache file was already absent": [
+  "RooIndexCleanupService.swift"
+ ],
+ "Watcher still has the old Qdrant API Key after reset. After the next install, copy the fresh API Key and Qdrant API Key from this screen into Watcher before starting indexing.": [
+  "EmbarsyStore.swift"
+ ],
+ "Watcher-compatible auth probe passed. Current API key is accepted.": [
+  "InstallManager.swift"
+ ],
+ "Watcher-compatible authentication check failed: %@ Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh API Key and Qdrant API Key from Embarsy into Watcher settings.": [
+  "InstallManager.swift"
+ ],
+ "Watcher/Qdrant diagnostics have not been run yet.": [
+  "EmbarsyStore.swift"
+ ],
+ "Watcher/Qdrant diagnostics skipped: components are not installed.": [
+  "EmbarsyStore.swift"
+ ],
+ "Watcher/Qdrant diagnostics skipped: components are removed. Run Install first.": [
+  "EmbarsyStore.swift"
+ ],
+ "What Claude Code, Codex and Zoo / Roo can see of your skills and instructions": [
+  "MemoryView.swift"
+ ],
+ "What kind of note: knowledge — facts on a subject; experience — work done and verified; person — about someone.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "What seems indexed": [
+  "ContentIndexView.swift"
+ ],
+ "What they describe may have changed since — code, services and processes move on. Re-check each one; then open it in Knowledge and mark it verified, so agents know they can rely on it.": [
+  "MemoryScanner.swift"
+ ],
+ "What to bring in": [
+  "MemoryMigrationViews.swift"
+ ],
+ "What will change": [
+  "MemoryCoreViews.swift"
+ ],
+ "When you ask an agent to remember something, its proposal appears here.": [
+  "MemoryInboxView.swift"
+ ],
+ "Where agents load skills and standing instructions from, plus folders you added to compare with — for example the folder where you keep your own copies.": [
+  "MemoryView.swift"
+ ],
+ "Where the agent wasn't sure, it offers alternatives. Pick one, or none.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Where to keep it": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "Where your agent ships a command-line tool Embarsy can drive, the button **runs 3 duels for you**. Where it doesn't, the button **copies a ready script** — paste it into that agent's chat, run both prompts, and compare. Hover a button for details.": [
+  "BenchmarkView.swift"
+ ],
+ "Where your agents keep memory today. Embarsy only reads these; it backs them all up before anything changes.": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Which one is right? The other note gets a short “outdated” line under that sentence.": [
+  "MemoryView.swift"
+ ],
+ "Who you are": [
+  "MemoryCoreViews.swift"
+ ],
+ "Who your agent is": [
+  "MemoryCoreViews.swift"
+ ],
+ "Why: %@": [
+  "MemoryInboxView.swift"
+ ],
+ "Will change.": [
+  "MemoryCoreViews.swift"
+ ],
+ "With problems %lld": [
+  "MemoryView.swift"
+ ],
+ "Works in every indexed folder — no npm, no Node, nothing to approve.": [
+  "ConnectionsView.swift"
+ ],
+ "Write": [
+  "ActivityTypeFilter.swift"
+ ],
+ "Writes": [
+  "ConnectionsView.swift"
+ ],
+ "Writing install marker...": [
+  "InstallManager.swift"
+ ],
+ "Wrong: this run did not land on the right file. (Filled check = correct; hollow red cross = wrong.)": [
+  "BenchmarkView.swift"
+ ],
+ "You can stop and continue later — the download picks up where it left off.": [
+  "LocalModelViews.swift"
+ ],
+ "You put %lld similar facts in %@/ before — like %@.": [
+  "MemoryInboxView.swift"
+ ],
+ "You put %lld similar facts in %@/ before.": [
+  "MemoryInboxView.swift"
+ ],
+ "You rejected %lld similar proposals before — like %@.": [
+  "MemoryInboxView.swift"
+ ],
+ "You rejected %lld similar proposals before.": [
+  "MemoryInboxView.swift"
+ ],
+ "Your agents read this at the start of every session.": [
+  "MemoryCoreViews.swift"
+ ],
+ "Your decisions": [
+  "MemoryMigrationViews.swift"
+ ],
+ "Your editor is using keys from a previous Embarsy installation": [
+  "RooConnectionView.swift"
+ ],
+ "Your memory base — agents get these skills through links Embarsy publishes": [
+  "MemoryScanner.swift"
+ ],
+ "Your own rules, one per line": [
+  "MemoryCoreViews.swift"
+ ],
+ "Your projects, indexed so agents find code by meaning": [
+  "CodeSearchView.swift"
+ ],
+ "Zoo / Roo Code indexes your code itself — it only needs Embarsy's values. In VS Code, open the Zoo / Roo chat, click the **Codebase Indexing** icon at the bottom right, paste the values below, press **Save**, then **Start Indexing**.": [
+  "ConnectionsView.swift"
+ ],
+ "Zoo / Roo Code runs only inside your editor's chat — it ships no command line, so Embarsy can't automate it. Use Copy duel prompts and run them in the Zoo/Roo chat by hand.": [
+  "BenchmarkView.swift"
+ ],
+ "Zoo / Roo hasn't run in VS Code yet. Open its panel in VS Code once, then connect.": [
+  "ConnectionsView.swift"
+ ],
+ "Zoo / Roo reads two different copies; the one in ~/.roo/skills wins.": [
+  "MemoryScanner.swift"
+ ],
+ "Zoo / Roo skills for the %@ mode": [
+  "MemoryScanner.swift"
+ ],
+ "Zoo / Roo's own skills folder": [
+  "MemoryScanner.swift"
+ ],
+ "Zoo / Roo's rules": [
+  "MemoryMigration.swift"
+ ],
+ "Zoo / Roo's skills": [
+  "MemoryMigration.swift"
+ ],
+ "all stopped": [
+  "StatusView.swift"
+ ],
+ "arsy": [
+  "StatusView.swift"
+ ],
+ "by %@": [
+  "MemoryView.swift"
+ ],
+ "can fix": [
+  "MemoryView.swift"
+ ],
+ "changed %@": [
+  "MemoryView.swift"
+ ],
+ "cleared Watcher cache file %@": [
+  "RooIndexCleanupService.swift"
+ ],
+ "connected": [
+  "ConnectionsView.swift"
+ ],
+ "connected through a separately installed bridge": [
+  "ConnectionsView.swift"
+ ],
+ "content_file %@ must be a file under %@.": [
+  "MemoryMigration.swift"
+ ],
+ "copies differ": [
+  "MemoryView.swift"
+ ],
+ "core": [
+  "MemoryCoreViews.swift"
+ ],
+ "core/ — who you are and how your agents should work with you. All agents load it in every session.": [
+  "MemoryCoreViews.swift"
+ ],
+ "cpu %@%%": [
+  "MonitoringView.swift"
+ ],
+ "cpu —": [
+  "MonitoringView.swift"
+ ],
+ "delete": [
+  "DesignKit.swift"
+ ],
+ "deleted Qdrant collection %@": [
+  "RooIndexCleanupService.swift"
+ ],
+ "description is %lld characters; Zoo / Roo skips anything over 1024.": [
+  "MemoryScanner.swift"
+ ],
+ "description is empty. Codex skips skills without one.": [
+  "MemoryScanner.swift"
+ ],
+ "description is empty. Zoo / Roo skips skills without one.": [
+  "MemoryScanner.swift"
+ ],
+ "description is empty; agents pick skills by it.": [
+  "MemoryPublisher.swift"
+ ],
+ "description is over 1024 characters; Zoo / Roo would skip it.": [
+  "MemoryPublisher.swift"
+ ],
+ "e.g. Product manager and QA engineer": [
+  "MemoryCoreViews.swift"
+ ],
+ "e.g. Russian and English": [
+  "MemoryCoreViews.swift"
+ ],
+ "e.g. Write skills in Russian": [
+  "MemoryCoreViews.swift"
+ ],
+ "e.g. by first name, informally": [
+  "MemoryCoreViews.swift"
+ ],
+ "e.g. short, examples over theory": [
+  "MemoryCoreViews.swift"
+ ],
+ "empty": [
+  "MemoryView.swift"
+ ],
+ "error": [
+  "ActivityView.swift"
+ ],
+ "events / bucket": [
+  "MonitoringView.swift"
+ ],
+ "exited during startup": [
+  "ProcessManager.swift"
+ ],
+ "exited with code %d": [
+  "ManagedProcess.swift"
+ ],
+ "found on this Mac": [
+  "MemoryCoreViews.swift"
+ ],
+ "from %@": [
+  "MemoryMigrationViews.swift"
+ ],
+ "grep needs the folder this collection indexes": [
+  "BenchmarkView.swift"
+ ],
+ "grep vs meaning": [
+  "BenchmarkView.swift"
+ ],
+ "i": [
+  "MonitoringView.swift"
+ ],
+ "inbox/ — where agents propose new memories for you to review.": [
+  "MemoryCoreViews.swift"
+ ],
+ "indexing": [
+  "ActivityService.swift"
+ ],
+ "inferred": [
+  "MemoryInboxView.swift"
+ ],
+ "installed": [
+  "SettingsView.swift"
+ ],
+ "keeps → %@\nmoves to archive/ → %@": [
+  "MemoryView.swift"
+ ],
+ "knowledge/, experience/, people/ — what agents learn, after you approve it.": [
+  "MemoryCoreViews.swift"
+ ],
+ "knowledge/topic.md": [
+  "MemoryInboxView.swift"
+ ],
+ "last output %@ ago": [
+  "InstallManager.swift"
+ ],
+ "last output just now": [
+  "InstallManager.swift"
+ ],
+ "last run %@": [
+  "BenchmarkView.swift"
+ ],
+ "line %lld: %@": [
+  "MemoryScanner.swift"
+ ],
+ "link to %@": [
+  "MemoryView.swift"
+ ],
+ "meaning wins": [
+  "BenchmarkView.swift"
+ ],
+ "memory %@ GB": [
+  "MonitoringView.swift"
+ ],
+ "memory —": [
+  "MonitoringView.swift"
+ ],
+ "min": [
+  "MonitoringView.swift"
+ ],
+ "miss": [
+  "BenchmarkView.swift"
+ ],
+ "miss: the right file never reached Embarsy's semantic search's top %lld for this question.": [
+  "BenchmarkView.swift"
+ ],
+ "miss: the right file never reached grep's top %lld for this question.": [
+  "BenchmarkView.swift"
+ ],
+ "missing": [
+  "MemoryView.swift"
+ ],
+ "n/a": [
+  "BenchmarkView.swift"
+ ],
+ "name %@ isn't lowercase letters, digits and single hyphens (up to 64). Zoo / Roo skips it.": [
+  "MemoryScanner.swift"
+ ],
+ "name %@ must be lowercase letters, digits and single hyphens.": [
+  "MemoryMigration.swift"
+ ],
+ "name is longer than 64 characters. Codex skips it.": [
+  "MemoryScanner.swift"
+ ],
+ "name is missing. Zoo / Roo requires it.": [
+  "MemoryPublisher.swift",
+  "MemoryScanner.swift"
+ ],
+ "name must be lowercase letters, digits and single hyphens, up to 64.": [
+  "MemoryPublisher.swift"
+ ],
+ "name: %@ differs from the folder name %@. Zoo / Roo skips a skill unless the two match.": [
+  "MemoryScanner.swift"
+ ],
+ "name: %@ differs from the folder name %@. Zoo / Roo would skip it.": [
+  "MemoryPublisher.swift"
+ ],
+ "new SKILL.md written by the agent": [
+  "MemoryMigrationViews.swift"
+ ],
+ "no agent reads it": [
+  "MemoryScanner.swift"
+ ],
+ "no agent sees it": [
+  "MemoryView.swift"
+ ],
+ "no automatable CLI here — copy prompts to its chat": [
+  "BenchmarkView.swift"
+ ],
+ "no collections": [
+  "BenchmarkView.swift"
+ ],
+ "no details": [
+  "EmbarsyStore.swift"
+ ],
+ "not connected": [
+  "ConnectionsView.swift"
+ ],
+ "not found on this Mac": [
+  "MemoryCoreViews.swift"
+ ],
+ "not indexed yet": [
+  "ConnectionsView.swift"
+ ],
+ "not installed": [
+  "SettingsView.swift"
+ ],
+ "notes": [
+  "MemoryScanner.swift"
+ ],
+ "optional": [
+  "LocalModelViews.swift"
+ ],
+ "read by %@": [
+  "MemoryScanner.swift"
+ ],
+ "recall & remember": [
+  "MemoryCoreViews.swift"
+ ],
+ "reload the VS Code window to pick it up": [
+  "EditorConnectionService.swift"
+ ],
+ "restart Claude Code to pick it up": [
+  "EditorConnectionService.swift"
+ ],
+ "restart Codex to pick it up": [
+  "EditorConnectionService.swift"
+ ],
+ "runs only inside the editor — copy prompts to its chat": [
+  "BenchmarkView.swift"
+ ],
+ "set up for a copy of Embarsy that no longer exists": [
+  "ConnectionsView.swift"
+ ],
+ "skills/ — skills every agent shares. Starts with one that teaches agents to use this memory.": [
+  "MemoryCoreViews.swift"
+ ],
+ "synonyms": [
+  "BenchmarkView.swift"
+ ],
+ "terminated by signal %d": [
+  "ManagedProcess.swift"
+ ],
+ "terminated by signal %d (SIGKILL — possibly killed by macOS code-signing enforcement)": [
+  "ManagedProcess.swift"
+ ],
+ "time": [
+  "MonitoringView.swift"
+ ],
+ "unknown": [
+  "StatusView.swift"
+ ],
+ "unknown date": [
+  "MemoryScanner.swift"
+ ],
+ "uptime %@": [
+  "StatusView.swift"
+ ],
+ "v": [
+  "MonitoringView.swift"
+ ],
+ "verified": [
+  "MemoryInboxView.swift"
+ ],
+ "vs": [
+  "BenchmarkView.swift"
+ ],
+ "without a request": [
+  "LocalModelViews.swift"
+ ],
+ "without a search": [
+  "LocalModelViews.swift"
+ ],
+ "written by the agent": [
+  "MemoryMigrationViews.swift"
+ ],
+ "you said it": [
+  "MemoryInboxView.swift"
+ ],
+ "~/EmbarsyMemory": [
+  "MemoryCoreViews.swift",
+  "MemoryMigrationViews.swift"
+ ],
+ "«%@»": [
+  "MemoryView.swift"
+ ],
+ "°C": [
+  "MonitoringView.swift"
+ ],
+ "“%@”": [
+  "BenchmarkView.swift"
+ ],
+ "“Lines” and “snippets” are different units, on purpose — that’s the whole point of the comparison.\n\nLEFT (grep): every matching line across all the files grep found — raw text you scroll through by eye to locate the answer. Mostly noise.\n\nRIGHT (Embarsy): a fixed handful — the top %lld ranked snippets. Each is one short, already-relevant code chunk with its file, ordered by meaning. You read these, you don’t sift them.\n\nSo the left number is how much you’d have to wade through; the right number is how little you’d actually read.": [
+  "BenchmarkView.swift"
+ ],
+ "•": [
+  "MemoryCoreViews.swift"
+ ],
+ "• %@ — changed %@, %@": [
+  "MemoryScanner.swift"
+ ],
+ "‹‹‹ %@": [
+  "DesignKit.swift"
+ ],
+ "→ link removed, text kept": [
+  "MemoryView.swift"
+ ]
+}

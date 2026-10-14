@@ -10,7 +10,7 @@ import Foundation
 /// Both files belong to live applications, so each is read, modified in place and written
 /// atomically: every unrelated key and every other server in them survives untouched.
 enum EditorAgent: String, CaseIterable, Identifiable {
-    case claude, codex
+    case claude, codex, roo
 
     var id: String { rawValue }
 
@@ -18,6 +18,7 @@ enum EditorAgent: String, CaseIterable, Identifiable {
         switch self {
         case .claude: return "Claude Code"
         case .codex: return "Codex"
+        case .roo: return "Zoo / Roo"
         }
     }
 
@@ -28,6 +29,7 @@ enum EditorAgent: String, CaseIterable, Identifiable {
         switch self {
         case .claude: return "claude-code"
         case .codex: return "codex"
+        case .roo: return "roo"
         }
     }
 
@@ -37,14 +39,32 @@ enum EditorAgent: String, CaseIterable, Identifiable {
         switch self {
         case .claude: return home.appendingPathComponent(".claude.json")
         case .codex: return home.appendingPathComponent(".codex/config.toml")
+        case .roo:
+            // Zoo Code and Roo Code are the same extension under two publishers; each keeps
+            // its MCP servers in its own VS Code storage. Zoo wins when both are there.
+            let storage = home.appendingPathComponent("Library/Application Support/Code/User/globalStorage")
+            let candidates = ["zoocodeorganization.zoo-code", "rooveterinaryinc.roo-cline"]
+                .map { storage.appendingPathComponent($0).appendingPathComponent("settings/mcp_settings.json") }
+            return candidates.first { FileManager.default.fileExists(atPath: $0.deletingLastPathComponent().path) }
+                ?? candidates[0]
+        }
+    }
+
+    /// Zoo / Roo keeps its config inside VS Code's storage, which exists only once the
+    /// extension has run; there is nowhere to connect before that.
+    func isInstalled(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> Bool {
+        switch self {
+        case .claude, .codex: return true
+        case .roo: return FileManager.default.fileExists(atPath: configURL(home: home).deletingLastPathComponent().path)
         }
     }
 
     /// What the user has to do for a freshly written config to take effect.
     var activationHint: String {
         switch self {
-        case .claude: return "restart Claude Code to pick it up"
-        case .codex: return "restart Codex to pick it up"
+        case .claude: return L("restart Claude Code to pick it up")
+        case .codex: return L("restart Codex to pick it up")
+        case .roo: return L("reload the VS Code window to pick it up")
         }
     }
 }
@@ -83,7 +103,7 @@ struct EditorConnectionService {
     private func recordedCommand(for agent: EditorAgent) -> String? {
         guard let text = try? String(contentsOf: agent.configURL(home: home), encoding: .utf8) else { return nil }
         switch agent {
-        case .claude:
+        case .claude, .roo:
             guard
                 let data = text.data(using: .utf8),
                 let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -112,14 +132,14 @@ struct EditorConnectionService {
 
     func connect(_ agent: EditorAgent, config: EmbarsyConfig) throws {
         switch agent {
-        case .claude: try writeClaude(config: config, remove: false)
+        case .claude, .roo: try writeJSON(agent, config: config, remove: false)
         case .codex: try writeCodex(config: config, remove: false)
         }
     }
 
     func disconnect(_ agent: EditorAgent) throws {
         switch agent {
-        case .claude: try writeClaude(config: nil, remove: true)
+        case .claude, .roo: try writeJSON(agent, config: nil, remove: true)
         case .codex: try writeCodex(config: nil, remove: true)
         }
     }
@@ -139,8 +159,10 @@ struct EditorConnectionService {
         ]
     }
 
-    private func writeClaude(config: EmbarsyConfig?, remove: Bool) throws {
-        let url = EditorAgent.claude.configURL(home: home)
+    /// Claude Code (~/.claude.json) and Zoo / Roo (mcp_settings.json) share the `mcpServers` shape.
+    private func writeJSON(_ agent: EditorAgent, config: EmbarsyConfig?, remove: Bool) throws {
+        let url = agent.configURL(home: home)
+        guard agent.isInstalled(home: home) else { throw ConnectionError.notInstalled(agent.label) }
         var json: [String: Any] = [:]
         if let data = try? Data(contentsOf: url), !data.isEmpty {
             guard let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -152,11 +174,18 @@ struct EditorConnectionService {
         if remove {
             servers.removeValue(forKey: Self.serverName)
         } else if let config {
-            servers[Self.serverName] = [
+            var server: [String: Any] = [
                 "command": paths.bundledNode.path,
                 "args": [paths.bundledBridgeMCP.path],
-                "env": environment(for: .claude, config: config),
+                "env": environment(for: agent, config: config),
             ]
+            if agent == .roo {
+                // Zoo / Roo's own fields. Nothing is pre-approved: the user decides per tool.
+                server["type"] = "stdio"
+                server["disabled"] = false
+                server["alwaysAllow"] = [String]()
+            }
+            servers[Self.serverName] = server
         }
         json["mcpServers"] = servers
         let data = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys])
@@ -238,11 +267,14 @@ struct EditorConnectionService {
 
     enum ConnectionError: LocalizedError {
         case unreadableConfig(String)
+        case notInstalled(String)
 
         var errorDescription: String? {
             switch self {
             case .unreadableConfig(let path):
-                return "\(path) is not valid JSON. Fix or remove it, then connect again."
+                return L("\(path) is not valid JSON. Fix or remove it, then connect again.")
+            case .notInstalled(let label):
+                return L("\(label) isn't set up in VS Code yet. Open its panel in VS Code once, then connect again.")
             }
         }
     }

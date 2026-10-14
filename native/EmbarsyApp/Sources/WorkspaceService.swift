@@ -7,8 +7,8 @@ enum WorkspaceError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .emptyPath: "Project path is empty. Choose a project folder first."
-        case .codeCommandFailed: "Failed to open project in VSCode with the `code` command."
+        case .emptyPath: L("Project path is empty. Choose a project folder first.")
+        case .codeCommandFailed: L("Failed to open project in VSCode with the `code` command.")
         }
     }
 }

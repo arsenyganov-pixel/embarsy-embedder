@@ -38,15 +38,28 @@ final class IndexingService: ObservableObject {
     }
 
     func index(folder: URL, collection: String, paths: AppPaths, config: EmbarsyConfig) async -> Bool {
+        await run(key: folder.standardizedFileURL.path, arguments: [folder.standardizedFileURL.path, "--collection", collection],
+                  extraEnvironment: [:], workingDirectory: folder, paths: paths, config: config)
+    }
+
+    /// The memory base, into the collection recall searches — same chunking and exclusions
+    /// as the bridge uses when an agent recalls something.
+    func indexMemory(vault: URL, paths: AppPaths, config: EmbarsyConfig) async -> Bool {
+        await run(key: vault.standardizedFileURL.path, arguments: ["--memory"],
+                  extraEnvironment: ["EMBARSY_MEMORY_DIR": vault.standardizedFileURL.path],
+                  workingDirectory: vault, paths: paths, config: config)
+    }
+
+    private func run(key: String, arguments: [String], extraEnvironment: [String: String], workingDirectory: URL,
+                     paths: AppPaths, config: EmbarsyConfig) async -> Bool {
         guard !isBusy else { return false }
-        let key = folder.standardizedFileURL.path
         activeFolder = key
-        runs[key] = .running(progress: "Starting…")
+        runs[key] = .running(progress: L("Starting…"))
         defer { activeFolder = nil }
 
         guard FileManager.default.isExecutableFile(atPath: paths.bundledNode.path),
               FileManager.default.fileExists(atPath: paths.bundledBridgeIndex.path) else {
-            runs[key] = .failed(message: "This build of Embarsy does not include the editor bridge. Reinstall the latest version.")
+            runs[key] = .failed(message: L("This build of Embarsy does not include the editor bridge. Reinstall the latest version."))
             return false
         }
 
@@ -54,8 +67,8 @@ final class IndexingService: ObservableObject {
         do {
             let result = try await runner.run(
                 executable: paths.bundledNode,
-                arguments: [paths.bundledBridgeIndex.path, key, "--collection", collection],
-                environment: [
+                arguments: [paths.bundledBridgeIndex.path] + arguments,
+                environment: extraEnvironment.merging([
                     // Labels the requests in Activity, so a refresh started from the app is not
                     // mistaken for an editor at work.
                     "EMBARSY_CLIENT": "embarsy-app",
@@ -63,8 +76,8 @@ final class IndexingService: ObservableObject {
                     "OPENAI_API_KEY": config.embarsyAPIKey,
                     "QDRANT_URL": config.qdrantProxyBaseURL.absoluteString,
                     "QDRANT_API_KEY": config.qdrantAPIKey,
-                ],
-                workingDirectory: folder,
+                ]) { _, new in new },
+                workingDirectory: workingDirectory,
                 timeout: nil,
                 onOutput: { [weak self] chunk in
                     tail.append(chunk)
@@ -73,7 +86,7 @@ final class IndexingService: ObservableObject {
                 }
             )
             if result.exitCode == 0 {
-                runs[key] = .finished(summary: Self.summary(from: result.output) ?? "Indexed")
+                runs[key] = .finished(summary: Self.summary(from: result.output) ?? L("Indexed"))
                 return true
             }
             runs[key] = .failed(message: Self.failureLine(from: result.output))
@@ -118,7 +131,7 @@ final class IndexingService: ObservableObject {
             .filter { !$0.isEmpty }
         return lines.last(where: { $0.localizedCaseInsensitiveContains("fail") || $0.contains("Error") })
             ?? lines.last
-            ?? "Indexing stopped without a message."
+            ?? L("Indexing stopped without a message.")
     }
 }
 

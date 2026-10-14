@@ -12,11 +12,11 @@ enum MonitoringScale: Int, CaseIterable, Identifiable {
     /// Common short duration units (m/h/d) so the label fits the pill-width range dropdown.
     var rangeLabel: String {
         switch self {
-        case .minutes15: "Last 15m"
-        case .hour1: "Last 1h"
-        case .hours6: "Last 6h"
-        case .hours24: "Last 24h"
-        case .days7: "Last 7d"
+        case .minutes15: L("Last 15m")
+        case .hour1: L("Last 1h")
+        case .hours6: L("Last 6h")
+        case .hours24: L("Last 24h")
+        case .days7: L("Last 7d")
         }
     }
 }
@@ -104,7 +104,7 @@ struct MonitoringPoint: Decodable, Equatable, Identifiable, Sendable {
 final class MonitoringService: ObservableObject {
     @Published var scale: MonitoringScale = .hour1
     @Published var snapshot: MonitoringSnapshot = .empty
-    @Published var message = "Monitoring is waiting for Embarsy API."
+    @Published var message = L("Monitoring is waiting for Embarsy API.")
     @Published var isRefreshing = false
     /// False until one refresh has succeeded — the empty snapshot before that means "not
     /// known yet", and the tiles must not present it as zero activity.
@@ -124,7 +124,7 @@ final class MonitoringService: ObservableObject {
 
     private func performRefresh(config: EmbarsyConfig) async {
         guard config.embarsyAPIKey.isEmpty == false else {
-            message = "Monitoring needs local API secrets. Start or install Embarsy first."
+            message = L("Monitoring needs local API secrets. Start or install Embarsy first.")
             snapshot = .empty
             return
         }
@@ -141,7 +141,7 @@ final class MonitoringService: ObservableObject {
             request.setValue("Bearer \(config.embarsyAPIKey)", forHTTPHeaderField: "Authorization")
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) else {
-                message = "Monitoring endpoint is unavailable. Start Embarsy API and refresh."
+                message = L("Monitoring endpoint is unavailable. Start Embarsy API and refresh.")
                 return
             }
             // Decode off the main actor — a 500-point snapshot decoded on main every 2s
@@ -152,13 +152,13 @@ final class MonitoringService: ObservableObject {
             try Task.checkCancellation()
             snapshot = decoded
             hasLoaded = true
-            message = decoded.series.isEmpty ? "No embedding activity yet." : "Monitoring updated."
+            message = decoded.series.isEmpty ? L("No embedding activity yet.") : L("Monitoring updated.")
         } catch is CancellationError {
             // Replaced by a newer refresh — keep whatever state the winner publishes.
         } catch let error as URLError where error.code == .cancelled {
             // Same: superseded mid-request.
         } catch {
-            message = "Monitoring refresh failed: \(error.localizedDescription)"
+            message = L("Monitoring refresh failed: \(error.localizedDescription)")
         }
     }
 }
