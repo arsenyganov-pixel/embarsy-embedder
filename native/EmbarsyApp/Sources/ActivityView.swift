@@ -17,7 +17,7 @@ struct ActivityView: View {
         // No outer ScrollView: header + footer stay put and the "Recent requests" list fills the
         // remaining window height (scrolling happens inside the list), so it grows with the window.
         VStack(alignment: .leading, spacing: 18) {
-            BrandedHeader(title: "Request Activity", subtitle: activity.message) {
+            BrandedHeader(title: "Request Activity", subtitle: LocalizedStringKey(activity.message)) {
                 HStack(spacing: 8) {
                     activityTypeMenu
                     onlyErrorsToggle
@@ -164,7 +164,7 @@ struct ActivityEventRow: View {
                 .foregroundStyle(color)
                 .frame(width: 20)
                 .contentShape(Rectangle())
-                .chipHelp(operationHelp)
+                .chipHelp(verbatim: operationHelp)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
@@ -257,9 +257,9 @@ struct ActivityEventRow: View {
     /// Explains the operation icon's glyph + color (the symbol carries the meaning).
     private var operationHelp: String {
         switch event.operation {
-        case .embedding: "Embedding request — text turned into a vector (green magnifying glass)."
-        case .read: "Qdrant read — a vector search or fetch (cyan up-arrow)."
-        case .write: "Qdrant write — vectors stored or updated (orange down-arrow)."
+        case .embedding: L("Embedding request — text turned into a vector (green magnifying glass).")
+        case .read: L("Qdrant read — a vector search or fetch (cyan up-arrow).")
+        case .write: L("Qdrant write — vectors stored or updated (orange down-arrow).")
         }
     }
 }

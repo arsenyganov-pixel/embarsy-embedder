@@ -37,7 +37,7 @@ export function establishRoot(
   return null;
 }
 
-/** `file_path` prefix ("proxiq-macos/") selecting what lies under `cwd`, or null when the
+/** `file_path` prefix ("acme-app/") selecting what lies under `cwd`, or null when the
  *  agent works at the index root (nothing to narrow) or outside it (nothing to narrow to). */
 export function scopePrefix(root: string | null, cwd: string): string | null {
   if (!root) return null;

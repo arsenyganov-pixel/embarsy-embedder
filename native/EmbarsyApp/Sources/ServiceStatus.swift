@@ -12,11 +12,11 @@ enum ServiceStatus: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .unknown: "Unknown"
-        case .starting: "Starting"
-        case .running: "Running"
-        case .stopped: "Stopped"
-        case .failed: "Failed"
+        case .unknown: L("Unknown")
+        case .starting: L("Starting")
+        case .running: L("Running")
+        case .stopped: L("Stopped")
+        case .failed: L("Failed")
         }
     }
 
@@ -67,16 +67,16 @@ enum InstallStep: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .idle: "Ready"
-        case .prepareDirectories: "Prepare App Support layout"
-        case .secrets: "Prepare local secrets"
-        case .validateBinaries: "Validate bundled binaries"
-        case .startQdrant: "Start Qdrant"
-        case .startOllama: "Start Ollama"
-        case .prepareModel: "Download and prepare embedding model"
-        case .startAPI: "Start Embarsy API"
-        case .verifyHealth: "Verify health"
-        case .completed: "Completed"
+        case .idle: L("Ready")
+        case .prepareDirectories: L("Prepare App Support layout")
+        case .secrets: L("Prepare local secrets")
+        case .validateBinaries: L("Validate bundled binaries")
+        case .startQdrant: L("Start Qdrant")
+        case .startOllama: L("Start Ollama")
+        case .prepareModel: L("Download and prepare embedding model")
+        case .startAPI: L("Start Embarsy API")
+        case .verifyHealth: L("Verify health")
+        case .completed: L("Completed")
         }
     }
 

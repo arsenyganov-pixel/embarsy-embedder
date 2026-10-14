@@ -26,7 +26,7 @@ struct MenuBarView: View {
             separator
 
             MenuBarItem(
-                title: store.installManager.isInstalled ? "Open Embarsy" : "Open Install",
+                title: store.installManager.isInstalled ? L("Open Embarsy") : L("Open Install"),
                 systemImage: "macwindow"
             ) {
                 if !store.installManager.isInstalled {
@@ -39,17 +39,17 @@ struct MenuBarView: View {
             separator
 
             if store.installManager.isInstalled {
-                MenuBarItem(title: "Start All", systemImage: "play") {
+                MenuBarItem(title: L("Start All"), systemImage: "play") {
                     Task { await store.startAll() }
                 }
-                MenuBarItem(title: "Stop All", systemImage: "square") {
+                MenuBarItem(title: L("Stop All"), systemImage: "square") {
                     store.processManager.stopAll()
                 }
-                MenuBarItem(title: "Refresh", systemImage: "arrow.clockwise") {
+                MenuBarItem(title: L("Refresh"), systemImage: "arrow.clockwise") {
                     Task { await store.refreshServiceStatuses() }
                 }
             } else {
-                MenuBarItem(title: "Install", systemImage: "square.and.arrow.down") {
+                MenuBarItem(title: L("Install"), systemImage: "square.and.arrow.down") {
                     store.selectedTab = .install
                     openWindow(id: EmbarsyWindowID.main)
                     NSApplication.shared.activate(ignoringOtherApps: true)
@@ -63,12 +63,12 @@ struct MenuBarView: View {
 
             separator
 
-            MenuBarItem(title: "Settings…", systemImage: "gearshape", shortcut: "⌘,") {
+            MenuBarItem(title: L("Settings…"), systemImage: "gearshape", shortcut: "⌘,") {
                 store.selectedTab = .settings
                 openWindow(id: EmbarsyWindowID.main)
                 NSApplication.shared.activate(ignoringOtherApps: true)
             }
-            MenuBarItem(title: "Quit Embarsy", systemImage: "power", shortcut: "⌘Q", danger: true) {
+            MenuBarItem(title: L("Quit Embarsy"), systemImage: "power", shortcut: "⌘Q", danger: true) {
                 NSApplication.shared.terminate(nil)
             }
 

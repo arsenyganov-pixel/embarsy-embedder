@@ -25,14 +25,27 @@ func brandedTitle(_ title: String, size: CGFloat = 19) -> Text {
 
 struct BrandedHeader<Trailing: View>: View {
     let title: String
-    var subtitle: String? = nil
+    var subtitle: LocalizedStringKey? = nil
     @ViewBuilder var trailing: () -> Trailing
+
+    /// The title is translated (a key in Localizable.strings), with or without a trailing view.
+    init(title: String.LocalizationValue, subtitle: LocalizedStringKey? = nil, @ViewBuilder trailing: @escaping () -> Trailing) {
+        self.title = String(localized: title)
+        self.subtitle = subtitle
+        self.trailing = trailing
+    }
+
+    /// Inside a section that already shows its own title (Code search), a screen keeps only
+    /// its subtitle and controls.
+    @Environment(\.embeddedScreen) private var embedded
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             VStack(alignment: .leading, spacing: 3) {
-                brandedTitle(title)
-                    .foregroundStyle(.primary)
+                if !embedded {
+                    brandedTitle(title)
+                        .foregroundStyle(.primary)
+                }
                 if let subtitle {
                     Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
                 }
@@ -44,7 +57,7 @@ struct BrandedHeader<Trailing: View>: View {
 }
 
 extension BrandedHeader where Trailing == EmptyView {
-    init(title: String, subtitle: String? = nil) {
+    init(title: String.LocalizationValue, subtitle: LocalizedStringKey? = nil) {
         self.init(title: title, subtitle: subtitle, trailing: { EmptyView() })
     }
 }
@@ -52,7 +65,8 @@ extension BrandedHeader where Trailing == EmptyView {
 // MARK: - SectionCard (surface panel with title + optional right label)
 
 struct EmbarsySection<Content: View>: View {
-    var title: String? = nil
+    var title: LocalizedStringKey? = nil
+    /// A value, not a phrase — shown as is.
     var right: String? = nil
     var spacing: CGFloat = 10
     /// When true the card fills the height it is offered (so its surface matches a taller
@@ -69,7 +83,7 @@ struct EmbarsySection<Content: View>: View {
                     }
                     Spacer(minLength: 8)
                     if let right {
-                        Text(right).font(.system(.caption2, design: .monospaced)).foregroundStyle(.tertiary)
+                        Text(verbatim: right).font(.system(.caption2, design: .monospaced)).foregroundStyle(.tertiary)
                     }
                 }
             }
@@ -116,10 +130,11 @@ struct TappableDisclosureStyle: DisclosureGroupStyle {
 // MARK: - HelpNote (small secondary caption)
 
 struct HelpNote: View {
-    let text: String
+    let text: LocalizedStringKey
     var tone: Tone = .normal
     enum Tone { case normal, warn }
-    init(_ text: String, tone: Tone = .normal) { self.text = text; self.tone = tone }
+    init(_ text: LocalizedStringKey, tone: Tone = .normal) { self.text = text; self.tone = tone }
+    init(verbatim text: String, tone: Tone = .normal) { self.text = LocalizedStringKey(stringLiteral: text); self.tone = tone }
     var body: some View {
         Text(text)
             .font(.caption)
@@ -135,14 +150,14 @@ enum RefreshInterval: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var short: String {
         switch self {
-        case .s2: return "2s"; case .s5: return "5s"; case .s10: return "10s"; case .s30: return "30s"
-        case .m1: return "1m"; case .m5: return "5m"; case .m15: return "15m"
+        case .s2: return L("2s"); case .s5: return L("5s"); case .s10: return L("10s"); case .s30: return L("30s")
+        case .m1: return L("1m"); case .m5: return L("5m"); case .m15: return L("15m")
         }
     }
     var label: String {
         switch self {
-        case .s2: return "2 seconds"; case .s5: return "5 seconds"; case .s10: return "10 seconds"; case .s30: return "30 seconds"
-        case .m1: return "1 minute"; case .m5: return "5 minutes"; case .m15: return "15 minutes"
+        case .s2: return L("2 seconds"); case .s5: return L("5 seconds"); case .s10: return L("10 seconds"); case .s30: return L("30 seconds")
+        case .m1: return L("1 minute"); case .m5: return L("5 minutes"); case .m15: return L("15 minutes")
         }
     }
     var seconds: Double {
@@ -254,12 +269,12 @@ struct RefreshDropdownCard: View {
     var body: some View {
         DropdownCard(width: width) {
             if let onRefreshNow {
-                DropdownRow(label: "Refresh Now", systemImage: "arrow.clockwise", checkColumn: false) {
+                DropdownRow(label: L("Refresh Now"), systemImage: "arrow.clockwise", checkColumn: false) {
                     onRefreshNow(); onSelect()
                 }
                 Divider().overlay(Theme.separator).padding(.horizontal, 10).padding(.vertical, 3)
             }
-            DropdownHeader(text: "Auto-refresh")
+            DropdownHeader(text: L("Auto-refresh"))
             ForEach(options) { option in
                 DropdownRow(label: option.label, selected: interval == option) {
                     interval = option; onSelect()
@@ -421,7 +436,7 @@ struct FlowLayout: Layout {
 /// past 60% and the grip morphs into a trash can. Release past `threshold` fires
 /// `onDelete`; release short springs back.
 struct SlideToDelete: View {
-    var label: String = "delete"
+    var label: String = L("delete")
     var threshold: CGFloat = 0.85
     var onDelete: () -> Void
 
@@ -494,5 +509,17 @@ private extension View {
             .frame(height: 34)
             .background(Theme.fillQuaternary, in: Capsule())
             .overlay(Capsule().stroke(Theme.separator))
+    }
+}
+
+private struct EmbeddedScreenKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    /// True for a screen shown inside a section with its own header and tabs.
+    var embeddedScreen: Bool {
+        get { self[EmbeddedScreenKey.self] }
+        set { self[EmbeddedScreenKey.self] = newValue }
     }
 }

@@ -35,25 +35,25 @@ struct MonitoringView: View {
             ScrollView {
                 // Lazy: collapsed/off-screen panels are not laid out on every data tick.
                 LazyVStack(alignment: .leading, spacing: Theme.gapSection) {
-                MonitorRowHeader(id: "overview", title: "OVERVIEW") {
+                MonitorRowHeader(id: "overview", title: L("OVERVIEW")) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 5), spacing: 10) {
                         ForEach(metricTiles) { StatPanel(tile: $0).equatable() }
                     }
                 }
 
-                CollapsiblePanel(id: "rw", title: "Read / write activity", meta: "events / bucket") {
+                CollapsiblePanel(id: "rw", title: L("Read / write activity"), meta: L("events / bucket")) {
                     ActivityLinesChart(series: monitoring.snapshot.series, domain: xDomain)
                         .equatable()
                     legend.padding(.top, 10)
                         .overlay(alignment: .top) { Rectangle().fill(Theme.separator).frame(height: 1).offset(y: -1) }
                 }
 
-                CollapsiblePanel(id: "latency", title: "Embedding latency", meta: "ms") {
+                CollapsiblePanel(id: "latency", title: L("Embedding latency"), meta: "ms") {
                     LatencyChart(series: monitoring.snapshot.series, domain: xDomain)
                         .equatable()
                 }
 
-                CollapsiblePanel(id: "memcpu", title: "Memory / CPU utilisation", meta: "GB / %") {
+                CollapsiblePanel(id: "memcpu", title: L("Memory / CPU utilisation"), meta: "GB / %") {
                     let w = memCpuWindow
                     if w.mem.count >= 2 {
                         DualAxisChart(mem: w.mem, cpu: w.cpu, dates: w.dates,
@@ -62,9 +62,9 @@ struct MonitoringView: View {
                             .equatable()
                             .frame(height: 220)
                         HStack {
-                            legendSwatch(sysMetrics.memSeries.isEmpty ? "memory \u{2014}" : "memory \(String(format: "%.2f", sysMetrics.lastMemGB)) GB", color: Theme.mReads)
+                            legendSwatch(sysMetrics.memSeries.isEmpty ? L("memory \u{2014}") : L("memory \(String(format: "%.2f", sysMetrics.lastMemGB)) GB"), color: Theme.mReads)
                             Spacer()
-                            legendSwatch(sysMetrics.hasCPUReading ? "cpu \(String(format: "%.0f", sysMetrics.lastCPU))%" : "cpu \u{2014}", color: Theme.mErrors)
+                            legendSwatch(sysMetrics.hasCPUReading ? L("cpu \(String(format: "%.0f", sysMetrics.lastCPU))%") : L("cpu \u{2014}"), color: Theme.mErrors)
                         }
                         .padding(.top, 10)
                         .overlay(alignment: .top) { Rectangle().fill(Theme.separator).frame(height: 1).offset(y: -1) }
@@ -77,7 +77,7 @@ struct MonitoringView: View {
                     }
                 }
 
-                CollapsiblePanel(id: "temp", title: "CPU temperature", meta: "°C") {
+                CollapsiblePanel(id: "temp", title: L("CPU temperature"), meta: "°C") {
                     if let t = sysMetrics.lastTempC {
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             Text(String(format: "%.1f", t))
@@ -220,7 +220,7 @@ struct MonitoringView: View {
 
     private func rangeDropdownCard(width: CGFloat) -> some View {
         DropdownCard(width: width) {
-            DropdownHeader(text: "Time range")
+            DropdownHeader(text: L("Time range"))
             ForEach(MonitoringScale.allCases) { scale in
                 DropdownRow(label: scale.rangeLabel, selected: selectedScale == scale) {
                     selectedScale = scale
@@ -260,16 +260,16 @@ struct MonitoringView: View {
         let known = monitoring.hasLoaded
         func count(_ v: Int) -> String { known ? v.formatted() : dash }
         return [
-            MetricTile(title: "Embedding requests", value: count(s.embeddingsRequests), color: Theme.mRequests, spark: spark { Double($0.embeddingsRequests) }),
-            MetricTile(title: "Vectors generated", value: count(s.embeddingsVectors), color: Theme.mVectors, spark: spark { Double($0.embeddingsVectors) }),
-            MetricTile(title: "Avg latency", value: known ? String(format: "%.0f ms", s.embeddingsLatencyMSAverage) : dash, color: Theme.mLatency, spark: spark { $0.embeddingsLatencyMSAverage }),
-            MetricTile(title: "Embedding errors", value: count(s.embeddingsErrors), color: Theme.mErrors, spark: spark { Double($0.embeddingsErrors) }),
-            MetricTile(title: "Qdrant reads", value: count(s.qdrantReads), color: Theme.mReads, spark: spark { Double($0.qdrantReads) }),
-            MetricTile(title: "Qdrant writes", value: count(s.qdrantWrites), color: Theme.mWrites, spark: spark { Double($0.qdrantWrites) }),
-            MetricTile(title: "Points indexed", value: contentIndex.hasLoaded ? points.formatted() : dash, color: Theme.accent, spark: spark { Double($0.embeddingsVectors) }),
-            MetricTile(title: "Memory", value: sysMetrics.memSeries.isEmpty ? dash : String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: spark(sysMetrics.memSeries)),
-            MetricTile(title: "CPU", value: sysMetrics.hasCPUReading ? String(format: "%.0f %%", sysMetrics.lastCPU) : dash, color: Theme.mErrors, spark: spark(sysMetrics.cpuSeries)),
-            MetricTile(title: "Temperature", value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? dash, color: Theme.mTemp, spark: spark(sysMetrics.tempSeries)),
+            MetricTile(title: L("Embedding requests"), value: count(s.embeddingsRequests), color: Theme.mRequests, spark: spark { Double($0.embeddingsRequests) }),
+            MetricTile(title: L("Vectors generated"), value: count(s.embeddingsVectors), color: Theme.mVectors, spark: spark { Double($0.embeddingsVectors) }),
+            MetricTile(title: L("Avg latency"), value: known ? String(format: "%.0f ms", s.embeddingsLatencyMSAverage) : dash, color: Theme.mLatency, spark: spark { $0.embeddingsLatencyMSAverage }),
+            MetricTile(title: L("Embedding errors"), value: count(s.embeddingsErrors), color: Theme.mErrors, spark: spark { Double($0.embeddingsErrors) }),
+            MetricTile(title: L("Qdrant reads"), value: count(s.qdrantReads), color: Theme.mReads, spark: spark { Double($0.qdrantReads) }),
+            MetricTile(title: L("Qdrant writes"), value: count(s.qdrantWrites), color: Theme.mWrites, spark: spark { Double($0.qdrantWrites) }),
+            MetricTile(title: L("Points indexed"), value: contentIndex.hasLoaded ? points.formatted() : dash, color: Theme.accent, spark: spark { Double($0.embeddingsVectors) }),
+            MetricTile(title: L("Memory"), value: sysMetrics.memSeries.isEmpty ? dash : String(format: "%.2f GB", sysMetrics.lastMemGB), color: Theme.mReads, spark: spark(sysMetrics.memSeries)),
+            MetricTile(title: L("CPU"), value: sysMetrics.hasCPUReading ? String(format: "%.0f %%", sysMetrics.lastCPU) : dash, color: Theme.mErrors, spark: spark(sysMetrics.cpuSeries)),
+            MetricTile(title: L("Temperature"), value: sysMetrics.lastTempC.map { String(format: "%.1f °C", $0) } ?? dash, color: Theme.mTemp, spark: spark(sysMetrics.tempSeries)),
         ]
     }
 
@@ -318,10 +318,10 @@ struct MonitoringView: View {
 
     private var legend: some View {
         HStack(spacing: 16) {
-            legendSwatch("Qdrant reads", color: Theme.mReads)
-            legendSwatch("Qdrant writes", color: Theme.mWrites)
-            legendSwatch("Embedding vectors", color: Theme.mVectors)
-            legendSwatch("Embedding errors", color: Theme.mErrors, dashed: true)
+            legendSwatch(L("Qdrant reads"), color: Theme.mReads)
+            legendSwatch(L("Qdrant writes"), color: Theme.mWrites)
+            legendSwatch(L("Embedding vectors"), color: Theme.mVectors)
+            legendSwatch(L("Embedding errors"), color: Theme.mErrors, dashed: true)
         }
     }
 

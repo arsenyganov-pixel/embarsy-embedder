@@ -3,6 +3,9 @@ import Combine
 import Foundation
 
 enum AppTab: Hashable {
+    /// The three screens of Code search, shown as its tabs.
+    static let codeSearch: [AppTab] = [.content, .activity, .monitoring]
+
     case status
     case install
     case monitoring
@@ -10,11 +13,14 @@ enum AppTab: Hashable {
     case content
     case settings
     case howto
+    case memory
 }
 
 @MainActor
 final class EmbarsyStore: ObservableObject {
     @Published var config = EmbarsyConfig()
+    /// The Code search tab last open, so the menu's Code search returns to it.
+    var lastCodeSearchTab: AppTab = .content
     @Published var paths: AppPaths
     @Published var processManager: ProcessManager
     @Published var installManager = InstallManager()
@@ -27,14 +33,14 @@ final class EmbarsyStore: ObservableObject {
     /// previous Embarsy installation — i.e. an editor was configured before a reinstall.
     @Published private(set) var staleEditorKeyDetected = false
     @Published var workspaceMessage = ""
-    @Published var localSecretsMessage = "Local secrets will be prepared before Install or Start."
+    @Published var localSecretsMessage = L("Local secrets will be prepared before Install or Start.")
     @Published var rooConnectionMessage = ""
-    @Published var rooDiagnosticsMessage = "Watcher/Qdrant diagnostics have not been run yet."
+    @Published var rooDiagnosticsMessage = L("Watcher/Qdrant diagnostics have not been run yet.")
     @Published var isRefreshingRooDiagnostics = false
     @Published var localSecretsNeedsRemediation = false
     @Published var securityPreflight = SecurityPreflight.unknown
     @Published var buildInfoSummary = EmbarsyBuildInfo.summary
-    @Published var debugLogMessage = "Debug log is ready."
+    @Published var debugLogMessage = L("Debug log is ready.")
     @Published var selectedTab: AppTab = .status
     @Published var isClearingRooIndex = false
     /// True when the RUNNING API process reports an older version than the API bundled
@@ -54,6 +60,18 @@ final class EmbarsyStore: ObservableObject {
     /// Owned by the store, not the Connections view: a first index can run for half an hour,
     /// and it must survive the user switching tabs while it does.
     let indexing = IndexingService()
+
+    /// What each agent can see of the user's skills and instructions. Store-owned so the
+    /// last scan is still there when the user comes back to the tab.
+    let memory = MemoryService()
+
+    /// The optional local language model. It lives in the same Ollama as the embeddings and
+    /// leaves memory on its own after a few idle minutes.
+    let localModel = LocalModelService(baseURL: EmbarsyConfig().ollamaBaseURL, embeddingModel: EmbarsyConfig().ollamaModel)
+
+    /// A new embedding idle time reaches Ollama with the API's next start; set while that
+    /// restart waits for indexing to finish.
+    private var embeddingRestartPending = false
 
     /// Whether Claude Code / Codex are registered with this copy of Embarsy. Read from their
     /// own config files, so it reflects reality even if the user edited those by hand.
@@ -117,6 +135,49 @@ final class EmbarsyStore: ObservableObject {
             debugLog.append(warning, category: "build.warning")
         }
         startMetricsSampling()
+        wireMemory()
+    }
+
+    /// Memory lives in its own service; these closures are how it reaches the parts of the
+    /// app it depends on — agents' MCP connections and the Embarsy API for similar-note search.
+    private func wireMemory() {
+        memory.toolsConnected = { [weak self] agent in
+            self?.editorStates[agent.editorAgent]?.isConnected ?? false
+        }
+        memory.connectTools = { [weak self] agent in
+            guard let self, !(self.editorStates[agent.editorAgent]?.isConnected ?? false) else { return }
+            self.connectEditor(agent.editorAgent)
+        }
+        memory.localModel = localModel
+        memory.reindex = { [weak self] in
+            Task { await self?.indexMemory() }
+        }
+        // Once at launch, after the stack has had time to come up: catches edits made while
+        // Embarsy wasn't running. Unchanged notes cost nothing.
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 30_000_000_000)
+            await self?.indexMemory()
+        }
+        // Health is checked in the background too, so the Memory icon can turn orange while
+        // its screen is closed: at launch, then every 10 minutes — agents change their skill
+        // folders without telling Embarsy. A scan only reads, and takes a couple of seconds.
+        Task { [weak self] in
+            while !Task.isCancelled {
+                await self?.memory.rescan()
+                try? await Task.sleep(nanoseconds: 600_000_000_000)
+            }
+        }
+        memory.searchConfig = { [weak self] in
+            guard let self, !self.config.embarsyAPIKey.isEmpty else { return nil }
+            return MemorySearchConfig(
+                embeddingsURL: self.config.apiBaseURL.appendingPathComponent("v1"),
+                apiKey: self.config.embarsyAPIKey,
+                qdrantURL: self.config.qdrantProxyBaseURL,
+                qdrantKey: self.config.qdrantAPIKey,
+                model: self.config.ollamaModel
+            )
+        }
+        refreshEditorConnections()
     }
 
     /// Continuously sample Memory / CPU / temperature for the app's lifetime so the Monitoring
@@ -181,12 +242,12 @@ final class EmbarsyStore: ObservableObject {
     /// more the status poll avoids publishing unchanged state, the longer it sat there.
     /// Recomputed on the sampling tick but assigned only when the rendered MINUTE changes,
     /// so it costs at most one re-render per minute instead of one every two seconds.
-    @Published private(set) var uptimeText = "0m"
+    @Published private(set) var uptimeText = L("0m")
 
     private func refreshUptimeText() {
         let elapsed = max(0, Int(Date().timeIntervalSince(launchedAt)))
         let hours = elapsed / 3600, minutes = (elapsed % 3600) / 60
-        let text = hours > 0 ? "\(hours)h \(minutes)m" : "\(minutes)m"
+        let text = hours > 0 ? L("\(hours)h \(minutes)m") : L("\(minutes)m")
         if text != uptimeText { uptimeText = text }
     }
 
@@ -207,15 +268,15 @@ final class EmbarsyStore: ObservableObject {
 
     func serviceMessage(for service: ManagedService) -> String {
         guard installManager.isInstalled || installManager.isInstalling else {
-            return "Components are not installed. Run Install first."
+            return L("Components are not installed. Run Install first.")
         }
-        return processManager.messages[service, default: "Not checked yet."]
+        return processManager.messages[service, default: L("Not checked yet.")]
     }
 
     func refreshServiceStatuses() async {
         refreshInstalledState()
         guard installManager.isInstalled || installManager.isInstalling else {
-            processManager.markAllStopped(message: "Components are not installed. Run Install first.")
+            processManager.markAllStopped(message: L("Components are not installed. Run Install first."))
             return
         }
         await processManager.refreshAll()
@@ -238,7 +299,7 @@ final class EmbarsyStore: ObservableObject {
             editorConnectionError = nil
             debugLog.append("Connected \(agent.label) to the bundled bridge", category: "connections")
         } catch {
-            editorConnectionError = "Couldn't connect \(agent.label). \(error.localizedDescription)"
+            editorConnectionError = L("Couldn't connect \(agent.label). \(error.localizedDescription)")
         }
         refreshEditorConnections()
     }
@@ -249,12 +310,57 @@ final class EmbarsyStore: ObservableObject {
             editorConnectionError = nil
             debugLog.append("Disconnected \(agent.label)", category: "connections")
         } catch {
-            editorConnectionError = "Couldn't disconnect \(agent.label). \(error.localizedDescription)"
+            editorConnectionError = L("Couldn't disconnect \(agent.label). \(error.localizedDescription)")
         }
         refreshEditorConnections()
     }
 
     /// Index (or refresh) a folder, then reload Content so the new numbers show at once.
+    private var memoryIndexRequested = false
+    private var memoryIndexRunning = false
+
+    /// Re-indexes the memory base in the background. Requests while a run is going are
+    /// folded into one more run after it; a project being indexed is waited for, not raced.
+    func indexMemory() async {
+        guard let vault = memory.vault else { return }
+        memoryIndexRequested = true
+        guard !memoryIndexRunning else { return }
+        memoryIndexRunning = true
+        defer { memoryIndexRunning = false }
+        while memoryIndexRequested {
+            memoryIndexRequested = false
+            var waited = 0
+            while indexing.isBusy && waited < 600 {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                waited += 2
+            }
+            guard !config.embarsyAPIKey.isEmpty else { return }
+            if await indexing.indexMemory(vault: vault.root, paths: paths, config: config) {
+                await contentIndex.refresh(config: config, maxAge: 0)
+            }
+        }
+    }
+
+    /// The API sends the idle time with every embedding request, and reads it only at start —
+    /// so it restarts, but never under a running index (that would fail it half-way).
+    func setEmbeddingIdle(minutes: Int) {
+        UserDefaults.standard.set(minutes, forKey: EmbarsyConfig.embeddingIdleKey)
+        config.ollamaKeepAlive = "\(minutes)m"
+        processManager.updateConfig(config)
+        guard !embeddingRestartPending else { return }
+        embeddingRestartPending = true
+        Task { [weak self] in
+            guard let self else { return }
+            while self.indexing.isBusy || self.memoryIndexRunning {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+            }
+            self.embeddingRestartPending = false
+            // A stopped API picks the new value up when it starts.
+            guard self.processManager.statuses[.api] == .running else { return }
+            await self.processManager.restart(.api, reason: L("Embedding model idle time is now \(self.config.ollamaKeepAlive)"))
+        }
+    }
+
     func indexFolder(_ folder: URL, collection: String) async {
         let ok = await indexing.index(folder: folder, collection: collection, paths: paths, config: config)
         if ok { await contentIndex.refresh(config: config, maxAge: 0) }
@@ -349,20 +455,20 @@ final class EmbarsyStore: ObservableObject {
         isUpdatingAPI = true
         defer { isUpdatingAPI = false }
 
-        workspaceMessage = "Updating Embarsy API to \(EmbarsyConfig.bundledAPIVersion)..."
+        workspaceMessage = L("Updating Embarsy API to \(EmbarsyConfig.bundledAPIVersion)...")
         debugLog.append("API update requested from Status screen", category: "store")
         guard prepareLocalSecretsForUse() else { return }
-        await processManager.restart(.api, reason: "Update to bundled API \(EmbarsyConfig.bundledAPIVersion)")
+        await processManager.restart(.api, reason: L("Update to bundled API \(EmbarsyConfig.bundledAPIVersion)"))
         await checkAPIVersion()
         workspaceMessage = processManager.statuses[.api] == .running
-            ? "Embarsy API updated to \(EmbarsyConfig.bundledAPIVersion). Qdrant and Ollama were not touched."
-            : "Embarsy API update failed: \(processManager.messages[.api] ?? "no details")"
+            ? L("Embarsy API updated to \(EmbarsyConfig.bundledAPIVersion). Qdrant and Ollama were not touched.")
+            : L("Embarsy API update failed: \(processManager.messages[.api] ?? L("no details"))")
         debugLog.append(workspaceMessage, category: "store")
     }
 
     func startStackIfNeededOnLaunch() async {
         guard preferences.startStackOnLaunch else { return }
-        guard ensureInstalledBeforeStart(source: "Start stack on launch") else { return }
+        guard ensureInstalledBeforeStart(source: L("Start stack on launch")) else { return }
         debugLog.append("Start stack on launch requested", category: "store")
         guard prepareLocalSecretsForUse() else { return }
         await processManager.startAll()
@@ -370,13 +476,13 @@ final class EmbarsyStore: ObservableObject {
     }
 
     func startAll() async {
-        workspaceMessage = "Starting Embarsy stack..."
+        workspaceMessage = L("Starting Embarsy stack...")
         debugLog.append("Start All requested", category: "store")
-        guard ensureInstalledBeforeStart(source: "Start All") else { return }
+        guard ensureInstalledBeforeStart(source: L("Start All")) else { return }
         guard prepareLocalSecretsForUse() else { return }
-        processManager.forceCleanStop(message: "Preparing clean start...")
+        processManager.forceCleanStop(message: L("Preparing clean start..."))
         await processManager.startAll()
-        workspaceMessage = "Start All finished with status: \(aggregateStatus.title)."
+        workspaceMessage = L("Start All finished with status: \(aggregateStatus.title).")
         debugLog.append(workspaceMessage, category: "store")
         reconcileStatusesAfterStart()
     }
@@ -398,13 +504,13 @@ final class EmbarsyStore: ObservableObject {
             guard let self, !Task.isCancelled else { return }
             await self.checkAPIVersion()
             guard self.processManager.allServicesRunning else { return }
-            self.workspaceMessage = "Start All finished with status: \(self.aggregateStatus.title)."
+            self.workspaceMessage = L("Start All finished with status: \(self.aggregateStatus.title).")
             self.debugLog.append("Status reconciled after start: \(self.aggregateStatus.title)", category: "store")
         }
     }
 
     func install() async {
-        workspaceMessage = "Install requested..."
+        workspaceMessage = L("Install requested...")
         debugLog.append("Install requested", category: "store")
         guard prepareLocalSecretsForUse() else { return }
         await installManager.installOnly(
@@ -417,7 +523,7 @@ final class EmbarsyStore: ObservableObject {
         if installManager.isInstalled && !installManager.isInstalling {
             selectedTab = .status
         }
-        workspaceMessage = "Install finished: \(installManager.message)"
+        workspaceMessage = L("Install finished: \(installManager.message)")
         debugLog.append(workspaceMessage, category: "store")
         debugLog.append(
             "Install UI state: isInstalled=\(installManager.isInstalled), currentStep=\(installManager.currentStep.rawValue), selectedTab=\(selectedTab)",
@@ -441,11 +547,11 @@ final class EmbarsyStore: ObservableObject {
                 (EmbarsySecret.embarsyAPIKey.rawValue, apiKey),
             ])
             applySecrets(qdrantKey: qdrantKey, apiKey: apiKey)
-            localSecretsMessage = "Protected local secrets were recreated."
+            localSecretsMessage = L("Protected local secrets were recreated.")
             debugLog.append(localSecretsMessage, category: "secrets")
         } catch {
             localSecretsNeedsRemediation = true
-            localSecretsMessage = "Failed to recreate local secrets: \(error.localizedDescription)"
+            localSecretsMessage = L("Failed to recreate local secrets: \(error.localizedDescription)")
             debugLog.append(localSecretsMessage, category: "secrets.error")
         }
     }
@@ -460,12 +566,12 @@ final class EmbarsyStore: ObservableObject {
             let apiReady = try localSecrets.value(for: EmbarsySecret.embarsyAPIKey.rawValue)?.isEmpty == false
             localSecretsNeedsRemediation = !(qdrantReady && apiReady)
             localSecretsMessage = qdrantReady && apiReady
-                ? "Protected local secrets are ready."
-                : "Protected local secrets are missing. Recreate local secrets or run Install."
+                ? L("Protected local secrets are ready.")
+                : L("Protected local secrets are missing. Recreate local secrets or run Install.")
             debugLog.append(localSecretsMessage, category: "secrets")
         } catch {
             localSecretsNeedsRemediation = true
-            localSecretsMessage = "Protected local secrets are unavailable: \(error.localizedDescription)"
+            localSecretsMessage = L("Protected local secrets are unavailable: \(error.localizedDescription)")
             debugLog.append(localSecretsMessage, category: "secrets.error")
         }
     }
@@ -476,7 +582,7 @@ final class EmbarsyStore: ObservableObject {
             selectedTab = .status
         }
         if !installManager.isInstalled && !installManager.isInstalling {
-            processManager.markAllStopped(message: "Components are not installed. Run Install first.")
+            processManager.markAllStopped(message: L("Components are not installed. Run Install first."))
             selectedTab = .install
         }
     }
@@ -520,17 +626,17 @@ final class EmbarsyStore: ObservableObject {
             }
             let (data, response) = try await URLSession.shared.data(for: request)
             if let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) {
-                workspaceMessage = "Deleted collection \(trimmed)."
+                workspaceMessage = L("Deleted collection \(trimmed).")
                 debugLog.append("Deleted Qdrant collection \(trimmed)", category: "content")
                 await contentIndex.refresh(config: config, maxAge: 0)
             } else {
                 let code = (response as? HTTPURLResponse)?.statusCode ?? 0
                 let body = String(data: data, encoding: .utf8) ?? ""
-                workspaceMessage = "Failed to delete \(trimmed): HTTP \(code). \(body)"
+                workspaceMessage = L("Failed to delete \(trimmed): HTTP \(code). \(body)")
                 debugLog.append(workspaceMessage, category: "content.error")
             }
         } catch {
-            workspaceMessage = "Failed to delete \(trimmed): \(error.localizedDescription). Start Embarsy stack and retry."
+            workspaceMessage = L("Failed to delete \(trimmed): \(error.localizedDescription). Start Embarsy stack and retry.")
             debugLog.append(workspaceMessage, category: "content.error")
         }
     }
@@ -550,14 +656,14 @@ final class EmbarsyStore: ObservableObject {
         config.qdrantAPIKey = ""
         config.embarsyAPIKey = ""
         processManager.updateConfig(config)
-        processManager.markAllStopped(message: "Components removed. Install required.")
+        processManager.markAllStopped(message: L("Components removed. Install required."))
         installManager.refreshInstalledState(paths: paths, processManager: processManager)
-        processManager.markAllStopped(message: "Components removed. Install required.")
+        processManager.markAllStopped(message: L("Components removed. Install required."))
         selectedTab = .install
-        localSecretsMessage = "Local secrets were removed. They will be recreated during install."
-        rooConnectionMessage = "Watcher still has the old Qdrant API Key after reset. After the next install, copy the fresh API Key and Qdrant API Key from this screen into Watcher before starting indexing."
-        rooDiagnosticsMessage = "Watcher/Qdrant diagnostics skipped: components are removed. Run Install first."
-        workspaceMessage = "Embarsy components and protected local secrets were removed."
+        localSecretsMessage = L("Local secrets were removed. They will be recreated during install.")
+        rooConnectionMessage = L("Watcher still has the old Qdrant API Key after reset. After the next install, copy the fresh API Key and Qdrant API Key from this screen into Watcher before starting indexing.")
+        rooDiagnosticsMessage = L("Watcher/Qdrant diagnostics skipped: components are removed. Run Install first.")
+        workspaceMessage = L("Embarsy components and protected local secrets were removed.")
         debugLog.append(workspaceMessage, category: "store")
         debugLog.append(
             "Reset UI state: isInstalled=\(installManager.isInstalled), isInstalling=\(installManager.isInstalling), selectedTab=\(selectedTab), aggregateStatus=\(aggregateStatus.rawValue)",
@@ -571,12 +677,12 @@ final class EmbarsyStore: ObservableObject {
         isClearingRooIndex = true
         defer { isClearingRooIndex = false }
 
-            workspaceMessage = "Clearing Watcher index..."
+            workspaceMessage = L("Clearing Watcher index...")
             debugLog.append("Clear Watcher Index requested", category: "roo-index")
 
-        guard ensureInstalledBeforeStart(source: "Clear Watcher Index") else { return }
+        guard ensureInstalledBeforeStart(source: L("Clear Watcher Index")) else { return }
         guard !preferences.defaultProjectPath.isEmpty else {
-            workspaceMessage = "Clear Watcher Index skipped: select a default project first."
+            workspaceMessage = L("Clear Watcher Index skipped: select a default project first.")
             debugLog.append(workspaceMessage, category: "roo-index")
             return
         }
@@ -588,7 +694,7 @@ final class EmbarsyStore: ObservableObject {
             await processManager.start(.qdrant)
         }
         guard processManager.statuses[.qdrant] == .running else {
-            workspaceMessage = "Clear Watcher Index failed: Qdrant is not running. Start Embarsy stack and try again."
+            workspaceMessage = L("Clear Watcher Index failed: Qdrant is not running. Start Embarsy stack and try again.")
             debugLog.append(workspaceMessage, category: "roo-index.error")
             return
         }
@@ -605,7 +711,7 @@ final class EmbarsyStore: ObservableObject {
                 category: "roo-index"
             )
         } catch {
-            workspaceMessage = "Clear Watcher Index failed: \(error.localizedDescription)"
+            workspaceMessage = L("Clear Watcher Index failed: \(error.localizedDescription)")
             debugLog.append(workspaceMessage, category: "roo-index.error")
         }
     }
@@ -622,13 +728,13 @@ final class EmbarsyStore: ObservableObject {
                 bytes: 24
             )
             applySecrets(qdrantKey: qdrantKey, apiKey: apiKey)
-            localSecretsMessage = "Protected local secrets are ready."
-            rooConnectionMessage = "Copy the current API Key and Qdrant API Key into Watcher. Old keys from before reinstall will be rejected by Qdrant."
+            localSecretsMessage = L("Protected local secrets are ready.")
+            rooConnectionMessage = L("Copy the current API Key and Qdrant API Key into Watcher. Old keys from before reinstall will be rejected by Qdrant.")
             debugLog.append(localSecretsMessage, category: "secrets")
             return true
         } catch {
             localSecretsNeedsRemediation = true
-            localSecretsMessage = "Protected local secrets are unavailable: \(error.localizedDescription)"
+            localSecretsMessage = L("Protected local secrets are unavailable: \(error.localizedDescription)")
             workspaceMessage = localSecretsMessage
             debugLog.append(localSecretsMessage, category: "secrets.error")
             return false
@@ -646,12 +752,12 @@ final class EmbarsyStore: ObservableObject {
         defer { isRefreshingRooDiagnostics = false }
 
         guard installManager.isInstalled || installManager.isInstalling else {
-            rooDiagnosticsMessage = "Watcher/Qdrant diagnostics skipped: components are not installed."
+            rooDiagnosticsMessage = L("Watcher/Qdrant diagnostics skipped: components are not installed.")
             debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics")
             return
         }
         guard !config.qdrantAPIKey.isEmpty else {
-            rooDiagnosticsMessage = "Qdrant API Key is missing. Run Install to recreate local secrets."
+            rooDiagnosticsMessage = L("Qdrant API Key is missing. Run Install to recreate local secrets.")
             debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics.error")
             return
         }
@@ -661,22 +767,22 @@ final class EmbarsyStore: ObservableObject {
             let currentKeyStatus = try await qdrantCollectionsStatus(apiKey: config.qdrantAPIKey)
 
             guard let http = currentKeyStatus.response as? HTTPURLResponse else {
-                rooDiagnosticsMessage = "Qdrant diagnostics failed: no HTTP response."
+                rooDiagnosticsMessage = L("Qdrant diagnostics failed: no HTTP response.")
                 debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics.error")
                 return
             }
 
             if http.statusCode == 200 {
-                let authMode = noKeyStatus.httpStatus.map { "No-key probe HTTP \($0)" } ?? "No-key probe unavailable"
-                rooDiagnosticsMessage = "Qdrant accepts the current Qdrant API Key (HTTP 200). \(authMode). If Watcher still shows Unauthorized, Watcher settings contain a stale key: copy the current Qdrant API Key from Embarsy into Watcher, then clear/restart Watcher indexing."
+                let authMode = noKeyStatus.httpStatus.map { L("No-key probe HTTP \($0)") } ?? L("No-key probe unavailable")
+                rooDiagnosticsMessage = L("Qdrant accepts the current Qdrant API Key (HTTP 200). \(authMode). If Watcher still shows Unauthorized, Watcher settings contain a stale key: copy the current Qdrant API Key from Embarsy into Watcher, then clear/restart Watcher indexing.")
                 debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics")
             } else {
                 let body = String(data: currentKeyStatus.data, encoding: .utf8) ?? "<non-UTF8 response>"
-                rooDiagnosticsMessage = "Qdrant rejects the current key with HTTP \(http.statusCode): \(body). Restart or reinstall the stack, then copy the fresh Qdrant API Key into Watcher."
+                rooDiagnosticsMessage = L("Qdrant rejects the current key with HTTP \(http.statusCode): \(body). Restart or reinstall the stack, then copy the fresh Qdrant API Key into Watcher.")
                 debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics.error")
             }
         } catch {
-            rooDiagnosticsMessage = "Qdrant diagnostics failed: \(error.localizedDescription). Start Embarsy stack and retry."
+            rooDiagnosticsMessage = L("Qdrant diagnostics failed: \(error.localizedDescription). Start Embarsy stack and retry.")
             debugLog.append(rooDiagnosticsMessage, category: "roo-diagnostics.error")
         }
     }
@@ -707,10 +813,10 @@ final class EmbarsyStore: ObservableObject {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try debugLog.export(to: url)
-            debugLogMessage = "Debug log saved to \(url.path)."
+            debugLogMessage = L("Debug log saved to \(url.path).")
             debugLog.append(debugLogMessage, category: "debug")
         } catch {
-            debugLogMessage = "Failed to save debug log: \(error.localizedDescription)"
+            debugLogMessage = L("Failed to save debug log: \(error.localizedDescription)")
             debugLog.append(debugLogMessage, category: "debug.error")
         }
     }
@@ -724,8 +830,8 @@ final class EmbarsyStore: ObservableObject {
     private func ensureInstalledBeforeStart(source: String) -> Bool {
         installManager.refreshInstalledState(paths: paths, processManager: processManager)
         guard installManager.isInstalled else {
-            workspaceMessage = "\(source) skipped: install Embarsy local stack first."
-            installManager.message = "Install Embarsy local stack before starting services."
+            workspaceMessage = L("\(source) skipped: install Embarsy local stack first.")
+            installManager.message = L("Install Embarsy local stack before starting services.")
             selectedTab = .install
             debugLog.append(workspaceMessage, category: "store")
             return false
@@ -738,7 +844,7 @@ final class EmbarsyStore: ObservableObject {
             try loginItemService.setEnabled(enabled)
             preferences.launchAtLogin = loginItemService.isEnabled
         } catch {
-            workspaceMessage = "Failed to update Login Item: \(error.localizedDescription)"
+            workspaceMessage = L("Failed to update Login Item: \(error.localizedDescription)")
             loginItemService.refresh()
             preferences.launchAtLogin = loginItemService.isEnabled
         }
@@ -753,7 +859,7 @@ final class EmbarsyStore: ObservableObject {
     func openDefaultProjectInVSCode() {
         do {
             try workspaceService.openInVSCode(path: preferences.defaultProjectPath)
-            workspaceMessage = "Opened project in VSCode."
+            workspaceMessage = L("Opened project in VSCode.")
         } catch {
             workspaceMessage = error.localizedDescription
         }

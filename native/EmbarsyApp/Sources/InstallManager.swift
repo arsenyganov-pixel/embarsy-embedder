@@ -3,8 +3,8 @@ import Foundation
 @MainActor
 final class InstallManager: ObservableObject {
     @Published var currentStep: InstallStep = .idle
-    @Published var message = "Ready to install Embarsy local stack."
-    @Published var detailMessage = "Install progress details will appear here."
+    @Published var message = L("Ready to install Embarsy local stack.")
+    @Published var detailMessage = L("Install progress details will appear here.")
     @Published private(set) var isModelDownloadActive = false
     @Published private(set) var modelDownloadActivity = ""
     @Published private(set) var modelDownloadCommand = ""
@@ -39,7 +39,7 @@ final class InstallManager: ObservableObject {
         isInstalled = markerExists && binariesReady && layoutReady
         if isInstalled {
             currentStep = .completed
-            message = "Embarsy local stack is installed."
+            message = L("Embarsy local stack is installed.")
         }
     }
 
@@ -50,81 +50,81 @@ final class InstallManager: ObservableObject {
         }
         refreshInstalledState(paths: paths, processManager: processManager)
         guard !isInstalled else {
-            message = "Embarsy local stack is already installed."
+            message = L("Embarsy local stack is already installed.")
             debugLog?.append(message, category: "install")
             return
         }
         isInstalling = true
         startInstallActivity(
-            "Install polling started. Waiting for setup steps...",
-            command: "Embarsy install workflow"
+            L("Install polling started. Waiting for setup steps..."),
+            command: L("Embarsy install workflow")
         )
         defer {
             stopInstallActivity(finalMessage: "")
             isInstalling = false
         }
-        detailMessage = "Preparing clean install..."
+        detailMessage = L("Preparing clean install...")
         debugLog?.append("Install flow started", category: "install")
 
         do {
-            try await setStep(.prepareDirectories, "Creating App Support layout...")
-            processManager.forceCleanStop(message: "Preparing clean install...")
+            try await setStep(.prepareDirectories, L("Creating App Support layout..."))
+            processManager.forceCleanStop(message: L("Preparing clean install..."))
             try paths.createDirectories()
 
-            try await setStep(.secrets, "Local secrets are ready.")
+            try await setStep(.secrets, L("Local secrets are ready."))
 
-            try await setStep(.validateBinaries, "Checking bundled binaries...")
+            try await setStep(.validateBinaries, L("Checking bundled binaries..."))
             binaryChecks = processManager.validateBinaries()
             let missing = binaryChecks.filter { !$0.isExecutable }
             guard missing.isEmpty else {
                 throw InstallError.missingBinaries(missing.map { "\($0.service.title): \($0.path)" })
             }
 
-            try await setStep(.startQdrant, "Temporarily starting Qdrant for setup...")
+            try await setStep(.startQdrant, L("Temporarily starting Qdrant for setup..."))
             await processManager.start(.qdrant)
             guard processManager.statuses[.qdrant] == .running else { throw InstallError.serviceStartFailed(.qdrant) }
             do {
                 try await validateQdrantAuth(config: config)
             } catch {
                 debugLog?.append("Qdrant rejected current key after start. Restarting Qdrant with freshly written config. Details: \(error.localizedDescription)", category: "install.qdrant")
-                await processManager.restart(.qdrant, reason: "Qdrant auth probe rejected current API key")
+                await processManager.restart(.qdrant, reason: L("Qdrant auth probe rejected current API key"))
                 guard processManager.statuses[.qdrant] == .running else { throw InstallError.serviceStartFailed(.qdrant) }
                 try await validateQdrantAuth(config: config)
             }
 
-            try await setStep(.startOllama, "Temporarily starting Ollama for model setup...")
+            try await setStep(.startOllama, L("Temporarily starting Ollama for model setup..."))
             await processManager.start(.ollama)
             guard processManager.statuses[.ollama] == .running else { throw InstallError.serviceStartFailed(.ollama) }
 
-            try await setStep(.prepareModel, "Downloading/preparing \(config.ollamaModel). This can take a while...")
+            try await setStep(.prepareModel, L("Downloading/preparing \(config.ollamaModel). This can take a while..."))
             try await prepareModel(paths: paths, config: config)
 
-            try await setStep(.startAPI, "Starting Embarsy API with current local secrets...")
+            try await setStep(.startAPI, L("Starting Embarsy API with current local secrets..."))
             await processManager.start(.api)
             if processManager.statuses[.api] != .running {
                 // One in-place retry: the first post-install start of the PyInstaller onefile
                 // API is its slowest (extraction + per-dylib signature validation); a second
                 // attempt starts from warm caches and usually clears a marginal timeout.
                 debugLog?.append("Embarsy API failed its first start during install (\(processManager.messages[.api] ?? "")). Retrying once...", category: "install")
-                updateInstallActivity("Embarsy API needs a second start attempt. Retrying...")
-                await processManager.restart(.api, reason: "Install retry after first API start failed")
+                updateInstallActivity(L("Embarsy API needs a second start attempt. Retrying..."))
+                await processManager.restart(.api, reason: L("Install retry after first API start failed"))
             }
             guard processManager.statuses[.api] == .running else {
-                throw InstallError.apiStartFailed(processManager.messages[.api] ?? "No details available.")
+                throw InstallError.apiStartFailed(processManager.messages[.api] ?? L("No details available."))
             }
 
-            try await setStep(.verifyHealth, "Verifying Watcher-compatible authentication...")
+            try await setStep(.verifyHealth, L("Verifying Watcher-compatible authentication..."))
             try await validateRooAuth(config: config)
 
-            try await setStep(.verifyHealth, "Writing install marker...")
+            try await setStep(.verifyHealth, L("Writing install marker..."))
             try writeInstallMarker(paths: paths)
-            try await setStep(.completed, "Embarsy is installed. Use Start All to run services.")
-            detailMessage = "Install completed. Watcher-compatible auth probe passed with the current API key."
+            try await setStep(.completed, L("Embarsy is installed. Use Start All to run services."))
+            detailMessage = L("Install completed. Watcher-compatible auth probe passed with the current API key.")
             isInstalled = true
             debugLog?.append("Install flow completed successfully", category: "install")
         } catch {
             message = error.localizedDescription
-            detailMessage = "Install failed. See the recommendation above and open logs for details."
+            detailMessage = L("Install failed. See the recommendation above and open logs for details.")
             currentStep = .idle
             isInstalled = false
             debugLog?.append("Install flow failed: \(error.localizedDescription)", category: "install.error")
@@ -142,7 +142,7 @@ final class InstallManager: ObservableObject {
         } catch CocoaError.fileNoSuchFile {
             debugLog?.append("App Support already clean at \(paths.appSupport.path)", category: "install")
         } catch {
-            message = "Hard Reset failed: \(error.localizedDescription)"
+            message = L("Hard Reset failed: \(error.localizedDescription)")
             debugLog?.append(message, category: "install.error")
             return
         }
@@ -150,9 +150,9 @@ final class InstallManager: ObservableObject {
         currentStep = .idle
         binaryChecks = []
         isInstalled = false
-        message = "Hard Reset completed. App Support and local secrets are clean."
-        detailMessage = "Components removed. Run Install to recreate the local stack."
-        processManager.markAllStopped(message: "Components removed. Install required.")
+        message = L("Hard Reset completed. App Support and local secrets are clean.")
+        detailMessage = L("Components removed. Run Install to recreate the local stack.")
+        processManager.markAllStopped(message: L("Components removed. Install required."))
         debugLog?.append(message, category: "install")
     }
 
@@ -195,15 +195,15 @@ final class InstallManager: ObservableObject {
 
         debugLog?.append("Preparing model \(config.ollamaModel) from \(config.ollamaSourceModel)", category: "install")
         startInstallActivity(
-            "Checking local Qwen model files before download...",
+            L("Checking local Qwen model files before download..."),
             command: "ollama pull \(config.ollamaSourceModel)"
         )
 
         if modelManifestExists(paths: paths, config: config) {
-            updateInstallActivity("Source model is already downloaded. Preparing local alias \(config.ollamaModel)...")
+            updateInstallActivity(L("Source model is already downloaded. Preparing local alias \(config.ollamaModel)..."))
             debugLog?.append("Source model manifest already exists. Skipping ollama pull for \(config.ollamaSourceModel).", category: "install")
         } else {
-            updateInstallActivity("Starting Qwen model download. Large layer can take several minutes...")
+            updateInstallActivity(L("Starting Qwen model download. Large layer can take several minutes..."))
             debugLog?.append("Running ollama pull \(config.ollamaSourceModel)", category: "install")
             let pull = try await runOllamaCommand(
                 name: "ollama pull",
@@ -220,11 +220,11 @@ final class InstallManager: ObservableObject {
             )
             debugLog?.append("ollama pull finished with exit code \(pull.exitCode). Output tail: \(Self.outputTail(pull.output))", category: "install")
             guard pull.exitCode == 0 else { throw InstallError.commandFailed("ollama pull", pull.output) }
-            updateInstallActivity("Qwen model download completed. Creating local alias \(config.ollamaModel)...")
+            updateInstallActivity(L("Qwen model download completed. Creating local alias \(config.ollamaModel)..."))
         }
 
         modelDownloadCommand = "ollama cp \(config.ollamaSourceModel) \(config.ollamaModel)"
-        detailMessage = "Creating local model alias \(config.ollamaModel)..."
+        detailMessage = L("Creating local model alias \(config.ollamaModel)...")
         debugLog?.append("Running ollama cp \(config.ollamaSourceModel) \(config.ollamaModel)", category: "install")
         let pull = try await runOllamaCommand(
             name: "ollama cp",
@@ -238,7 +238,7 @@ final class InstallManager: ObservableObject {
         guard pull.exitCode == 0 || pull.output.localizedCaseInsensitiveContains("already") else {
             throw InstallError.commandFailed("ollama cp", pull.output)
         }
-        updateInstallActivity("Model \(config.ollamaModel) is ready.")
+        updateInstallActivity(L("Model \(config.ollamaModel) is ready."))
     }
 
     private func runOllamaCommand(
@@ -279,14 +279,14 @@ final class InstallManager: ObservableObject {
 
         let (_, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw InstallError.rooAuthProbeFailed("No HTTP response from Embarsy API.")
+            throw InstallError.rooAuthProbeFailed(L("No HTTP response from Embarsy API."))
         }
 
         guard httpResponse.statusCode == 200 else {
-            throw InstallError.rooAuthProbeFailed("Embarsy API returned HTTP \(httpResponse.statusCode).")
+            throw InstallError.rooAuthProbeFailed(L("Embarsy API returned HTTP \(httpResponse.statusCode)."))
         }
 
-        detailMessage = "Watcher-compatible auth probe passed. Current API key is accepted."
+        detailMessage = L("Watcher-compatible auth probe passed. Current API key is accepted.")
         debugLog?.append("Watcher-compatible auth probe passed", category: "install")
     }
 
@@ -301,12 +301,12 @@ final class InstallManager: ObservableObject {
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw InstallError.qdrantAuthProbeFailed("No HTTP response from Qdrant.")
+            throw InstallError.qdrantAuthProbeFailed(L("No HTTP response from Qdrant."))
         }
 
         guard httpResponse.statusCode == 200 else {
             let body = String(data: data, encoding: .utf8) ?? "<non-UTF8 response>"
-            throw InstallError.qdrantAuthProbeFailed("Qdrant returned HTTP \(httpResponse.statusCode): \(body)")
+            throw InstallError.qdrantAuthProbeFailed(L("Qdrant returned HTTP \(httpResponse.statusCode): \(body)"))
         }
 
         debugLog?.append("Qdrant auth probe passed with current API key", category: "install.qdrant")
@@ -326,7 +326,7 @@ final class InstallManager: ObservableObject {
         lastModelDownloadOutputAt = now
         isModelDownloadActive = true
         modelDownloadCommand = command
-        modelDownloadLastOutputAge = "last output just now"
+        modelDownloadLastOutputAge = L("last output just now")
         lastModelDownloadLine = initialMessage
         modelDownloadActivity = initialMessage
         detailMessage = initialMessage
@@ -346,7 +346,7 @@ final class InstallManager: ObservableObject {
     private func updateInstallActivity(_ activity: String) {
         lastModelDownloadOutputAt = Date()
         isModelDownloadActive = true
-        modelDownloadLastOutputAge = "last output just now"
+        modelDownloadLastOutputAge = L("last output just now")
         lastModelDownloadLine = activity
         let message = formattedInstallActivity(elapsed: Int(Date().timeIntervalSince(modelDownloadStartedAt ?? Date())))
         modelDownloadActivity = message
@@ -358,7 +358,7 @@ final class InstallManager: ObservableObject {
         guard isModelDownloadActive else { return }
         let elapsed = Int(Date().timeIntervalSince(modelDownloadStartedAt ?? Date()))
         let secondsSinceOutput = Int(Date().timeIntervalSince(lastModelDownloadOutputAt ?? Date()))
-        modelDownloadLastOutputAge = "last output \(Self.formatDuration(secondsSinceOutput)) ago"
+        modelDownloadLastOutputAge = L("last output \(Self.formatDuration(secondsSinceOutput)) ago")
         let message = formattedInstallActivity(elapsed: elapsed)
         modelDownloadActivity = message
         detailMessage = message
@@ -403,9 +403,9 @@ final class InstallManager: ObservableObject {
 
     private func formattedInstallActivity(elapsed: Int) -> String {
         let currentLine = lastModelDownloadLine.isEmpty
-            ? "Waiting for install progress output"
+            ? L("Waiting for install progress output")
             : lastModelDownloadLine
-        return "\(currentLine) · elapsed \(Self.formatDuration(elapsed))"
+        return L("\(currentLine) · elapsed \(Self.formatDuration(elapsed))")
     }
 
     private func modelManifestExists(paths: AppPaths, config: EmbarsyConfig) -> Bool {
@@ -458,8 +458,8 @@ final class InstallManager: ObservableObject {
     private static func formatDuration(_ seconds: Int) -> String {
         let minutes = seconds / 60
         let remainder = seconds % 60
-        if minutes == 0 { return "\(remainder)s" }
-        return "\(minutes)m \(remainder)s"
+        if minutes == 0 { return L("\(remainder)s") }
+        return L("\(minutes)m \(remainder)s")
     }
 
     private func setStep(_ step: InstallStep, _ newMessage: String) async throws {
@@ -491,21 +491,21 @@ enum InstallError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingBinaries(let binaries):
-            "Missing executable binaries:\n" + binaries.joined(separator: "\n")
+            L("Missing executable binaries:\n\(binaries.joined(separator: "\n"))")
         case .commandFailed(let command, let output):
-            "\(command) failed: \(output)\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com."
+            L("\(command) failed: \(output)\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com.")
         case .commandTimedOut(let command, let output):
-            "\(command) timed out. Output tail: \(Self.outputTail(output))\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com."
+            L("\(command) timed out. Output tail: \(Self.outputTail(output))\n\nRecommendation: check your internet connection, click Refresh, then run Install again. If it fails again, export the debug log first (Settings), then use Remove Components and Clear Secrets, retry Install, and send the debug log to arsenyganov@gmail.com.")
         case .serviceStartFailed(let service):
-            "\(service.title) failed to start during install. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
+            L("\(service.title) failed to start during install. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com.")
         case .apiStartFailed(let details):
-            "Embarsy API failed to start during install (after a retry): \(details)\n\nQdrant, Ollama and the model are installed correctly — only the API step failed. Recommendation: retry Install (it will skip the finished steps), and if it fails again, export the debug log (Settings) and send it to arsenyganov@gmail.com. Do NOT run Remove Components — that would erase the evidence and the downloaded model."
+            L("Embarsy API failed to start during install (after a retry): \(details)\n\nQdrant, Ollama and the model are installed correctly — only the API step failed. Recommendation: retry Install (it will skip the finished steps), and if it fails again, export the debug log (Settings) and send it to arsenyganov@gmail.com. Do NOT run Remove Components — that would erase the evidence and the downloaded model.")
         case .healthCheckFailed:
-            "Health check failed: not all services are running. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com."
+            L("Health check failed: not all services are running. Recommendation: click Refresh, retry Install, then open logs and send the debug log to arsenyganov@gmail.com.")
         case .rooAuthProbeFailed(let details):
-            "Watcher-compatible authentication check failed: \(details) Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh API Key and Qdrant API Key from Embarsy into Watcher settings."
+            L("Watcher-compatible authentication check failed: \(details) Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh API Key and Qdrant API Key from Embarsy into Watcher settings.")
         case .qdrantAuthProbeFailed(let details):
-            "Qdrant authentication check failed: \(details) Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh Qdrant API Key from Embarsy into Watcher settings."
+            L("Qdrant authentication check failed: \(details) Recommendation: use Remove Components and Clear Secrets, run Install again, then copy the fresh Qdrant API Key from Embarsy into Watcher settings.")
         }
     }
 

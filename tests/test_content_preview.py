@@ -99,9 +99,9 @@ def test_summary_reads_like_a_sentence_without_collection_ids():
 
 def test_summary_prefixes_resolved_workspace_name():
     paths = ["backend/main.go", "backend/api/router.go"]
-    summary = indexed_content_summary("autohub", paths, [{"file_path": p} for p in paths], 10)
+    summary = indexed_content_summary("acme", paths, [{"file_path": p} for p in paths], 10)
 
-    assert summary.startswith("autohub — looks like a Go project: 2 files")
+    assert summary.startswith("acme — looks like a Go project: 2 files")
 
 
 def test_summary_docs_only_workspace():

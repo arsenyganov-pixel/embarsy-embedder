@@ -9,9 +9,9 @@ enum ActivityTypeFilter: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .embedding: "Embedding request"
-        case .write: "Write"
-        case .read: "Read"
+        case .embedding: L("Embedding request")
+        case .write: L("Write")
+        case .read: L("Read")
         }
     }
 
@@ -33,7 +33,7 @@ struct ActivityTypeFilterState {
 
     var selectedTitle: String {
         if selectedTypes.count == ActivityTypeFilter.allCases.count {
-            return "All activity types"
+            return L("All activity types")
         }
         return ActivityTypeFilter.allCases
             .filter { selectedTypes.contains($0) }

@@ -1,0 +1,1373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>%@ timed out after %lld seconds. Output: %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$@: превышено время ожидания (%2$#@n@). Вывод: %3$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld секунда</string>
+      <key>few</key>
+      <string>%lld секунды</string>
+      <key>many</key>
+      <string>%lld секунд</string>
+      <key>other</key>
+      <string>%lld секунды</string>
+    </dict>
+  </dict>
+  <key>%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld коллекция · нажмите на строку, чтобы раскрыть превью целиком · сдвиньте ручку строки, чтобы удалить коллекцию. Обзор строится по коллекциям Qdrant и метаданным кэша Watcher.</string>
+      <key>few</key>
+      <string>%lld коллекции · нажмите на строку, чтобы раскрыть превью целиком · сдвиньте ручку строки, чтобы удалить коллекцию. Обзор строится по коллекциям Qdrant и метаданным кэша Watcher.</string>
+      <key>many</key>
+      <string>%lld коллекций · нажмите на строку, чтобы раскрыть превью целиком · сдвиньте ручку строки, чтобы удалить коллекцию. Обзор строится по коллекциям Qdrant и метаданным кэша Watcher.</string>
+      <key>other</key>
+      <string>%lld коллекции · нажмите на строку, чтобы раскрыть превью целиком · сдвиньте ручку строки, чтобы удалить коллекцию. Обзор строится по коллекциям Qdrant и метаданным кэша Watcher.</string>
+    </dict>
+  </dict>
+  <key>%lld copies</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld копия</string>
+      <key>few</key>
+      <string>%lld копии</string>
+      <key>many</key>
+      <string>%lld копий</string>
+      <key>other</key>
+      <string>%lld копии</string>
+    </dict>
+  </dict>
+  <key>%lld copies of %@ differ</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%2$@: %1$#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld копия различается</string>
+      <key>few</key>
+      <string>%lld копии различаются</string>
+      <key>many</key>
+      <string>%lld копий различаются</string>
+      <key>other</key>
+      <string>%lld копии различаются</string>
+    </dict>
+  </dict>
+  <key>%lld files</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld файл</string>
+      <key>few</key>
+      <string>%lld файла</string>
+      <key>many</key>
+      <string>%lld файлов</string>
+      <key>other</key>
+      <string>%lld файла</string>
+    </dict>
+  </dict>
+  <key>%lld files on this Mac match; Embarsy can't tell which one. The link is removed, its text stays.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>На этом Mac %#@n@ — Embarsy не может понять, какой нужен. Ссылка удалена, её текст остался.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>подходит %lld файл</string>
+      <key>few</key>
+      <string>подходят %lld файла</string>
+      <key>many</key>
+      <string>подходят %lld файлов</string>
+      <key>other</key>
+      <string>подходят %lld файла</string>
+    </dict>
+  </dict>
+  <key>%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld прогон grep превысил лимит 15 с и был остановлен — он не учтён в медианах выше.</string>
+      <key>few</key>
+      <string>%lld прогона grep превысили лимит 15 с и были остановлены — они не учтены в медианах выше.</string>
+      <key>many</key>
+      <string>%lld прогонов grep превысили лимит 15 с и были остановлены — они не учтены в медианах выше.</string>
+      <key>other</key>
+      <string>%lld прогона grep превысили лимит 15 с и были остановлены — они не учтены в медианах выше.</string>
+    </dict>
+  </dict>
+  <key>%lld knowledge notes were last verified over %lld months ago</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ больше %2$#@b@ назад</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка знаний последний раз проверялась</string>
+      <key>few</key>
+      <string>%lld заметки знаний последний раз проверялись</string>
+      <key>many</key>
+      <string>%lld заметок знаний последний раз проверялись</string>
+      <key>other</key>
+      <string>%lld заметки знаний последний раз проверялись</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld месяца</string>
+      <key>few</key>
+      <string>%lld месяцев</string>
+      <key>many</key>
+      <string>%lld месяцев</string>
+      <key>other</key>
+      <string>%lld месяцев</string>
+    </dict>
+  </dict>
+  <key>%lld leftover copies in a folder no agent reads</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ в папке, которую не читает ни один агент</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld остаток</string>
+      <key>few</key>
+      <string>%lld остатка</string>
+      <key>many</key>
+      <string>%lld остатков</string>
+      <key>other</key>
+      <string>%lld остатка</string>
+    </dict>
+  </dict>
+  <key>%lld lines</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld строка</string>
+      <key>few</key>
+      <string>%lld строки</string>
+      <key>many</key>
+      <string>%lld строк</string>
+      <key>other</key>
+      <string>%lld строки</string>
+    </dict>
+  </dict>
+  <key>%lld lines · %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ · %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld строка</string>
+      <key>few</key>
+      <string>%lld строки</string>
+      <key>many</key>
+      <string>%lld строк</string>
+      <key>other</key>
+      <string>%lld строки</string>
+    </dict>
+  </dict>
+  <key>%lld links to old copies in %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ на старые копии в %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld ссылка</string>
+      <key>few</key>
+      <string>%lld ссылки</string>
+      <key>many</key>
+      <string>%lld ссылок</string>
+      <key>other</key>
+      <string>%lld ссылки</string>
+    </dict>
+  </dict>
+  <key>%lld links with line numbers in %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ с номерами строк в %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld ссылка</string>
+      <key>few</key>
+      <string>%lld ссылки</string>
+      <key>many</key>
+      <string>%lld ссылок</string>
+      <key>other</key>
+      <string>%lld ссылки</string>
+    </dict>
+  </dict>
+  <key>%lld links with line numbers in %@ across %lld files</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ с номерами строк в %2$@, %3$#@b@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld ссылка</string>
+      <key>few</key>
+      <string>%lld ссылки</string>
+      <key>many</key>
+      <string>%lld ссылок</string>
+      <key>other</key>
+      <string>%lld ссылки</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>в %lld файле</string>
+      <key>few</key>
+      <string>в %lld файлах</string>
+      <key>many</key>
+      <string>в %lld файлах</string>
+      <key>other</key>
+      <string>в %lld файлах</string>
+    </dict>
+  </dict>
+  <key>%lld notes</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>%lld notes nothing links to</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ без входящих ссылок</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>%lld of your skills are available to other agents, but none is in %@, where %@ looks for them. Publish them for %@ in Memory → Core.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ другим агентам, но в %2$@, где их ищет %3$@, нет ни одного. Опубликуйте их для %4$@ в Память → Профиль.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld ваш скилл доступен</string>
+      <key>few</key>
+      <string>%lld ваших скилла доступны</string>
+      <key>many</key>
+      <string>%lld ваших скиллов доступны</string>
+      <key>other</key>
+      <string>%lld ваших скилла доступны</string>
+    </dict>
+  </dict>
+  <key>%lld places where notes disagree — see below.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Заметки расходятся в %#@n@ — см. ниже.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld месте</string>
+      <key>few</key>
+      <string>%lld местах</string>
+      <key>many</key>
+      <string>%lld местах</string>
+      <key>other</key>
+      <string>%lld места</string>
+    </dict>
+  </dict>
+  <key>%lld problems and %lld warnings. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ и %2$#@b@. Оранжевый считает проблемы — то, что агент делает не так прямо сейчас. Серый считал бы только предупреждения.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld проблема</string>
+      <key>few</key>
+      <string>%lld проблемы</string>
+      <key>many</key>
+      <string>%lld проблем</string>
+      <key>other</key>
+      <string>%lld проблемы</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld предупреждение</string>
+      <key>few</key>
+      <string>%lld предупреждения</string>
+      <key>many</key>
+      <string>%lld предупреждений</string>
+      <key>other</key>
+      <string>%lld предупреждения</string>
+    </dict>
+  </dict>
+  <key>%lld proposals from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@. Серый — всё в порядке: в память попадает только то, что вы примете.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld предложение от агентов ждёт проверки</string>
+      <key>few</key>
+      <string>%lld предложения от агентов ждут проверки</string>
+      <key>many</key>
+      <string>%lld предложений от агентов ждут проверки</string>
+      <key>other</key>
+      <string>%lld предложения от агентов ждут проверки</string>
+    </dict>
+  </dict>
+  <key>%lld proposals have waited in the inbox for over two weeks</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ во Входящих больше двух недель</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld предложение ждёт</string>
+      <key>few</key>
+      <string>%lld предложения ждут</string>
+      <key>many</key>
+      <string>%lld предложений ждут</string>
+      <key>other</key>
+      <string>%lld предложения ждут</string>
+    </dict>
+  </dict>
+  <key>%lld pts</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld точка</string>
+      <key>few</key>
+      <string>%lld точки</string>
+      <key>many</key>
+      <string>%lld точек</string>
+      <key>other</key>
+      <string>%lld точки</string>
+    </dict>
+  </dict>
+  <key>%lld questions · top-%lld</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ · топ-%2$lld</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld вопрос</string>
+      <key>few</key>
+      <string>%lld вопроса</string>
+      <key>many</key>
+      <string>%lld вопросов</string>
+      <key>other</key>
+      <string>%lld вопроса</string>
+    </dict>
+  </dict>
+  <key>%lld running</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld работает</string>
+      <key>few</key>
+      <string>%lld работают</string>
+      <key>many</key>
+      <string>%lld работают</string>
+      <key>other</key>
+      <string>%lld работают</string>
+    </dict>
+  </dict>
+  <key>%lld skills</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+  </dict>
+  <key>%lld skills have a problem: %lld skipped by an agent that reads their folder, %lld with copies that differ, %lld that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@: %2$#@b@, %3$#@c@, %4$#@d@. Оранжевый — хотя бы один агент не видит скилл или читает его неправильно. Серый — ничего не сломано, но некоторые скиллы не доходят ни до одного агента.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл с проблемой</string>
+      <key>few</key>
+      <string>%lld скилла с проблемой</string>
+      <key>many</key>
+      <string>%lld скиллов с проблемой</string>
+      <key>other</key>
+      <string>%lld скилла с проблемой</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld пропущен агентом, который читает его папку</string>
+      <key>few</key>
+      <string>%lld пропущены агентом, который читает их папку</string>
+      <key>many</key>
+      <string>%lld пропущены агентом, который читает их папку</string>
+      <key>other</key>
+      <string>%lld пропущены агентом, который читает их папку</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld с различающимися копиями</string>
+      <key>few</key>
+      <string>%lld с различающимися копиями</string>
+      <key>many</key>
+      <string>%lld с различающимися копиями</string>
+      <key>other</key>
+      <string>%lld с различающимися копиями</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld не видит ни один агент</string>
+      <key>few</key>
+      <string>%lld не видит ни один агент</string>
+      <key>many</key>
+      <string>%lld не видит ни один агент</string>
+      <key>other</key>
+      <string>%lld не видит ни один агент</string>
+    </dict>
+  </dict>
+  <key>%lld skills have copies that differ — choose which to keep.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>У %#@n@ копии различаются — нужно выбрать, какую оставить.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилла</string>
+      <key>few</key>
+      <string>%lld скиллов</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+  </dict>
+  <key>%lld skills · %lld notes</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ · %2$#@b@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>%lld skills · %lld notes · core</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ · %2$#@b@ · профиль</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>%lld snippets</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld фрагмент</string>
+      <key>few</key>
+      <string>%lld фрагмента</string>
+      <key>many</key>
+      <string>%lld фрагментов</string>
+      <key>other</key>
+      <string>%lld фрагмента</string>
+    </dict>
+  </dict>
+  <key>%lld warnings, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@, проблем нет. Серый считает предупреждения; он станет оранжевым и будет считать проблемы, когда агент что-то сделает не так.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld предупреждение</string>
+      <key>few</key>
+      <string>%lld предупреждения</string>
+      <key>many</key>
+      <string>%lld предупреждений</string>
+      <key>other</key>
+      <string>%lld предупреждения</string>
+    </dict>
+  </dict>
+  <key>Brought over %lld skills and %lld notes. A backup of every source is in %@. Restart your agents so they load the new memory.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Перенесено: %1$#@a@ и %2$#@b@. Резервная копия каждого источника — в %3$@. Перезапустите агентов, чтобы они загрузили новую память.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>Brought over %lld skills and %lld notes. Not brought over:
+%@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Перенесено: %1$#@a@ и %2$#@b@. Не перенесено:
+%3$@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+  </dict>
+  <key>Codex lists this skill %lld times — once per copy.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Codex показывает этот скилл %#@n@ — по разу на каждую копию.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld раз</string>
+      <key>few</key>
+      <string>%lld раза</string>
+      <key>many</key>
+      <string>%lld раз</string>
+      <key>other</key>
+      <string>%lld раза</string>
+    </dict>
+  </dict>
+  <key>Embarsy found %lld skills (%lld with copies that differ), %lld instruction files, %lld Claude Code memories and %lld journal entries. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Найдено: %1$#@a@ (%2$#@b@), %3$#@c@, %4$#@d@ и %5$#@e@. Чтобы решить, что куда отнести, нужно суждение: отдайте это своему агенту или пусть черновик сделает локальная модель.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>у %lld копии различаются</string>
+      <key>few</key>
+      <string>у %lld копии различаются</string>
+      <key>many</key>
+      <string>у %lld копии различаются</string>
+      <key>other</key>
+      <string>у %lld копии различаются</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld файл инструкций</string>
+      <key>few</key>
+      <string>%lld файла инструкций</string>
+      <key>many</key>
+      <string>%lld файлов инструкций</string>
+      <key>other</key>
+      <string>%lld файла инструкций</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld запись памяти Claude Code</string>
+      <key>few</key>
+      <string>%lld записи памяти Claude Code</string>
+      <key>many</key>
+      <string>%lld записей памяти Claude Code</string>
+      <key>other</key>
+      <string>%lld записи памяти Claude Code</string>
+    </dict>
+    <key>e</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld запись журнала</string>
+      <key>few</key>
+      <string>%lld записи журнала</string>
+      <key>many</key>
+      <string>%lld записей журнала</string>
+      <key>other</key>
+      <string>%lld записи журнала</string>
+    </dict>
+  </dict>
+  <key>Fix %lld issues</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Исправить %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld проблему</string>
+      <key>few</key>
+      <string>%lld проблемы</string>
+      <key>many</key>
+      <string>%lld проблем</string>
+      <key>other</key>
+      <string>%lld проблемы</string>
+    </dict>
+  </dict>
+  <key>Fix %lld issues…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Исправить %#@n@…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld проблему</string>
+      <key>few</key>
+      <string>%lld проблемы</string>
+      <key>many</key>
+      <string>%lld проблем</string>
+      <key>other</key>
+      <string>%lld проблемы</string>
+    </dict>
+  </dict>
+  <key>Fix %lld links</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Исправить %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld ссылку</string>
+      <key>few</key>
+      <string>%lld ссылки</string>
+      <key>many</key>
+      <string>%lld ссылок</string>
+      <key>other</key>
+      <string>%lld ссылки</string>
+    </dict>
+  </dict>
+  <key>Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.
+
+Orange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>В памяти %lld проблема: агенту сейчас чего-то не хватает или он что-то понимает неверно. См. Память → Здоровье.
+
+Оранжевый — в «Здоровье» есть проблемы. Обычный цвет — проблем нет; предупреждения и заметки, если есть, — в Память → Здоровье.</string>
+      <key>few</key>
+      <string>В памяти %lld проблемы: агенту сейчас чего-то не хватает или он что-то понимает неверно. См. Память → Здоровье.
+
+Оранжевый — в «Здоровье» есть проблемы. Обычный цвет — проблем нет; предупреждения и заметки, если есть, — в Память → Здоровье.</string>
+      <key>many</key>
+      <string>В памяти %lld проблем: агенту сейчас чего-то не хватает или он что-то понимает неверно. См. Память → Здоровье.
+
+Оранжевый — в «Здоровье» есть проблемы. Обычный цвет — проблем нет; предупреждения и заметки, если есть, — в Память → Здоровье.</string>
+      <key>other</key>
+      <string>В памяти %lld проблемы: агенту сейчас чего-то не хватает или он что-то понимает неверно. См. Память → Здоровье.
+
+Оранжевый — в «Здоровье» есть проблемы. Обычный цвет — проблем нет; предупреждения и заметки, если есть, — в Память → Здоровье.</string>
+    </dict>
+  </dict>
+  <key>Move %lld to backups</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Переместить %#@n@ в резервные копии</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld папку</string>
+      <key>few</key>
+      <string>%lld папки</string>
+      <key>many</key>
+      <string>%lld папок</string>
+      <key>other</key>
+      <string>%lld папки</string>
+    </dict>
+  </dict>
+  <key>Moves %lld folders to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Перемещает %#@n@ в резервные копии Embarsy. Ни один агент их не читает, так что для агентов ничего не изменится; «Отменить настройку» в Память → Профиль вернёт их на место.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld папку</string>
+      <key>few</key>
+      <string>%lld папки</string>
+      <key>many</key>
+      <string>%lld папок</string>
+      <key>other</key>
+      <string>%lld папки</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Claude Code only looks one level into its skills folder.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Вложенность — %#@n@. Claude Code смотрит только на один уровень вглубь своей папки скиллов.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld папка</string>
+      <key>few</key>
+      <string>%lld папки</string>
+      <key>many</key>
+      <string>%lld папок</string>
+      <key>other</key>
+      <string>%lld папки</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Codex stops at 6.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Вложенность — %#@n@. Codex дальше 6 не смотрит.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld папка</string>
+      <key>few</key>
+      <string>%lld папки</string>
+      <key>many</key>
+      <string>%lld папок</string>
+      <key>other</key>
+      <string>%lld папки</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Zoo / Roo only looks one level into its skills folder.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Вложенность — %#@n@. Zoo / Roo смотрит только на один уровень вглубь своей папки скиллов.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld папка</string>
+      <key>few</key>
+      <string>%lld папки</string>
+      <key>many</key>
+      <string>%lld папок</string>
+      <key>other</key>
+      <string>%lld папки</string>
+    </dict>
+  </dict>
+  <key>Planned by the local model: %lld skills, %lld notes, %lld rules in the core, %lld items left behind.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>План локальной модели: %1$#@a@, %2$#@b@, %3$#@c@ в профиле, %4$#@d@.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld скилл</string>
+      <key>few</key>
+      <string>%lld скилла</string>
+      <key>many</key>
+      <string>%lld скиллов</string>
+      <key>other</key>
+      <string>%lld скилла</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld заметка</string>
+      <key>few</key>
+      <string>%lld заметки</string>
+      <key>many</key>
+      <string>%lld заметок</string>
+      <key>other</key>
+      <string>%lld заметки</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld правило</string>
+      <key>few</key>
+      <string>%lld правила</string>
+      <key>many</key>
+      <string>%lld правил</string>
+      <key>other</key>
+      <string>%lld правила</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld элемент остаётся на месте</string>
+      <key>few</key>
+      <string>%lld элемента остаются на месте</string>
+      <key>many</key>
+      <string>%lld элементов остаются на месте</string>
+      <key>other</key>
+      <string>%lld элемента остаются на месте</string>
+    </dict>
+  </dict>
+  <key>Publish %lld changes…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Опубликовать %#@n@…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld изменение</string>
+      <key>few</key>
+      <string>%lld изменения</string>
+      <key>many</key>
+      <string>%lld изменений</string>
+      <key>other</key>
+      <string>%lld изменения</string>
+    </dict>
+  </dict>
+  <key>Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>Вопросы — это ключевые слова, извлечённые из случайно выбранных фрагментов этой коллекции; исходный файл — эталонный ответ, и его наличие в вашей папке проверяется. По построению каждое слово запроса буквально есть в файле-ответе — это помогает grep (его AND-конвейер всегда может дойти до файла) не меньше, чем индексу, поэтому дуэль измеряет ранжирование в шуме и время до ответа, а не понимание перефразировок. grep играет в полную силу: файлы, содержащие ВСЕ слова (классический конвейер `grep -ril | xargs`), ранжированные по плотности совпадений, в папке, которую индексирует коллекция; запасной вариант — один проход с OR. В тайминги grep входит обычное кэширование файловой системы, а модель эмбеддингов заранее прогрета, как при реальной работе. %lld случайный вопрос — это ориентир, а не научная статья: запустите ещё раз для новой выборки.</string>
+      <key>few</key>
+      <string>Вопросы — это ключевые слова, извлечённые из случайно выбранных фрагментов этой коллекции; исходный файл — эталонный ответ, и его наличие в вашей папке проверяется. По построению каждое слово запроса буквально есть в файле-ответе — это помогает grep (его AND-конвейер всегда может дойти до файла) не меньше, чем индексу, поэтому дуэль измеряет ранжирование в шуме и время до ответа, а не понимание перефразировок. grep играет в полную силу: файлы, содержащие ВСЕ слова (классический конвейер `grep -ril | xargs`), ранжированные по плотности совпадений, в папке, которую индексирует коллекция; запасной вариант — один проход с OR. В тайминги grep входит обычное кэширование файловой системы, а модель эмбеддингов заранее прогрета, как при реальной работе. %lld случайных вопроса — это ориентир, а не научная статья: запустите ещё раз для новой выборки.</string>
+      <key>many</key>
+      <string>Вопросы — это ключевые слова, извлечённые из случайно выбранных фрагментов этой коллекции; исходный файл — эталонный ответ, и его наличие в вашей папке проверяется. По построению каждое слово запроса буквально есть в файле-ответе — это помогает grep (его AND-конвейер всегда может дойти до файла) не меньше, чем индексу, поэтому дуэль измеряет ранжирование в шуме и время до ответа, а не понимание перефразировок. grep играет в полную силу: файлы, содержащие ВСЕ слова (классический конвейер `grep -ril | xargs`), ранжированные по плотности совпадений, в папке, которую индексирует коллекция; запасной вариант — один проход с OR. В тайминги grep входит обычное кэширование файловой системы, а модель эмбеддингов заранее прогрета, как при реальной работе. %lld случайных вопросов — это ориентир, а не научная статья: запустите ещё раз для новой выборки.</string>
+      <key>other</key>
+      <string>Вопросы — это ключевые слова, извлечённые из случайно выбранных фрагментов этой коллекции; исходный файл — эталонный ответ, и его наличие в вашей папке проверяется. По построению каждое слово запроса буквально есть в файле-ответе — это помогает grep (его AND-конвейер всегда может дойти до файла) не меньше, чем индексу, поэтому дуэль измеряет ранжирование в шуме и время до ответа, а не понимание перефразировок. grep играет в полную силу: файлы, содержащие ВСЕ слова (классический конвейер `grep -ril | xargs`), ранжированные по плотности совпадений, в папке, которую индексирует коллекция; запасной вариант — один проход с OR. В тайминги grep входит обычное кэширование файловой системы, а модель эмбеддингов заранее прогрета, как при реальной работе. %lld случайного вопроса — это ориентир, а не научная статья: запустите ещё раз для новой выборки.</string>
+    </dict>
+  </dict>
+  <key>Remove %lld line numbers</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Убрать %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld номер строки</string>
+      <key>few</key>
+      <string>%lld номера строк</string>
+      <key>many</key>
+      <string>%lld номеров строк</string>
+      <key>other</key>
+      <string>%lld номера строк</string>
+    </dict>
+  </dict>
+  <key>Sampling %@ and running %lld duels — real grep vs the semantic index…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Выборка из %1$@ и запуск %2$#@n@ — настоящий grep против семантического индекса…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld дуэль</string>
+      <key>few</key>
+      <string>%lld дуэли</string>
+      <key>many</key>
+      <string>%lld дуэлей</string>
+      <key>other</key>
+      <string>%lld дуэли</string>
+    </dict>
+  </dict>
+  <key>Turns links like file.md:36 into file.md in %lld files: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Превращает ссылки вида file.md:36 в file.md %#@n@: они по-прежнему ведут на файл, но не на строку, которая сдвигается при каждой правке. Прежняя версия остаётся в истории базы.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>в %lld файле</string>
+      <key>few</key>
+      <string>в %lld файлах</string>
+      <key>many</key>
+      <string>в %lld файлах</string>
+      <key>other</key>
+      <string>в %lld файлах</string>
+    </dict>
+  </dict>
+  <key>You put %lld similar facts in %@/ before — like %@.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Похожие факты уже лежат в %2$@/ (%1$#@n@) — например, %3$@.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>few</key>
+      <string>%lld</string>
+      <key>many</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+  </dict>
+  <key>You put %lld similar facts in %@/ before.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Похожие факты уже лежат в %2$@/ (%1$#@n@).</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>few</key>
+      <string>%lld</string>
+      <key>many</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+  </dict>
+  <key>You rejected %lld similar proposals before — like %@.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Похожие предложения уже отклонялись (%1$#@n@) — например, %2$@.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld раз</string>
+      <key>few</key>
+      <string>%lld раза</string>
+      <key>many</key>
+      <string>%lld раз</string>
+      <key>other</key>
+      <string>%lld раза</string>
+    </dict>
+  </dict>
+  <key>You rejected %lld similar proposals before.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Похожие предложения уже отклонялись (%#@n@).</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld раз</string>
+      <key>few</key>
+      <string>%lld раза</string>
+      <key>many</key>
+      <string>%lld раз</string>
+      <key>other</key>
+      <string>%lld раза</string>
+    </dict>
+  </dict>
+  <key>description is %lld characters; Zoo / Roo skips anything over 1024.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>description — %#@n@; Zoo / Roo пропускает всё длиннее 1024.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld символ</string>
+      <key>few</key>
+      <string>%lld символа</string>
+      <key>many</key>
+      <string>%lld символов</string>
+      <key>other</key>
+      <string>%lld символа</string>
+    </dict>
+  </dict>
+</dict>
+</plist>

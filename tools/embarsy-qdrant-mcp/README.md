@@ -66,6 +66,15 @@ is working in. Set `QDRANT_COLLECTION_NAME` only to pin one collection everywher
 - **`search_code`** — semantic search; returns the most relevant chunks with `file:line` and a snippet. When the index covers a parent of the editor's folder (say `~/code` while you work in `~/code/my-app`), it searches `my-app/` first and widens to the whole index only if nothing there is convincing; `whole_index: true` searches everything from the start. Paths come back relative to the editor's folder, or absolute when outside it.
 - **`index_status`** — how many chunks are indexed in the collection.
 
+When you have set up a memory base in Embarsy (Memory → Start fresh), four more tools work with it. The bridge finds the base through `~/Library/Application Support/Embarsy/memory.json`, which the app writes; `EMBARSY_MEMORY_DIR` overrides it.
+
+- `embarsy-index --memory` indexes the memory base ahead of time (Embarsy does this by itself whenever it changes).
+- **`recall`** — search the memory by meaning: notes, verified experience, people, the core and shared skills. The base is indexed on demand into the `embarsy-memory` collection; proposals still in `inbox/` are not searched.
+- **`remember`** — propose a fact. It is written to `inbox/<agent>/` for the user to review in Embarsy, never straight into memory; text that looks like a secret is refused.
+- **`memory_status`** — where the base is, what it holds, how many proposals wait for review.
+- **`memory_history`** — who changed a note and when: which agent proposed it, who approved it.
+- **`memory_scan`** / **`memory_propose`** — for Embarsy's "Bring existing memory": read the task and inventory Embarsy prepared, and hand back a plan. The plan is checked (names, paths inside the chosen sources, no secrets) and saved for the user's review; nothing is moved until they approve it.
+
 ## License
 
 **[PolyForm Strict 1.0.0](LICENSE)** — source-available, **not** open source: noncommercial use

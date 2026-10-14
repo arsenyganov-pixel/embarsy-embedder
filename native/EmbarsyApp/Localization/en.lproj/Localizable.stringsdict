@@ -1,0 +1,1049 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>%@ timed out after %lld seconds. Output: %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$@ timed out after %2$#@n@. Output: %3$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld second</string>
+      <key>other</key>
+      <string>%lld seconds</string>
+    </dict>
+  </dict>
+  <key>%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld collection · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.</string>
+      <key>other</key>
+      <string>%lld collections · click a row to expand its full preview · slide a row's grip to delete its collection. The overview is built from Qdrant collections plus Watcher cache metadata.</string>
+    </dict>
+  </dict>
+  <key>%lld copies</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld copy</string>
+      <key>other</key>
+      <string>%lld copies</string>
+    </dict>
+  </dict>
+  <key>%lld copies of %@ differ</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ of %2$@ differ</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld copy</string>
+      <key>other</key>
+      <string>%lld copies</string>
+    </dict>
+  </dict>
+  <key>%lld files</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld file</string>
+      <key>other</key>
+      <string>%lld files</string>
+    </dict>
+  </dict>
+  <key>%lld files on this Mac match; Embarsy can't tell which one. The link is removed, its text stays.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@; Embarsy can't tell which one. The link is removed, its text stays.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld file on this Mac matches</string>
+      <key>other</key>
+      <string>%lld files on this Mac match</string>
+    </dict>
+  </dict>
+  <key>%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld grep run exceeded the 15 s budget and was stopped — excluded from the medians above.</string>
+      <key>other</key>
+      <string>%lld grep runs exceeded the 15 s budget and were stopped — excluded from the medians above.</string>
+    </dict>
+  </dict>
+  <key>%lld knowledge notes were last verified over %lld months ago</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ last verified over %2$#@b@ ago</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld knowledge note was</string>
+      <key>other</key>
+      <string>%lld knowledge notes were</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld month</string>
+      <key>other</key>
+      <string>%lld months</string>
+    </dict>
+  </dict>
+  <key>%lld leftover copies in a folder no agent reads</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ in a folder no agent reads</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld leftover copy</string>
+      <key>other</key>
+      <string>%lld leftover copies</string>
+    </dict>
+  </dict>
+  <key>%lld lines</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld line</string>
+      <key>other</key>
+      <string>%lld lines</string>
+    </dict>
+  </dict>
+  <key>%lld lines · %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ · %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld line</string>
+      <key>other</key>
+      <string>%lld lines</string>
+    </dict>
+  </dict>
+  <key>%lld links to old copies in %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ to old copies in %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld link</string>
+      <key>other</key>
+      <string>%lld links</string>
+    </dict>
+  </dict>
+  <key>%lld links with line numbers in %@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ with line numbers in %2$@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld link</string>
+      <key>other</key>
+      <string>%lld links</string>
+    </dict>
+  </dict>
+  <key>%lld links with line numbers in %@ across %lld files</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ with line numbers in %2$@ across %3$#@b@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld link</string>
+      <key>other</key>
+      <string>%lld links</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld file</string>
+      <key>other</key>
+      <string>%lld files</string>
+    </dict>
+  </dict>
+  <key>%lld notes</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+  </dict>
+  <key>%lld notes nothing links to</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note nothing links to</string>
+      <key>other</key>
+      <string>%lld notes nothing links to</string>
+    </dict>
+  </dict>
+  <key>%lld of your skills are available to other agents, but none is in %@, where %@ looks for them. Publish them for %@ in Memory → Core.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ available to other agents, but none is in %2$@, where %3$@ looks for them. Publish them for %4$@ in Memory → Core.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld of your skills is</string>
+      <key>other</key>
+      <string>%lld of your skills are</string>
+    </dict>
+  </dict>
+  <key>%lld places where notes disagree — see below.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ where notes disagree — see below.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld place</string>
+      <key>other</key>
+      <string>%lld places</string>
+    </dict>
+  </dict>
+  <key>%lld problems and %lld warnings. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ and %2$#@b@. Orange counts problems — things an agent gets wrong right now. Grey would count warnings only.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld problem</string>
+      <key>other</key>
+      <string>%lld problems</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld warning</string>
+      <key>other</key>
+      <string>%lld warnings</string>
+    </dict>
+  </dict>
+  <key>%lld proposals from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ from your agents waiting for review. Grey — nothing is wrong; it only becomes memory once you accept it.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld proposal</string>
+      <key>other</key>
+      <string>%lld proposals</string>
+    </dict>
+  </dict>
+  <key>%lld proposals have waited in the inbox for over two weeks</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ in the inbox for over two weeks</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld proposal has waited</string>
+      <key>other</key>
+      <string>%lld proposals have waited</string>
+    </dict>
+  </dict>
+  <key>%lld pts</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld pt</string>
+      <key>other</key>
+      <string>%lld pts</string>
+    </dict>
+  </dict>
+  <key>%lld questions · top-%lld</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@n@ · top-%2$lld</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld question</string>
+      <key>other</key>
+      <string>%lld questions</string>
+    </dict>
+  </dict>
+  <key>%lld skills</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+  </dict>
+  <key>%lld skills have a problem: %lld skipped by an agent that reads their folder, %lld with copies that differ, %lld that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ a problem: %2$#@b@ skipped by an agent that reads their folder, %3$#@c@ with copies that differ, %4$#@d@ that no agent sees. Orange — at least one agent is missing or mis-reading a skill. Grey — nothing is broken, but some skills reach no agent.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill has</string>
+      <key>other</key>
+      <string>%lld skills have</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+  </dict>
+  <key>%lld skills have copies that differ — choose which to keep.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@ copies that differ — choose which to keep.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill has</string>
+      <key>other</key>
+      <string>%lld skills have</string>
+    </dict>
+  </dict>
+  <key>%lld skills · %lld notes</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ · %2$#@b@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+  </dict>
+  <key>%lld skills · %lld notes · core</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%1$#@a@ · %2$#@b@ · core</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+  </dict>
+  <key>%lld snippets</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld snippet</string>
+      <key>other</key>
+      <string>%lld snippets</string>
+    </dict>
+  </dict>
+  <key>%lld warnings, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@, no problems. Grey counts warnings; it turns orange and counts problems when an agent gets something wrong.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld warning</string>
+      <key>other</key>
+      <string>%lld warnings</string>
+    </dict>
+  </dict>
+  <key>Brought over %lld skills and %lld notes. A backup of every source is in %@. Restart your agents so they load the new memory.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Brought over %1$#@a@ and %2$#@b@. A backup of every source is in %3$@. Restart your agents so they load the new memory.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+  </dict>
+  <key>Brought over %lld skills and %lld notes. Not brought over:
+%@</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Brought over %1$#@a@ and %2$#@b@. Not brought over:
+%3$@</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+  </dict>
+  <key>Codex lists this skill %lld times — once per copy.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Codex lists this skill %#@n@ — once per copy.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld time</string>
+      <key>other</key>
+      <string>%lld times</string>
+    </dict>
+  </dict>
+  <key>Embarsy found %lld skills (%lld with copies that differ), %lld instruction files, %lld Claude Code memories and %lld journal entries. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Embarsy found %1$#@a@ (%2$#@b@ with copies that differ), %3$#@c@, %4$#@d@ and %5$#@e@. Deciding what goes where takes judgement: give it to your agent, or let the local model draft it.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld</string>
+      <key>other</key>
+      <string>%lld</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld instruction file</string>
+      <key>other</key>
+      <string>%lld instruction files</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld Claude Code memory</string>
+      <key>other</key>
+      <string>%lld Claude Code memories</string>
+    </dict>
+    <key>e</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld journal entry</string>
+      <key>other</key>
+      <string>%lld journal entries</string>
+    </dict>
+  </dict>
+  <key>Fix %lld issues</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Fix %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld issue</string>
+      <key>other</key>
+      <string>%lld issues</string>
+    </dict>
+  </dict>
+  <key>Fix %lld issues…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Fix %#@n@…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld issue</string>
+      <key>other</key>
+      <string>%lld issues</string>
+    </dict>
+  </dict>
+  <key>Fix %lld links</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Fix %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld link</string>
+      <key>other</key>
+      <string>%lld links</string>
+    </dict>
+  </dict>
+  <key>Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.
+
+Orange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>Memory has %lld problem: an agent is missing something or getting it wrong right now. See Memory → Health.
+
+Orange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.</string>
+      <key>other</key>
+      <string>Memory has %lld problems: an agent is missing something or getting it wrong right now. See Memory → Health.
+
+Orange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.</string>
+    </dict>
+  </dict>
+  <key>Moves %lld folders to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Moves %#@n@ to Embarsy's backups. No agent reads them, so nothing changes for your agents; Undo setup in Memory → Core puts them back.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld folder</string>
+      <key>other</key>
+      <string>%lld folders</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Claude Code only looks one level into its skills folder.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Nested %#@n@ deep. Claude Code only looks one level into its skills folder.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld folder</string>
+      <key>other</key>
+      <string>%lld folders</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Codex stops at 6.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Nested %#@n@ deep. Codex stops at 6.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld folder</string>
+      <key>other</key>
+      <string>%lld folders</string>
+    </dict>
+  </dict>
+  <key>Nested %lld folders deep. Zoo / Roo only looks one level into its skills folder.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Nested %#@n@ deep. Zoo / Roo only looks one level into its skills folder.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld folder</string>
+      <key>other</key>
+      <string>%lld folders</string>
+    </dict>
+  </dict>
+  <key>Planned by the local model: %lld skills, %lld notes, %lld rules in the core, %lld items left behind.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Planned by the local model: %1$#@a@, %2$#@b@, %3$#@c@ in the core, %4$#@d@ left behind.</string>
+    <key>a</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld skill</string>
+      <key>other</key>
+      <string>%lld skills</string>
+    </dict>
+    <key>b</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld note</string>
+      <key>other</key>
+      <string>%lld notes</string>
+    </dict>
+    <key>c</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld rule</string>
+      <key>other</key>
+      <string>%lld rules</string>
+    </dict>
+    <key>d</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld item</string>
+      <key>other</key>
+      <string>%lld items</string>
+    </dict>
+  </dict>
+  <key>Publish %lld changes…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Publish %#@n@…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld change</string>
+      <key>other</key>
+      <string>%lld changes</string>
+    </dict>
+  </dict>
+  <key>Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>%#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled question is an indication, not a paper — run it again for a fresh sample.</string>
+      <key>other</key>
+      <string>Questions are concept words extracted from randomly sampled chunks of this collection; the source file is the ground truth and is verified to exist in your folder. By construction every query word is literally present in the answer file — that aids grep (its AND pipeline can always reach the file) as much as the index, so the duel measures ranking under noise and time-to-answer, not paraphrase understanding. grep plays its competent game: files containing ALL the words (classic `grep -ril | xargs` pipeline), ranked by match density, over the folder the collection indexes; one-pass OR is the fallback. grep timings include normal filesystem caching, while the embedding model is pre-warmed, as it is in real use. %lld sampled questions are an indication, not a paper — run it again for a fresh sample.</string>
+    </dict>
+  </dict>
+  <key>Remove %lld line numbers</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Remove %#@n@</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld line number</string>
+      <key>other</key>
+      <string>%lld line numbers</string>
+    </dict>
+  </dict>
+  <key>Sampling %@ and running %lld duels — real grep vs the semantic index…</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Sampling %1$@ and running %2$#@n@ — real grep vs the semantic index…</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld duel</string>
+      <key>other</key>
+      <string>%lld duels</string>
+    </dict>
+  </dict>
+  <key>Turns links like file.md:36 into file.md in %lld files: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>Turns links like file.md:36 into file.md in %#@n@: they keep pointing at the file, just not at a line that moves with every edit. The previous version stays in the base's history.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld file</string>
+      <key>other</key>
+      <string>%lld files</string>
+    </dict>
+  </dict>
+  <key>You put %lld similar facts in %@/ before — like %@.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>You put %1$#@n@ in %2$@/ before — like %3$@.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld similar fact</string>
+      <key>other</key>
+      <string>%lld similar facts</string>
+    </dict>
+  </dict>
+  <key>You put %lld similar facts in %@/ before.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>You put %1$#@n@ in %2$@/ before.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld similar fact</string>
+      <key>other</key>
+      <string>%lld similar facts</string>
+    </dict>
+  </dict>
+  <key>You rejected %lld similar proposals before — like %@.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>You rejected %1$#@n@ before — like %2$@.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld similar proposal</string>
+      <key>other</key>
+      <string>%lld similar proposals</string>
+    </dict>
+  </dict>
+  <key>You rejected %lld similar proposals before.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>You rejected %#@n@ before.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld similar proposal</string>
+      <key>other</key>
+      <string>%lld similar proposals</string>
+    </dict>
+  </dict>
+  <key>description is %lld characters; Zoo / Roo skips anything over 1024.</key>
+  <dict>
+    <key>NSStringLocalizedFormatKey</key>
+    <string>description is %#@n@; Zoo / Roo skips anything over 1024.</string>
+    <key>n</key>
+    <dict>
+      <key>NSStringFormatSpecTypeKey</key>
+      <string>NSStringPluralRuleType</string>
+      <key>NSStringFormatValueTypeKey</key>
+      <string>lld</string>
+      <key>one</key>
+      <string>%lld character</string>
+      <key>other</key>
+      <string>%lld characters</string>
+    </dict>
+  </dict>
+</dict>
+</plist>

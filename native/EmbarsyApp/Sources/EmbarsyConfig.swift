@@ -5,7 +5,7 @@ struct EmbarsyConfig {
     /// `src/embarsy_api/__init__.py`). The Status screen compares it with what the
     /// running process reports at /health: after an app update the previous API process
     /// can still be serving on :8000, and a mismatch surfaces the "Update" button.
-    static let bundledAPIVersion = "0.2.3"
+    static let bundledAPIVersion = "0.3.0"
 
     var host = "127.0.0.1"
     var apiPort = 8000
@@ -14,9 +14,14 @@ struct EmbarsyConfig {
     var ollamaBaseURL = URL(string: "http://127.0.0.1:11434")!
     var ollamaModel = "qwen3-embedding"
     var ollamaSourceModel = "hf.co/Qwen/Qwen3-Embedding-0.6B-GGUF:Q8_0"
-    /// Unload the embedding model after 30 idle minutes (was "-1" = pinned forever). Ollama
-    /// transparently reloads it on the next request; ~700MB RAM comes back when idle.
-    var ollamaKeepAlive = "30m"
+    /// How long the embedding model stays in memory after its last request (Settings → Embedding
+    /// model). Ollama reloads it transparently on the next request, in a couple of seconds.
+    var ollamaKeepAlive = "\(EmbarsyConfig.embeddingIdleMinutes)m"
+
+    static let embeddingIdleKey = "embeddingIdleMinutes"
+    static var embeddingIdleMinutes: Int {
+        UserDefaults.standard.object(forKey: embeddingIdleKey) as? Int ?? 10
+    }
     var embeddingDimension = 1024
     var searchScoreThreshold = "0.4"
     var maxSearchResults = "50"

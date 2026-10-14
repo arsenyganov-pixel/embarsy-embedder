@@ -58,6 +58,10 @@ struct EmbarsyApp: App {
     @NSApplicationDelegateAdaptor(EmbarsyAppDelegate.self) private var appDelegate
     @StateObject private var store = EmbarsyStore()
 
+    init() {
+        AppLanguage.applyAtLaunch()
+    }
+
     var body: some Scene {
         WindowGroup("Embarsy", id: EmbarsyWindowID.main) {
             ContentView()

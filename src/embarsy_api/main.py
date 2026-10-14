@@ -260,6 +260,7 @@ def get_embedding_service(settings: Settings = Depends(get_settings)) -> Embeddi
         dimension=settings.embedding_dimension,
         instruction=settings.embedding_instruction,
         timeout_seconds=settings.request_timeout_seconds,
+        num_ctx=settings.ollama_num_ctx,
     )
 
 
@@ -837,15 +838,17 @@ def content_preview(
     return preview
 
 
+# Folders that hold projects rather than name a part of one; the home directory's own
+# segments (`Users/<name>`) are added at call time.
+_NOT_A_DOMAIN = {"users", "home", "workspace", "projects", "code", "dev", "repos", "src", "sources", "tests"}
+
+
 def _domain_terms(paths: list[str]) -> list[str]:
-    ignored = {
-        "Users", "avganov", "WORKSPACE", "TECH", "[WORKSPACE]", "[TECH]",
-        "Autohub", "Automation", "src", "Sources", "tests", "Tests",
-    }
+    ignored = _NOT_A_DOMAIN | {part.casefold() for part in Path.home().parts}
     terms: dict[str, int] = {}
     for path in paths:
         for part in _normalize_path(path).split("/")[-5:-1]:
-            if not part or part in ignored or part.startswith("."):
+            if not part or part.casefold() in ignored or part.startswith(".") or _is_placeholder_segment(part):
                 continue
             terms[part] = terms.get(part, 0) + 1
     return [term for term, _ in sorted(terms.items(), key=lambda item: (-item[1], item[0].lower()))]
@@ -990,8 +993,13 @@ def _is_absolute_path(path: str) -> bool:
     return bool(_ABSOLUTE_PATH_PREFIX.match(_normalize_path(path)))
 
 
+def _is_placeholder_segment(part: str) -> bool:
+    """`[WORKSPACE]`-style stand-ins some indexers write instead of a real folder name."""
+    return len(part) > 2 and part.startswith("[") and part.endswith("]")
+
+
 def _path_segments(path: str) -> list[str]:
-    return [part for part in _normalize_path(path).split("/") if part and part not in {"[WORKSPACE]", "[TECH]"}]
+    return [part for part in _normalize_path(path).split("/") if part and not _is_placeholder_segment(part)]
 
 
 def _stated_project_name(value: str) -> str:
@@ -1014,12 +1022,12 @@ def _friendly_project_name(path: str) -> str:
     """The project's own name, read from a root path — absolute and relative roots differ.
 
     An ABSOLUTE root is the workspace directory itself, so its last segment is the name;
-    it is walked from the end because nested layouts (`…/WORKSPACE/TECH/Autohub/service-x`)
+    it is walked from the end because nested layouts (`…/work/clients/Acme/service-x`)
     must resolve to the project, and a scan from the front stops at the first container.
 
     A RELATIVE root is a common prefix of workspace-relative payload paths, which
     overshoots DOWNWARD into whatever subtree the sample happens to share
-    (`Autohub/service-x/internal/generated/api/schema`). There the name sits above the
+    (`Acme/service-x/internal/generated/api/schema`). There the name sits above the
     first source container, so the root is cut there and the last survivor wins — the
     deepest shared directory (`schema`) names a layer, never the project.
     Returns "" when nothing above a container survives; callers treat that as "no name",

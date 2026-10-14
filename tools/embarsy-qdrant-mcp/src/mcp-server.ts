@@ -8,6 +8,7 @@ import { embedOne } from "./embeddings.js";
 import { search, collectionInfo, sampleLocation, type SearchHit } from "./qdrant.js";
 import { resolveCollection } from "./resolve-collection.js";
 import { establishRoot, scopePrefix, displayPath } from "./scope.js";
+import { agentFolder, history, locateMigration, locateVault, migrationPropose, migrationScan, recall, remember, status } from "./memory.js";
 
 /** The published package version — read from package.json (which ships in the tarball)
  *  so the MCP handshake never drifts from the real release. */
@@ -49,6 +50,13 @@ const SERVER_INSTRUCTIONS = [
   "",
   "If `search_code` returns nothing useful, say so and fall back to grep — the index may not",
   "cover this folder, or may be stale until `embarsy-index` is run again.",
+  "",
+  "Embarsy also keeps the user's long-term memory: what they told agents before, verified",
+  "experience from earlier work, notes about people and projects, and the skills they share.",
+  "Use `recall` before answering anything that depends on past sessions or on the user's own",
+  "context, instead of guessing. Use `remember` to propose a new memory — only when the user",
+  "asked you to remember something or agreed when you offered; it lands in an inbox the user",
+  "reviews, never directly in memory. `memory_history` shows who changed a note and when.",
 ].join("\n");
 
 /** Below this cosine score the hit is reported as weak rather than presented as an answer.
@@ -111,7 +119,7 @@ export async function runMcpServer(baseCfg: Config): Promise<void> {
       const run = async (under: string | null): Promise<SearchHit[]> => {
         // Qdrant's `text` match on a field without a full-text index is a plain substring
         // match — it narrows the search server-side without listing the folder's files. A
-        // substring can also hit mid-path ("x/proxiq-macos/…"), so the exact prefix is
+        // substring can also hit mid-path ("x/acme-app/…"), so the exact prefix is
         // re-checked here, over-fetching a little to make up for what that drops.
         const filter = under ? { must: [{ key: "file_path", match: { text: under } }] } : undefined;
         const fetch = (path_contains ? want * 6 : want) * (under ? 2 : 1);
@@ -196,6 +204,154 @@ export async function runMcpServer(baseCfg: Config): Promise<void> {
         ? `Collection "${cfg.collection}" (${reason}): ${info.pointsCount} indexed chunks.`
         : `Collection "${cfg.collection}" does not exist yet. Run: embarsy-index <path> --collection ${cfg.collection}`;
       return { content: [{ type: "text", text }] };
+    },
+  );
+
+  const NO_VAULT =
+    "The user has no memory base set up yet. They can create one in Embarsy → Memory → Start fresh. " +
+    "Until then, there is nothing to recall and nowhere to remember to — say so instead of guessing.";
+  const text = (t: string) => ({ content: [{ type: "text" as const, text: t }] });
+  const failure = (err: unknown) => ({
+    content: [{ type: "text" as const, text: err instanceof Error ? err.message : String(err) }],
+    isError: true,
+  });
+
+  server.tool(
+    "recall",
+    "Search the user's long-term memory by MEANING: facts they told agents before, verified " +
+      "experience from earlier work, notes about people and projects, their standing rules, and " +
+      "the skills they share. Use it before answering anything that depends on past sessions or " +
+      "on the user's own context. Returns a few ranked passages with the note they come from.",
+    {
+      query: z.string().describe("What you want to know, in plain words."),
+      limit: z.number().int().min(1).max(20).optional().describe("Max passages (default 6)."),
+      types: z.array(z.string()).optional().describe(
+        "Only these parts of memory: knowledge, experience, people, core, skills.",
+      ),
+    },
+    async ({ query, limit, types }) => {
+      const vault = locateVault();
+      if (!vault) return text(NO_VAULT);
+      try {
+        return text(await recall(vault, baseCfg, query, limit ?? 6, types));
+      } catch (err) {
+        return failure(err);
+      }
+    },
+  );
+
+  server.tool(
+    "remember",
+    "Propose a fact for the user's long-term memory. Call it ONLY when the user asked you to " +
+      "remember something, or agreed when you offered. One fact per call, in plain words that " +
+      "will still make sense months later. It goes to an inbox the user reviews in Embarsy — it " +
+      "is not memory until they accept it. Never include passwords, tokens or keys.",
+    {
+      text: z.string().describe("The fact itself, self-contained."),
+      title: z.string().optional().describe("A short title (default: the first line)."),
+      reason: z.string().describe("Why it is worth keeping, and how you know it."),
+      proposed_type: z.enum(["knowledge", "experience", "person", "core"]).optional().describe(
+        "knowledge: a fact about a subject; experience: work that was done and verified; " +
+          "person: about someone; core: a standing rule or preference for every session.",
+      ),
+      proposed_path: z.string().optional().describe("Where in the base you think it belongs, e.g. knowledge/billing/invoices.md."),
+      merge_with: z.array(z.string()).optional().describe("Existing notes (paths from recall) this extends or corrects."),
+      confidence: z.enum(["stated", "observed", "inferred"]).optional().describe(
+        "stated: the user said it; observed: you verified it; inferred: your conclusion.",
+      ),
+    },
+    async (args) => {
+      const vault = locateVault();
+      if (!vault) return text(NO_VAULT);
+      try {
+        const agent = agentFolder(server.server.getClientVersion()?.name);
+        const rel = await remember(vault, agent, {
+          text: args.text,
+          title: args.title,
+          reason: args.reason,
+          proposedType: args.proposed_type,
+          proposedPath: args.proposed_path,
+          mergeWith: args.merge_with,
+          confidence: args.confidence,
+        });
+        return text(`Proposed: ${rel} in ${vault}. Tell the user it is waiting in Embarsy → Memory → Inbox; it becomes memory once they accept it.`);
+      } catch (err) {
+        return failure(err);
+      }
+    },
+  );
+
+  server.tool(
+    "memory_status",
+    "Where the user's memory base is, what it holds, and how many proposals wait for review.",
+    {},
+    async () => {
+      const vault = locateVault();
+      if (!vault) return text(NO_VAULT);
+      try {
+        return text(await status(vault));
+      } catch (err) {
+        return failure(err);
+      }
+    },
+  );
+
+  server.tool(
+    "memory_history",
+    "Who changed a note in the memory base and when — which agent proposed it, who approved it. " +
+      "Use it when a remembered fact looks wrong or surprising, before trusting or correcting it.",
+    {
+      path: z.string().describe("The note's path, as recall shows it (relative to the base)."),
+      limit: z.number().int().min(1).max(100).optional().describe("Max changes listed (default 20)."),
+      lines: z.boolean().optional().describe("Also say which change wrote which lines (default false)."),
+    },
+    async ({ path: file, limit, lines }) => {
+      const vault = locateVault();
+      if (!vault) return text(NO_VAULT);
+      try {
+        return text(await history(vault, file, limit ?? 20, lines ?? false));
+      } catch (err) {
+        return failure(err);
+      }
+    },
+  );
+
+  const NO_MIGRATION =
+    "Embarsy isn't preparing a migration right now. The user starts one in Embarsy → Memory → Bring existing memory.";
+
+  server.tool(
+    "memory_scan",
+    "For moving the user's existing agent memory into Embarsy: the task Embarsy prepared and the " +
+      "inventory of what it found (skills and their copies, instructions, memories, journals). " +
+      "Use it when the user asks you to do the migration task.",
+    {},
+    async () => {
+      const staging = locateMigration();
+      if (!staging) return text(NO_MIGRATION);
+      try {
+        return text(await migrationScan(staging));
+      } catch (err) {
+        return failure(err);
+      }
+    },
+  );
+
+  server.tool(
+    "memory_propose",
+    "Hand back the migration plan described in the task from memory_scan. It is checked and saved " +
+      "for the user to review in Embarsy; nothing is moved until they approve it. If it reports " +
+      "problems, fix them and call it again.",
+    {
+      plan: z.record(z.any()).describe("The plan object, exactly in the format the task describes."),
+    },
+    async ({ plan }) => {
+      const staging = locateMigration();
+      if (!staging) return text(NO_MIGRATION);
+      try {
+        return text(await migrationPropose(staging, plan));
+      } catch (err) {
+        return failure(err);
+      }
     },
   );
 

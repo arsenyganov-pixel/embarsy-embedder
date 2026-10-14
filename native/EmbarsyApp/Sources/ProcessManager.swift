@@ -6,7 +6,7 @@ final class ProcessManager: ObservableObject {
         uniqueKeysWithValues: ManagedService.allCases.map { ($0, .unknown) }
     )
     @Published private(set) var messages: [ManagedService: String] = Dictionary(
-        uniqueKeysWithValues: ManagedService.allCases.map { ($0, "Not checked yet.") }
+        uniqueKeysWithValues: ManagedService.allCases.map { ($0, L("Not checked yet.")) }
     )
 
     private let paths: AppPaths
@@ -57,10 +57,10 @@ final class ProcessManager: ObservableObject {
 
     func hardResetCleanup() {
         debugLog?.append("Hard reset cleanup requested", category: "process")
-        forceCleanStop(message: "Components removed. Install required.")
+        forceCleanStop(message: L("Components removed. Install required."))
     }
 
-    func forceCleanStop(message: String = "Stopped for clean start.") {
+    func forceCleanStop(message: String = L("Stopped for clean start.")) {
         debugLog?.append("Force clean stop requested", category: "process")
         stopAll()
         markAllStopped(message: message)
@@ -107,15 +107,30 @@ final class ProcessManager: ObservableObject {
         defer { endMutation() }
         if statuses[service] == .running {
             if await isServiceReady(service) {
-                setStatus(service, .running, message: "Already running.")
+                setStatus(service, .running, message: L("Already running."))
                 debugLog?.append("Skip start for \(service.title): already running with current configuration", category: "process")
                 return
             }
 
             debugLog?.append("\(service.title) was marked Running, but health check failed with current configuration. Restarting listener on port \(managedPort(for: service)).", category: "process")
             terminateListeners(on: managedPort(for: service))
+        } else if await isServiceReady(service) {
+            // Services outlive the app on purpose (they hold the index warm), so after a
+            // relaunch a healthy one is usually already listening. Spawning another copy only
+            // got "address already in use" in its log; adopt it instead. The exception is an
+            // Ollama left over from a build that bundled another version: replace it, or an
+            // Ollama update would never take effect. (An older API is the Update button's job.)
+            if service == .ollama, let running = await runningOllamaVersion(), let bundled = bundledOllamaVersion(),
+               running != bundled {
+                debugLog?.append("Ollama \(running) is still running from another build; replacing it with the bundled \(bundled)", category: "process")
+                terminateListeners(on: managedPort(for: service))
+            } else {
+                setStatus(service, .running, message: L("Already running."))
+                debugLog?.append("Adopted \(service.title): already listening and healthy", category: "process")
+                return
+            }
         }
-        setStatus(service, .starting, message: "Starting \(service.title)...")
+        setStatus(service, .starting, message: L("Starting \(service.title)..."))
         debugLog?.append("Starting \(service.title)", category: "process")
         do {
             try paths.createDirectories()
@@ -123,22 +138,22 @@ final class ProcessManager: ObservableObject {
                 try writeQdrantConfig()
             }
             guard validateBinaries().first(where: { $0.service == service })?.isExecutable == true else {
-                setStatus(service, .failed, message: "Missing executable binary at \(binaryPath(for: service).path).")
+                setStatus(service, .failed, message: L("Missing executable binary at \(binaryPath(for: service).path)."))
                 debugLog?.append(messages[service] ?? "Missing binary for \(service.title)", category: "process.error")
                 return
             }
             try processes[service]?.start()
-            setMessage(service, "Process started. Waiting for health at \(healthURL(for: service).absoluteString)...")
+            setMessage(service, L("Process started. Waiting for health at \(healthURL(for: service).absoluteString)..."))
             debugLog?.append(messages[service] ?? "Waiting health for \(service.title)", category: "process")
             let wait = await waitUntilReady(service)
             if wait == .ready {
-                setStatus(service, .running, message: "Running.")
+                setStatus(service, .running, message: L("Running."))
             } else {
                 reportStartupFailure(service, outcome: wait)
             }
             debugLog?.append("\(service.title) status after start: \(statuses[service, default: .unknown].title). \(messages[service] ?? "")", category: wait == .ready ? "process" : "process.error")
         } catch {
-            setStatus(service, .failed, message: "Failed to start \(service.title): \(error.localizedDescription). Check \(logFile(for: service).path).")
+            setStatus(service, .failed, message: L("Failed to start \(service.title): \(error.localizedDescription). Check \(logFile(for: service).path)."))
             debugLog?.append(messages[service] ?? error.localizedDescription, category: "process.error")
         }
     }
@@ -147,7 +162,12 @@ final class ProcessManager: ObservableObject {
         beginMutation()
         defer { endMutation() }
         processes[service]?.stop()
-        setStatus(service, .stopped, message: "Stopped.")
+        // An adopted service isn't this app's child, so stopping the child alone would leave
+        // it running behind a "Stopped" label.
+        if !listenerPIDs(on: managedPort(for: service)).isEmpty {
+            terminateListeners(on: managedPort(for: service))
+        }
+        setStatus(service, .stopped, message: L("Stopped."))
         debugLog?.append("Stopped \(service.title)", category: "process")
     }
 
@@ -157,7 +177,7 @@ final class ProcessManager: ObservableObject {
         debugLog?.append("Restarting \(service.title): \(reason)", category: "process")
         stop(service)
         terminateListeners(on: managedPort(for: service))
-        setStatus(service, .stopped, message: "Restart requested: \(reason)")
+        setStatus(service, .stopped, message: L("Restart requested: \(reason)"))
         await start(service)
     }
 
@@ -238,7 +258,7 @@ final class ProcessManager: ObservableObject {
             if isMutating || mutationGeneration != generation { return }
             // Still bound to its port → alive but unresponsive. Leave the status alone.
             guard !listening else { return }
-            setStatus(service, .failed, message: "Stopped unexpectedly (crashed). Check \(logFile(for: service).path).")
+            setStatus(service, .failed, message: L("Stopped unexpectedly (crashed). Check \(logFile(for: service).path)."))
             debugLog?.append("\(service.title) crashed: unhealthy for \(Int(unhealthyFor))s and nothing is listening on port \(port)", category: "process.error")
             return
         }
@@ -247,12 +267,12 @@ final class ProcessManager: ObservableObject {
             service,
             isReady ? .running : (processes[service]?.isRunning == true ? .starting : .stopped),
             message: isReady
-                ? "Health check OK."
+                ? L("Health check OK.")
                 // A service the user deliberately stopped keeps its own "Stopped." wording — the
                 // not-ready diagnostic only makes sense for something that is supposed to be up.
                 : (statuses[service] == .stopped
-                    ? messages[service, default: "Stopped."]
-                    : "Health check is not ready at \(url.absoluteString) with current configuration.")
+                    ? messages[service, default: L("Stopped.")]
+                    : L("Health check is not ready at \(url.absoluteString) with current configuration."))
         )
     }
 
@@ -328,17 +348,14 @@ final class ProcessManager: ObservableObject {
         switch outcome {
         case .processDied:
             if let exit, exit.isSignalKill {
-                message = "\(service.title) was killed by macOS right after launch (code-signature enforcement). "
-                    + "Restart your Mac; if it happens again, delete /Applications/Embarsy.app completely "
-                    + "and copy the new version fresh instead of overwriting it."
+                message = L("\(service.title) was killed by macOS right after launch (code-signature enforcement). Restart your Mac; if it happens again, delete /Applications/Embarsy.app completely and copy the new version fresh instead of overwriting it.")
             } else {
-                message = "\(service.title) \(exit?.summary ?? "exited during startup"). Check \(logFile(for: service).path)."
+                message = L("\(service.title) \(exit?.summary ?? L("exited during startup")). Check \(logFile(for: service).path).")
             }
         case .timedOut:
             // Leave the process running: a service that turns healthy late is picked up by
             // the post-start status reconciliation (EmbarsyStore) and flips to Running.
-            message = "\(service.title) is still starting but did not pass its health check in time. "
-                + "It may finish on its own — press Refresh in a minute. Check \(logFile(for: service).path)."
+            message = L("\(service.title) is still starting but did not pass its health check in time. It may finish on its own — press Refresh in a minute. Check \(logFile(for: service).path).")
         case .ready:
             return
         }
@@ -398,6 +415,32 @@ final class ProcessManager: ObservableObject {
         case .ollama: paths.bundledOllama
         case .api: paths.bundledAPI
         }
+    }
+
+    /// The version of the Ollama answering on its port.
+    private func runningOllamaVersion() async -> String? {
+        var request = URLRequest(url: config.ollamaBaseURL.appendingPathComponent("api/version"))
+        request.timeoutInterval = 3
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return json["version"] as? String
+    }
+
+    /// The bundled binary's own version. `ollama --version` names the client's version on its
+    /// last line ("client version is X" when a server answers, "ollama version is X" when not).
+    private func bundledOllamaVersion() -> String? {
+        let process = Process()
+        process.executableURL = paths.bundledOllama
+        process.arguments = ["--version"]
+        process.environment = ["OLLAMA_HOST": "127.0.0.1:1"]   // no server there: just the client
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+        guard (try? process.run()) != nil else { return nil }
+        process.waitUntilExit()
+        let text = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        guard let range = text.range(of: #"version is ([0-9][^\s]*)"#, options: [.regularExpression, .backwards]) else { return nil }
+        return String(text[range].split(separator: " ").last ?? "")
     }
 
     private func terminateListenersOnManagedPorts() {

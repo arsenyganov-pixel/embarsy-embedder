@@ -9,8 +9,9 @@ struct EmbarsyMarkView: View {
     var color: Color
     /// Stroke width expressed in the 96-unit design space (SVG uses 6).
     var strokeWidth: CGFloat = 6
-    /// When true, the stroke draws itself on a loop (design-system `emb-draw`):
-    /// a 2.4s cycle — draw over the first 55% (eased), then hold. Dots stay static.
+    /// When true, the stroke runs a loop like an arrow going round: the head draws the mark
+    /// left to right, it holds whole for a moment, then the tail follows the same way and the
+    /// arrowhead leaves last; a short empty beat, and again. Dots stay static.
     var animated: Bool = false
 
     @ObservedObject private var windowVisibility = WindowVisibility.shared
@@ -25,8 +26,9 @@ struct EmbarsyMarkView: View {
                     // TimelineView(.animation) redrew at full display refresh (up to 120Hz).
                     // Paused entirely while the window can't be seen.
                     TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !windowVisibility.isMainWindowVisible)) { timeline in
+                        let span = Self.stroke(timeline.date.timeIntervalSinceReferenceDate)
                         MarkOutline()
-                            .trim(from: 0, to: Self.drawProgress(timeline.date.timeIntervalSinceReferenceDate))
+                            .trim(from: span.from, to: span.to)
                             .stroke(color, style: style)
                     }
                 } else {
@@ -38,11 +40,20 @@ struct EmbarsyMarkView: View {
         }
     }
 
-    /// Draw fraction for the 2.4s loop: 0→1 (smoothstep-eased) over the first 55%, then held at 1.
-    private static func drawProgress(_ t: TimeInterval) -> CGFloat {
-        let phase = t.truncatingRemainder(dividingBy: 2.4) / 2.4
-        let raw = min(1.0, phase / 0.55)
-        return CGFloat(raw * raw * (3 - 2 * raw))   // ease-in-out (smoothstep)
+    static let cycle: TimeInterval = 4.0
+
+    /// The visible part of the stroke over one cycle: the head draws over 0–40% of it, the whole
+    /// mark holds to 52%, the tail erases over 52–92%, and the mark stays empty to the end. Both
+    /// moves are smoothstep-eased, so the arrow eases in and out of every turn.
+    static func stroke(_ t: TimeInterval) -> (from: CGFloat, to: CGFloat) {
+        let phase = t.truncatingRemainder(dividingBy: cycle) / cycle
+        func ease(_ x: Double) -> CGFloat {
+            let c = min(1, max(0, x))
+            return CGFloat(c * c * (3 - 2 * c))
+        }
+        let head = ease(phase / 0.40)
+        let tail = ease((phase - 0.52) / 0.40)
+        return (from: tail, to: head)
     }
 }
 

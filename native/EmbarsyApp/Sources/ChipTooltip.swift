@@ -10,7 +10,13 @@ import SwiftUI
 /// and overflow window edges; a panel escapes both and mirrors how a real tooltip
 /// behaves (appears near the cursor, on a short delay).
 extension View {
-    func chipHelp(_ text: String) -> some View {
+    /// Translated: the text is a key in Localizable.strings (English in code).
+    func chipHelp(_ text: String.LocalizationValue) -> some View {
+        modifier(ChipHelpModifier(text: String(localized: text)))
+    }
+
+    /// Shown as is — for text made at run time (paths, names, values).
+    func chipHelp(verbatim text: String) -> some View {
         modifier(ChipHelpModifier(text: text))
     }
 }

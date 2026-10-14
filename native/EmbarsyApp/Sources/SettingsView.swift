@@ -10,6 +10,7 @@ struct SettingsView: View {
                 BrandedHeader(title: "Settings", subtitle: "Startup, local secrets, and installed components.")
 
                 startupCard
+                LanguageCard()
 
                 // A Grid row sizes both cells to the taller card's height; `fillHeight` lets each
                 // card's surface fill that height so they read as equal in the row.
@@ -20,6 +21,7 @@ struct SettingsView: View {
                     }
                 }
 
+                EmbeddingModelCard(model: store.localModel)
                 localSecretsCard
                 debugLogCard
                 installStateCard
@@ -65,7 +67,7 @@ struct SettingsView: View {
         EmbarsySection(title: "Default project", fillHeight: true) {
             HStack(spacing: 10) {
                 Button("Choose…") { store.chooseDefaultProject() }
-                Text(store.preferences.defaultProjectPath.isEmpty ? "Not selected" : store.preferences.defaultProjectPath)
+                Text(store.preferences.defaultProjectPath.isEmpty ? L("Not selected") : store.preferences.defaultProjectPath)
                     .font(.system(size: 11.5, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
@@ -107,7 +109,7 @@ struct SettingsView: View {
     }
 
     private var installStateCard: some View {
-        EmbarsySection(title: "Install state", right: store.installManager.isInstalled ? "installed" : "not installed") {
+        EmbarsySection(title: "Install state", right: store.installManager.isInstalled ? L("installed") : L("not installed")) {
             HStack {
                 Button("Refresh Install State") { store.refreshInstalledState() }
                 Button("Remove Components and Clear Secrets", role: .destructive) {
@@ -137,6 +139,32 @@ struct SettingsView: View {
             if !store.installManager.message.isEmpty {
                 Text(store.installManager.message).font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+/// The interface language. A change needs a restart: macOS picks an app's language at launch.
+private struct LanguageCard: View {
+    @State private var chosen = AppLanguage.chosen
+
+    var body: some View {
+        EmbarsySection(title: "Language") {
+            HStack(spacing: 10) {
+                Picker("", selection: Binding(get: { chosen }, set: { chosen = $0; AppLanguage.choose($0) })) {
+                    ForEach(AppLanguage.allCases) { Text(verbatim: $0.nativeName).tag($0) }
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(width: 220)
+                if chosen != AppLanguage.running {
+                    Button("Restart Embarsy") { AppLanguage.relaunch() }
+                        .buttonStyle(.borderedProminent).tint(Theme.accent)
+                }
+            }
+            Text(chosen != AppLanguage.running
+                 ? "The new language shows after a restart. Your services keep running."
+                 : "Notes and the core stay in the language you wrote them in.")
+                .font(.system(size: 11.5)).foregroundStyle(.secondary)
         }
     }
 }

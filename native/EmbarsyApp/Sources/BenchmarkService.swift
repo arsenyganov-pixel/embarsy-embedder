@@ -224,7 +224,7 @@ final class BenchmarkService: ObservableObject {
     func runRetrieval(config: EmbarsyConfig, collection: String, workspacePath: String, samples: Int = 12, paraphrase: Bool = false) async {
         if case .running = phase { return }
         if case .running = agentPhase { return }  // duels reference the current question set
-        phase = .running("Sampling \(collection) and running \(samples) duels — real grep vs the semantic index…")
+        phase = .running(L("Sampling \(collection) and running \(samples) duels — real grep vs the semantic index…"))
         // Keep the previous result on screen while the new run is in flight — Status
         // always shows the last completed benchmark. Editor duels answered the OLD
         // questions, though: pairing them with a fresh sample would fabricate data.
@@ -245,7 +245,7 @@ final class BenchmarkService: ObservableObject {
             ])
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse else {
-                phase = .failed("No HTTP response from the Embarsy API.")
+                phase = .failed(L("No HTTP response from the Embarsy API."))
                 return
             }
             guard http.statusCode == 200 else {
@@ -253,9 +253,9 @@ final class BenchmarkService: ObservableObject {
                 if http.statusCode == 404, detail == nil || detail == "Not Found" {
                     // A still-running pre-0.2.1 API has no benchmark route at all; its
                     // bare "Not Found" would leave the user with no way forward.
-                    phase = .failed("The running Embarsy API predates the benchmark. Use the Update button in Services — only the API restarts, indexes are untouched.")
+                    phase = .failed(L("The running Embarsy API predates the benchmark. Use the Update button in Services — only the API restarts, indexes are untouched."))
                 } else {
-                    phase = .failed(detail ?? "Benchmark endpoint returned HTTP \(http.statusCode). If Status offers an API Update, run it first.")
+                    phase = .failed(detail ?? L("Benchmark endpoint returned HTTP \(http.statusCode). If Status offers an API Update, run it first."))
                 }
                 return
             }
@@ -264,7 +264,7 @@ final class BenchmarkService: ObservableObject {
             lastRunDate = Date()
             phase = .done
         } catch {
-            phase = .failed("Benchmark failed: \(error.localizedDescription)")
+            phase = .failed(L("Benchmark failed: \(error.localizedDescription)"))
         }
     }
 
@@ -364,7 +364,7 @@ final class BenchmarkService: ObservableObject {
         guard let binaryPath = detectedCLIs[editor] else { return }
         agentEditor = editor
         agentDuels = []
-        agentPhase = .running("Starting \(editor.title)…")
+        agentPhase = .running(L("Starting \(editor.title)…"))
 
         var duels: [AgentDuel] = []
         for (index, row) in questions.enumerated() {
@@ -376,7 +376,9 @@ final class BenchmarkService: ObservableObject {
             var semanticRun = grepRun
             for pass in 0..<2 {
                 let isGrepPass = (pass == 0) == grepFirst
-                agentPhase = .running("\(editor.title) · question \(index + 1)/\(questions.count) · \(isGrepPass ? "grep-only" : "semantic") run…")
+                agentPhase = .running(isGrepPass
+                    ? L("\(editor.title) · question \(index + 1)/\(questions.count) · grep-only run…")
+                    : L("\(editor.title) · question \(index + 1)/\(questions.count) · semantic run…"))
                 let run = await runAgent(
                     editor: editor, binaryPath: binaryPath,
                     prompt: isGrepPass ? Self.grepPrompt(question: row.query)

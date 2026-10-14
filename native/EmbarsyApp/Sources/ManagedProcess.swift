@@ -22,9 +22,9 @@ struct ProcessExit {
     var summary: String {
         switch reason {
         case .uncaughtSignal:
-            "terminated by signal \(status)\(status == SIGKILL ? " (SIGKILL — possibly killed by macOS code-signing enforcement)" : "")"
+            status == SIGKILL ? L("terminated by signal \(status) (SIGKILL — possibly killed by macOS code-signing enforcement)") : L("terminated by signal \(status)")
         default:
-            "exited with code \(status)"
+            L("exited with code \(status)")
         }
     }
 }
@@ -85,7 +85,7 @@ final class ManagedProcess {
         let fd = open(spec.logFile.path, O_WRONLY | O_APPEND | O_CREAT, 0o644)
         guard fd >= 0 else {
             throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno), userInfo: [
-                NSLocalizedDescriptionKey: "Cannot open log file at \(spec.logFile.path)",
+                NSLocalizedDescriptionKey: L("Cannot open log file at \(spec.logFile.path)"),
             ])
         }
         let logHandle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)

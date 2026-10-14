@@ -46,17 +46,17 @@ struct EmbarsyBuildInfo {
 
     static var mountedVolumeWarning: String? {
         guard isRunningFromMountedVolume else { return nil }
-        return "Running from a mounted DMG at \(bundlePath). Copy Embarsy.app to /Applications or rebuild/remount the DMG before testing fixes."
+        return L("Running from a mounted DMG at \(bundlePath). Copy Embarsy.app to /Applications or rebuild/remount the DMG before testing fixes.")
     }
 
     static var summary: String {
         var lines = [
-            "Version: \(shortVersion)",
-            "Build: \(bundleVersion)",
-            "Bundle path: \(bundlePath)",
+            L("Version: \(shortVersion)"),
+            L("Build: \(bundleVersion)"),
+            L("Bundle path: \(bundlePath)"),
         ]
         if let mountedVolumeWarning {
-            lines.append("Warning: \(mountedVolumeWarning)")
+            lines.append(L("Warning: \(mountedVolumeWarning)"))
         }
         return lines.joined(separator: "\n")
     }

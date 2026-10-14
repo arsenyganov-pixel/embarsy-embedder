@@ -12,7 +12,7 @@ struct ProcessRunner {
         var errorDescription: String? {
             switch self {
             case .timedOut(let command, let seconds, let output):
-                "\(command) timed out after \(Int(seconds)) seconds. Output: \(output)"
+                L("\(command) timed out after \(Int(seconds)) seconds. Output: \(output)")
             }
         }
     }

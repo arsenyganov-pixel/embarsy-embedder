@@ -17,7 +17,7 @@ struct ContentView: View {
             store.checkInstalledBuild()
             if !store.installManager.isInstalled {
                 store.selectedTab = .install
-                store.processManager.markAllStopped(message: "Components are not installed. Run Install first.")
+                store.processManager.markAllStopped(message: L("Components are not installed. Run Install first."))
             } else {
                 await store.processManager.refreshAll()
                 // Detect an orphaned pre-update API still serving :8000 right at launch,
@@ -53,15 +53,16 @@ struct ContentView: View {
     }
 
     private let allTabs: [TabDescriptor] = [
-        TabDescriptor(tab: .status,     title: "Status",     icon: "square.grid.2x2"),
-        TabDescriptor(tab: .install,    title: "Install",    icon: "square.and.arrow.down"),
+        TabDescriptor(tab: .status,     title: L("Status"),     icon: "square.grid.2x2"),
+        TabDescriptor(tab: .install,    title: L("Install"),    icon: "square.and.arrow.down"),
         // Right after Status: connecting agents is the next step once the stack is up,
         // before anything there is to monitor.
-        TabDescriptor(tab: .howto,      title: "Connections", icon: "point.3.connected.trianglepath.dotted"),
-        TabDescriptor(tab: .monitoring, title: "Monitoring", icon: "chart.line.uptrend.xyaxis"),
-        TabDescriptor(tab: .activity,   title: "Activity",   icon: "list.bullet"),
-        TabDescriptor(tab: .content,    title: "Content",    icon: "tablecells"),
-        TabDescriptor(tab: .settings,   title: "Settings",   icon: "gearshape"),
+        TabDescriptor(tab: .howto,      title: L("Connections"), icon: "point.3.connected.trianglepath.dotted"),
+        // Next to Connections: once agents are connected, this is what they know.
+        TabDescriptor(tab: .memory,     title: L("Memory"),     icon: "brain"),
+        // One entry for the code index and its search: its own tabs switch between the three.
+        TabDescriptor(tab: .content,    title: L("Code search"), icon: "magnifyingglass"),
+        TabDescriptor(tab: .settings,   title: L("Settings"),   icon: "gearshape"),
     ]
 
     // Install is only offered while the stack isn't installed (matches the old TabView).
@@ -87,20 +88,42 @@ struct ContentView: View {
     }
 
     private func tabButton(_ descriptor: TabDescriptor) -> some View {
-        let active = store.selectedTab == descriptor.tab
+        let inCodeSearch = AppTab.codeSearch.contains(store.selectedTab)
+        let active = store.selectedTab == descriptor.tab || (descriptor.tab == .content && inCodeSearch)
         return Button {
-            store.selectedTab = descriptor.tab
+            if descriptor.tab == .content {
+                if !inCodeSearch { store.selectedTab = store.lastCodeSearchTab }
+            } else {
+                store.selectedTab = descriptor.tab
+            }
         } label: {
             VStack(spacing: 3) {
-                Image(systemName: descriptor.icon)
-                    .font(.system(size: 17))
-                    .foregroundStyle(active ? Theme.accent : .secondary)
-                Text(descriptor.title)
-                    .font(.system(size: 11))
-                    .fontWeight(active ? .semibold : .regular)
-                    .foregroundStyle(active ? .primary : .secondary)
+                // Icons differ in height; a fixed box keeps every title on one baseline.
+                Group {
+                    if descriptor.tab == .memory {
+                        MemoryTabIcon(memory: store.memory, systemName: descriptor.icon, active: active)
+                    } else {
+                        Image(systemName: descriptor.icon)
+                            .font(.system(size: 17))
+                            .foregroundStyle(active ? Theme.accent : .secondary)
+                    }
+                }
+                .frame(height: 22)
+                // One line always; a longer title (Russian "Подключения") widens its tab
+                // instead of wrapping. The bold active weight is reserved invisibly, so a tab
+                // doesn't change width when it's selected.
+                ZStack {
+                    Text(verbatim: descriptor.title).font(.system(size: 11, weight: .semibold)).hidden()
+                    Text(verbatim: descriptor.title)
+                        .font(.system(size: 11))
+                        .fontWeight(active ? .semibold : .regular)
+                        .foregroundStyle(active ? .primary : .secondary)
+                }
+                .lineLimit(1)
+                .fixedSize()
             }
-            .frame(width: 74)
+            .padding(.horizontal, 6)
+            .frame(minWidth: 74)
             .padding(.vertical, 5)
             .background(
                 active ? Color.white.opacity(0.10) : Color.clear,
@@ -116,11 +139,31 @@ struct ContentView: View {
         switch store.selectedTab {
         case .status:     StatusView()
         case .install:    InstallView()
-        case .monitoring: MonitoringView(monitoring: store.monitoring, contentIndex: store.contentIndex, sysMetrics: store.sysMetrics)
-        case .activity:   ActivityView(activity: store.activity)
-        case .content:    ContentIndexView(contentIndex: store.contentIndex)
+        case .monitoring, .activity, .content: CodeSearchView()
         case .settings:   SettingsView()
         case .howto:      ConnectionsView()
+        case .memory:     MemoryView(memory: store.memory)
         }
+    }
+}
+
+/// The Memory tab's icon. Orange while Health has Problems — something an agent is missing or
+/// getting wrong right now — whichever tab is open; otherwise the usual colours. Watches the
+/// memory service itself, which the store doesn't republish.
+private struct MemoryTabIcon: View {
+    @ObservedObject var memory: MemoryService
+    let systemName: String
+    let active: Bool
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 17))
+            .foregroundStyle(memory.hasProblems ? Color.orange : (active ? Theme.accent : Color.secondary))
+            .padding(4)
+            .contentShape(Rectangle())
+            .chipHelp(verbatim: memory.hasProblems
+                       ? L("Memory has \(memory.problemCount) problems: an agent is missing something or getting it wrong right now. See Memory → Health.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health.")
+                       : L("Memory: no problems.\n\nOrange — Health has problems. Usual colour — no problems; warnings and notes, if any, are in Memory → Health."))
+            .padding(-4)
     }
 }

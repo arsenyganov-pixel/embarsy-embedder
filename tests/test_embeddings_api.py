@@ -171,3 +171,40 @@ def test_service_rejects_wrong_dimension(monkeypatch):
 
     with pytest.raises(Exception, match="expected 1024"):
         asyncio.run(service.embed(["test"]))
+
+
+def test_embed_request_caps_ollama_context_window(monkeypatch):
+    """Without num_ctx Ollama loads the embedding model with a 32k window — 5.8 GB of KV cache
+    for a 0.6B model whose inputs never exceed ~700 tokens."""
+    sent: dict = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        def raise_for_status(self) -> None:
+            pass
+
+        def json(self) -> dict:
+            return {"embeddings": [vector_with_norm_5()]}
+
+    class FakeClient:
+        async def post(self, _url: str, json: dict, timeout: float) -> FakeResponse:
+            sent.update(json)
+            return FakeResponse()
+
+    import embarsy_api.embeddings as embeddings
+
+    monkeypatch.setattr(embeddings, "_ollama_client", lambda: FakeClient())
+    service = EmbeddingService(
+        ollama_base_url="http://127.0.0.1:11434",
+        model="qwen3-embedding",
+        keep_alive="10m",
+        dimension=1024,
+        instruction="code_search",
+        timeout_seconds=1.0,
+    )
+
+    asyncio.run(service.embed(["test"]))
+
+    assert sent["options"] == {"num_ctx": 8192}
+    assert sent["keep_alive"] == "10m"
